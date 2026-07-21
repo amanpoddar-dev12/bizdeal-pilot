@@ -15,6 +15,10 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as ApiPublicSeedRouteImport } from './routes/api/public/seed'
+import { Route as AuthenticatedEmployeeTasksRouteImport } from './routes/_authenticated/employee/tasks'
+import { Route as AuthenticatedEmployeeLocationRouteImport } from './routes/_authenticated/employee/location'
+import { Route as AuthenticatedEmployeeDutyRouteImport } from './routes/_authenticated/employee/duty'
+import { Route as AuthenticatedEmployeeClientsRouteImport } from './routes/_authenticated/employee/clients'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin/orders'
 import { Route as AuthenticatedAdminLocationsRouteImport } from './routes/_authenticated/admin/locations'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated/admin/invoices'
@@ -22,6 +26,7 @@ import { Route as AuthenticatedAdminEmployeesRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin/customers'
 import { Route as AuthenticatedAdminCreditRouteImport } from './routes/_authenticated/admin/credit'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
+import { Route as AuthenticatedEmployeeOrdersNewRouteImport } from './routes/_authenticated/employee/orders.new'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -52,6 +57,30 @@ const ApiPublicSeedRoute = ApiPublicSeedRouteImport.update({
   path: '/api/public/seed',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedEmployeeTasksRoute =
+  AuthenticatedEmployeeTasksRouteImport.update({
+    id: '/employee/tasks',
+    path: '/employee/tasks',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEmployeeLocationRoute =
+  AuthenticatedEmployeeLocationRouteImport.update({
+    id: '/employee/location',
+    path: '/employee/location',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEmployeeDutyRoute =
+  AuthenticatedEmployeeDutyRouteImport.update({
+    id: '/employee/duty',
+    path: '/employee/duty',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEmployeeClientsRoute =
+  AuthenticatedEmployeeClientsRouteImport.update({
+    id: '/employee/clients',
+    path: '/employee/clients',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminOrdersRoute =
   AuthenticatedAdminOrdersRouteImport.update({
     id: '/admin/orders',
@@ -93,6 +122,12 @@ const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
   path: '/admin/audit',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedEmployeeOrdersNewRoute =
+  AuthenticatedEmployeeOrdersNewRouteImport.update({
+    id: '/employee/orders/new',
+    path: '/employee/orders/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -106,7 +141,12 @@ export interface FileRoutesByFullPath {
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/employee/clients': typeof AuthenticatedEmployeeClientsRoute
+  '/employee/duty': typeof AuthenticatedEmployeeDutyRoute
+  '/employee/location': typeof AuthenticatedEmployeeLocationRoute
+  '/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
   '/api/public/seed': typeof ApiPublicSeedRoute
+  '/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -120,7 +160,12 @@ export interface FileRoutesByTo {
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/employee/clients': typeof AuthenticatedEmployeeClientsRoute
+  '/employee/duty': typeof AuthenticatedEmployeeDutyRoute
+  '/employee/location': typeof AuthenticatedEmployeeLocationRoute
+  '/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
   '/api/public/seed': typeof ApiPublicSeedRoute
+  '/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -136,7 +181,12 @@ export interface FileRoutesById {
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/_authenticated/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/_authenticated/employee/clients': typeof AuthenticatedEmployeeClientsRoute
+  '/_authenticated/employee/duty': typeof AuthenticatedEmployeeDutyRoute
+  '/_authenticated/employee/location': typeof AuthenticatedEmployeeLocationRoute
+  '/_authenticated/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
   '/api/public/seed': typeof ApiPublicSeedRoute
+  '/_authenticated/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -152,7 +202,12 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/locations'
     | '/admin/orders'
+    | '/employee/clients'
+    | '/employee/duty'
+    | '/employee/location'
+    | '/employee/tasks'
     | '/api/public/seed'
+    | '/employee/orders/new'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -166,7 +221,12 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/locations'
     | '/admin/orders'
+    | '/employee/clients'
+    | '/employee/duty'
+    | '/employee/location'
+    | '/employee/tasks'
     | '/api/public/seed'
+    | '/employee/orders/new'
   id:
     | '__root__'
     | '/'
@@ -181,7 +241,12 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/invoices'
     | '/_authenticated/admin/locations'
     | '/_authenticated/admin/orders'
+    | '/_authenticated/employee/clients'
+    | '/_authenticated/employee/duty'
+    | '/_authenticated/employee/location'
+    | '/_authenticated/employee/tasks'
     | '/api/public/seed'
+    | '/_authenticated/employee/orders/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -236,6 +301,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSeedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/employee/tasks': {
+      id: '/_authenticated/employee/tasks'
+      path: '/employee/tasks'
+      fullPath: '/employee/tasks'
+      preLoaderRoute: typeof AuthenticatedEmployeeTasksRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/employee/location': {
+      id: '/_authenticated/employee/location'
+      path: '/employee/location'
+      fullPath: '/employee/location'
+      preLoaderRoute: typeof AuthenticatedEmployeeLocationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/employee/duty': {
+      id: '/_authenticated/employee/duty'
+      path: '/employee/duty'
+      fullPath: '/employee/duty'
+      preLoaderRoute: typeof AuthenticatedEmployeeDutyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/employee/clients': {
+      id: '/_authenticated/employee/clients'
+      path: '/employee/clients'
+      fullPath: '/employee/clients'
+      preLoaderRoute: typeof AuthenticatedEmployeeClientsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/orders': {
       id: '/_authenticated/admin/orders'
       path: '/admin/orders'
@@ -285,6 +378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/employee/orders/new': {
+      id: '/_authenticated/employee/orders/new'
+      path: '/employee/orders/new'
+      fullPath: '/employee/orders/new'
+      preLoaderRoute: typeof AuthenticatedEmployeeOrdersNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -297,6 +397,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminInvoicesRoute: typeof AuthenticatedAdminInvoicesRoute
   AuthenticatedAdminLocationsRoute: typeof AuthenticatedAdminLocationsRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
+  AuthenticatedEmployeeClientsRoute: typeof AuthenticatedEmployeeClientsRoute
+  AuthenticatedEmployeeDutyRoute: typeof AuthenticatedEmployeeDutyRoute
+  AuthenticatedEmployeeLocationRoute: typeof AuthenticatedEmployeeLocationRoute
+  AuthenticatedEmployeeTasksRoute: typeof AuthenticatedEmployeeTasksRoute
+  AuthenticatedEmployeeOrdersNewRoute: typeof AuthenticatedEmployeeOrdersNewRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -308,6 +413,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminInvoicesRoute: AuthenticatedAdminInvoicesRoute,
   AuthenticatedAdminLocationsRoute: AuthenticatedAdminLocationsRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
+  AuthenticatedEmployeeClientsRoute: AuthenticatedEmployeeClientsRoute,
+  AuthenticatedEmployeeDutyRoute: AuthenticatedEmployeeDutyRoute,
+  AuthenticatedEmployeeLocationRoute: AuthenticatedEmployeeLocationRoute,
+  AuthenticatedEmployeeTasksRoute: AuthenticatedEmployeeTasksRoute,
+  AuthenticatedEmployeeOrdersNewRoute: AuthenticatedEmployeeOrdersNewRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

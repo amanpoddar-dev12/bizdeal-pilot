@@ -41,7 +41,7 @@ function Duty() {
         <CardHeader><CardTitle className="flex items-center gap-2"><Clock className="size-5" />Current status</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <Badge variant={isOnDuty ? "default" : "secondary"}>{isOnDuty ? "On duty" : "Off duty"}</Badge>
-          {isOnDuty && <p className="text-sm text-muted-foreground">Clocked in at {fmtDateTime(data!.open.clock_in_time)}</p>}
+          {isOnDuty && data?.open && <p className="text-sm text-muted-foreground">Clocked in at {fmtDateTime(data.open.clock_in_time)}</p>}
           <div>
             {isOnDuty
               ? <Button onClick={() => outMut.mutate()} disabled={outMut.isPending}>Clock out</Button>
