@@ -20,7 +20,9 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 
 function Dashboard() {
   const { data: me } = useSuspenseQuery({ queryKey: ["me"], queryFn: () => getMe() });
-  if (me.role === "admin") return <AdminOverview />;
-  if (me.role === "employee") return <EmployeeOverview />;
-  return <ClientOverview />;
+  // Key by userId so switching accounts fully remounts the correct overview
+  // rather than letting a stale role's component fire a forbidden server fn.
+  if (me.role === "admin") return <AdminOverview key={me.userId} />;
+  if (me.role === "employee") return <EmployeeOverview key={me.userId} />;
+  return <ClientOverview key={me.userId} />;
 }
