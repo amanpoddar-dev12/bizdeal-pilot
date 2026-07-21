@@ -38,41 +38,36 @@ async function runSeed() {
     const empId = await mkUser("employee@demo.com", "Ravi Kumar", "+91 9800000002");
     const clientId = await mkUser("client@demo.com", "Sunita Sharma", "+91 9800000003");
 
-    // Roles — the signup trigger set them all to 'client'. Correct admin+employee.
     await supabaseAdmin.from("user_roles").delete().in("user_id", [adminId, empId]);
     await supabaseAdmin.from("user_roles").insert([
       { user_id: adminId, role: "admin" },
       { user_id: empId, role: "employee" },
     ]);
 
-    await supabaseAdmin.from("employee_profiles").insert({
-      id: empId,
-      territory: "Mumbai West",
-      order_limit: 200,
-      max_order_value: 500000,
-      base_salary: 45000,
-      commission_rate: 0.025,
-      active: true,
-    });
+    await supabaseAdmin.from("employee_profiles").upsert({
+      id: empId, territory: "Mumbai West", order_limit: 200, max_order_value: 500000,
+      base_salary: 45000, commission_rate: 0.025, active: true,
+    }, { onConflict: "id" });
 
-    const { data: cli } = await supabaseAdmin.from("clients").insert({
-      user_id: clientId,
-      business_name: "Sharma Traders Pvt Ltd",
-      business_type: "Retail Distribution",
-      contact_person: "Sunita Sharma",
-      email: "client@demo.com",
-      phone: "+91 9800000003",
-      gst_number: "27ABCDE1234F1Z5",
-      pan: "ABCDE1234F",
-      address: "Andheri West, Mumbai 400058",
-      credit_limit: 500000,
-      credit_terms: 45,
-      penalty_rate_per_day: 0.005,
-      kyc_verified: true,
-      active: true,
-    }).select().single();
+    let cli: any = null;
+    const { data: existingCli } = await supabaseAdmin.from("clients").select("*").eq("user_id", clientId).maybeSingle();
+    if (existingCli) {
+      cli = existingCli;
+    } else {
+      const { data: newCli, error: cliErr } = await supabaseAdmin.from("clients").insert({
+        user_id: clientId, business_name: "Sharma Traders Pvt Ltd", business_type: "Retail Distribution",
+        contact_person: "Sunita Sharma", email: "client@demo.com", phone: "+91 9800000003",
+        gst_number: "27ABCDE1234F1Z5", pan: "ABCDE1234F", address: "Andheri West, Mumbai 400058",
+        credit_limit: 500000, credit_terms: 45, penalty_rate_per_day: 0.005,
+        kyc_verified: true, active: true,
+      }).select().single();
+      if (cliErr) return Response.json({ ok: false, step: "clients", error: cliErr.message }, { status: 500 });
+      cli = newCli;
+    }
 
     if (cli) {
+      const { count: existingOrders } = await supabaseAdmin.from("orders").select("*", { count: "exact", head: true }).eq("client_id", cli.id);
+      if (!existingOrders || existingOrders === 0) {
       await supabaseAdmin.from("client_employees").insert({ client_id: cli.id, employee_id: empId });
 
       // Orders
