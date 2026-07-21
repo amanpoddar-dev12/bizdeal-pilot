@@ -9,38 +9,329 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as ApiPublicSeedRouteImport } from './routes/api/public/seed'
+import { Route as AuthenticatedEmployeeTasksRouteImport } from './routes/_authenticated/employee/tasks'
+import { Route as AuthenticatedEmployeeLocationRouteImport } from './routes/_authenticated/employee/location'
+import { Route as AuthenticatedEmployeeDutyRouteImport } from './routes/_authenticated/employee/duty'
+import { Route as AuthenticatedEmployeeClientsRouteImport } from './routes/_authenticated/employee/clients'
+import { Route as AuthenticatedClientProfileRouteImport } from './routes/_authenticated/client/profile'
+import { Route as AuthenticatedClientOrdersRouteImport } from './routes/_authenticated/client/orders'
+import { Route as AuthenticatedClientLedgerRouteImport } from './routes/_authenticated/client/ledger'
+import { Route as AuthenticatedClientInvoicesRouteImport } from './routes/_authenticated/client/invoices'
+import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin/orders'
+import { Route as AuthenticatedAdminLocationsRouteImport } from './routes/_authenticated/admin/locations'
+import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated/admin/invoices'
+import { Route as AuthenticatedAdminEmployeesRouteImport } from './routes/_authenticated/admin/employees'
+import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin/customers'
+import { Route as AuthenticatedAdminCreditRouteImport } from './routes/_authenticated/admin/credit'
+import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
+import { Route as AuthenticatedEmployeeOrdersNewRouteImport } from './routes/_authenticated/employee/orders.new'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiPublicSeedRoute = ApiPublicSeedRouteImport.update({
+  id: '/api/public/seed',
+  path: '/api/public/seed',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedEmployeeTasksRoute =
+  AuthenticatedEmployeeTasksRouteImport.update({
+    id: '/employee/tasks',
+    path: '/employee/tasks',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEmployeeLocationRoute =
+  AuthenticatedEmployeeLocationRouteImport.update({
+    id: '/employee/location',
+    path: '/employee/location',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEmployeeDutyRoute =
+  AuthenticatedEmployeeDutyRouteImport.update({
+    id: '/employee/duty',
+    path: '/employee/duty',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEmployeeClientsRoute =
+  AuthenticatedEmployeeClientsRouteImport.update({
+    id: '/employee/clients',
+    path: '/employee/clients',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedClientProfileRoute =
+  AuthenticatedClientProfileRouteImport.update({
+    id: '/client/profile',
+    path: '/client/profile',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedClientOrdersRoute =
+  AuthenticatedClientOrdersRouteImport.update({
+    id: '/client/orders',
+    path: '/client/orders',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedClientLedgerRoute =
+  AuthenticatedClientLedgerRouteImport.update({
+    id: '/client/ledger',
+    path: '/client/ledger',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedClientInvoicesRoute =
+  AuthenticatedClientInvoicesRouteImport.update({
+    id: '/client/invoices',
+    path: '/client/invoices',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminOrdersRoute =
+  AuthenticatedAdminOrdersRouteImport.update({
+    id: '/admin/orders',
+    path: '/admin/orders',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminLocationsRoute =
+  AuthenticatedAdminLocationsRouteImport.update({
+    id: '/admin/locations',
+    path: '/admin/locations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminInvoicesRoute =
+  AuthenticatedAdminInvoicesRouteImport.update({
+    id: '/admin/invoices',
+    path: '/admin/invoices',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminEmployeesRoute =
+  AuthenticatedAdminEmployeesRouteImport.update({
+    id: '/admin/employees',
+    path: '/admin/employees',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminCustomersRoute =
+  AuthenticatedAdminCustomersRouteImport.update({
+    id: '/admin/customers',
+    path: '/admin/customers',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminCreditRoute =
+  AuthenticatedAdminCreditRouteImport.update({
+    id: '/admin/credit',
+    path: '/admin/credit',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
+  id: '/admin/audit',
+  path: '/admin/audit',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEmployeeOrdersNewRoute =
+  AuthenticatedEmployeeOrdersNewRouteImport.update({
+    id: '/employee/orders/new',
+    path: '/employee/orders/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/credit': typeof AuthenticatedAdminCreditRoute
+  '/admin/customers': typeof AuthenticatedAdminCustomersRoute
+  '/admin/employees': typeof AuthenticatedAdminEmployeesRoute
+  '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
+  '/admin/locations': typeof AuthenticatedAdminLocationsRoute
+  '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/client/invoices': typeof AuthenticatedClientInvoicesRoute
+  '/client/ledger': typeof AuthenticatedClientLedgerRoute
+  '/client/orders': typeof AuthenticatedClientOrdersRoute
+  '/client/profile': typeof AuthenticatedClientProfileRoute
+  '/employee/clients': typeof AuthenticatedEmployeeClientsRoute
+  '/employee/duty': typeof AuthenticatedEmployeeDutyRoute
+  '/employee/location': typeof AuthenticatedEmployeeLocationRoute
+  '/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
+  '/api/public/seed': typeof ApiPublicSeedRoute
+  '/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/admin/credit': typeof AuthenticatedAdminCreditRoute
+  '/admin/customers': typeof AuthenticatedAdminCustomersRoute
+  '/admin/employees': typeof AuthenticatedAdminEmployeesRoute
+  '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
+  '/admin/locations': typeof AuthenticatedAdminLocationsRoute
+  '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/client/invoices': typeof AuthenticatedClientInvoicesRoute
+  '/client/ledger': typeof AuthenticatedClientLedgerRoute
+  '/client/orders': typeof AuthenticatedClientOrdersRoute
+  '/client/profile': typeof AuthenticatedClientProfileRoute
+  '/employee/clients': typeof AuthenticatedEmployeeClientsRoute
+  '/employee/duty': typeof AuthenticatedEmployeeDutyRoute
+  '/employee/location': typeof AuthenticatedEmployeeLocationRoute
+  '/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
+  '/api/public/seed': typeof ApiPublicSeedRoute
+  '/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
+  '/_authenticated/admin/credit': typeof AuthenticatedAdminCreditRoute
+  '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRoute
+  '/_authenticated/admin/employees': typeof AuthenticatedAdminEmployeesRoute
+  '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
+  '/_authenticated/admin/locations': typeof AuthenticatedAdminLocationsRoute
+  '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/_authenticated/client/invoices': typeof AuthenticatedClientInvoicesRoute
+  '/_authenticated/client/ledger': typeof AuthenticatedClientLedgerRoute
+  '/_authenticated/client/orders': typeof AuthenticatedClientOrdersRoute
+  '/_authenticated/client/profile': typeof AuthenticatedClientProfileRoute
+  '/_authenticated/employee/clients': typeof AuthenticatedEmployeeClientsRoute
+  '/_authenticated/employee/duty': typeof AuthenticatedEmployeeDutyRoute
+  '/_authenticated/employee/location': typeof AuthenticatedEmployeeLocationRoute
+  '/_authenticated/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
+  '/api/public/seed': typeof ApiPublicSeedRoute
+  '/_authenticated/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/dashboard'
+    | '/admin/audit'
+    | '/admin/credit'
+    | '/admin/customers'
+    | '/admin/employees'
+    | '/admin/invoices'
+    | '/admin/locations'
+    | '/admin/orders'
+    | '/client/invoices'
+    | '/client/ledger'
+    | '/client/orders'
+    | '/client/profile'
+    | '/employee/clients'
+    | '/employee/duty'
+    | '/employee/location'
+    | '/employee/tasks'
+    | '/api/public/seed'
+    | '/employee/orders/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/reset-password'
+    | '/dashboard'
+    | '/admin/audit'
+    | '/admin/credit'
+    | '/admin/customers'
+    | '/admin/employees'
+    | '/admin/invoices'
+    | '/admin/locations'
+    | '/admin/orders'
+    | '/client/invoices'
+    | '/client/ledger'
+    | '/client/orders'
+    | '/client/profile'
+    | '/employee/clients'
+    | '/employee/duty'
+    | '/employee/location'
+    | '/employee/tasks'
+    | '/api/public/seed'
+    | '/employee/orders/new'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/reset-password'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/admin/audit'
+    | '/_authenticated/admin/credit'
+    | '/_authenticated/admin/customers'
+    | '/_authenticated/admin/employees'
+    | '/_authenticated/admin/invoices'
+    | '/_authenticated/admin/locations'
+    | '/_authenticated/admin/orders'
+    | '/_authenticated/client/invoices'
+    | '/_authenticated/client/ledger'
+    | '/_authenticated/client/orders'
+    | '/_authenticated/client/profile'
+    | '/_authenticated/employee/clients'
+    | '/_authenticated/employee/duty'
+    | '/_authenticated/employee/location'
+    | '/_authenticated/employee/tasks'
+    | '/api/public/seed'
+    | '/_authenticated/employee/orders/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicSeedRoute: typeof ApiPublicSeedRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +339,185 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/public/seed': {
+      id: '/api/public/seed'
+      path: '/api/public/seed'
+      fullPath: '/api/public/seed'
+      preLoaderRoute: typeof ApiPublicSeedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/employee/tasks': {
+      id: '/_authenticated/employee/tasks'
+      path: '/employee/tasks'
+      fullPath: '/employee/tasks'
+      preLoaderRoute: typeof AuthenticatedEmployeeTasksRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/employee/location': {
+      id: '/_authenticated/employee/location'
+      path: '/employee/location'
+      fullPath: '/employee/location'
+      preLoaderRoute: typeof AuthenticatedEmployeeLocationRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/employee/duty': {
+      id: '/_authenticated/employee/duty'
+      path: '/employee/duty'
+      fullPath: '/employee/duty'
+      preLoaderRoute: typeof AuthenticatedEmployeeDutyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/employee/clients': {
+      id: '/_authenticated/employee/clients'
+      path: '/employee/clients'
+      fullPath: '/employee/clients'
+      preLoaderRoute: typeof AuthenticatedEmployeeClientsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/client/profile': {
+      id: '/_authenticated/client/profile'
+      path: '/client/profile'
+      fullPath: '/client/profile'
+      preLoaderRoute: typeof AuthenticatedClientProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/client/orders': {
+      id: '/_authenticated/client/orders'
+      path: '/client/orders'
+      fullPath: '/client/orders'
+      preLoaderRoute: typeof AuthenticatedClientOrdersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/client/ledger': {
+      id: '/_authenticated/client/ledger'
+      path: '/client/ledger'
+      fullPath: '/client/ledger'
+      preLoaderRoute: typeof AuthenticatedClientLedgerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/client/invoices': {
+      id: '/_authenticated/client/invoices'
+      path: '/client/invoices'
+      fullPath: '/client/invoices'
+      preLoaderRoute: typeof AuthenticatedClientInvoicesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/orders': {
+      id: '/_authenticated/admin/orders'
+      path: '/admin/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AuthenticatedAdminOrdersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/locations': {
+      id: '/_authenticated/admin/locations'
+      path: '/admin/locations'
+      fullPath: '/admin/locations'
+      preLoaderRoute: typeof AuthenticatedAdminLocationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/invoices': {
+      id: '/_authenticated/admin/invoices'
+      path: '/admin/invoices'
+      fullPath: '/admin/invoices'
+      preLoaderRoute: typeof AuthenticatedAdminInvoicesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/employees': {
+      id: '/_authenticated/admin/employees'
+      path: '/admin/employees'
+      fullPath: '/admin/employees'
+      preLoaderRoute: typeof AuthenticatedAdminEmployeesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/customers': {
+      id: '/_authenticated/admin/customers'
+      path: '/admin/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AuthenticatedAdminCustomersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/credit': {
+      id: '/_authenticated/admin/credit'
+      path: '/admin/credit'
+      fullPath: '/admin/credit'
+      preLoaderRoute: typeof AuthenticatedAdminCreditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/audit': {
+      id: '/_authenticated/admin/audit'
+      path: '/admin/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/employee/orders/new': {
+      id: '/_authenticated/employee/orders/new'
+      path: '/employee/orders/new'
+      fullPath: '/employee/orders/new'
+      preLoaderRoute: typeof AuthenticatedEmployeeOrdersNewRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
+  AuthenticatedAdminCreditRoute: typeof AuthenticatedAdminCreditRoute
+  AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRoute
+  AuthenticatedAdminEmployeesRoute: typeof AuthenticatedAdminEmployeesRoute
+  AuthenticatedAdminInvoicesRoute: typeof AuthenticatedAdminInvoicesRoute
+  AuthenticatedAdminLocationsRoute: typeof AuthenticatedAdminLocationsRoute
+  AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
+  AuthenticatedClientInvoicesRoute: typeof AuthenticatedClientInvoicesRoute
+  AuthenticatedClientLedgerRoute: typeof AuthenticatedClientLedgerRoute
+  AuthenticatedClientOrdersRoute: typeof AuthenticatedClientOrdersRoute
+  AuthenticatedClientProfileRoute: typeof AuthenticatedClientProfileRoute
+  AuthenticatedEmployeeClientsRoute: typeof AuthenticatedEmployeeClientsRoute
+  AuthenticatedEmployeeDutyRoute: typeof AuthenticatedEmployeeDutyRoute
+  AuthenticatedEmployeeLocationRoute: typeof AuthenticatedEmployeeLocationRoute
+  AuthenticatedEmployeeTasksRoute: typeof AuthenticatedEmployeeTasksRoute
+  AuthenticatedEmployeeOrdersNewRoute: typeof AuthenticatedEmployeeOrdersNewRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
+  AuthenticatedAdminCreditRoute: AuthenticatedAdminCreditRoute,
+  AuthenticatedAdminCustomersRoute: AuthenticatedAdminCustomersRoute,
+  AuthenticatedAdminEmployeesRoute: AuthenticatedAdminEmployeesRoute,
+  AuthenticatedAdminInvoicesRoute: AuthenticatedAdminInvoicesRoute,
+  AuthenticatedAdminLocationsRoute: AuthenticatedAdminLocationsRoute,
+  AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
+  AuthenticatedClientInvoicesRoute: AuthenticatedClientInvoicesRoute,
+  AuthenticatedClientLedgerRoute: AuthenticatedClientLedgerRoute,
+  AuthenticatedClientOrdersRoute: AuthenticatedClientOrdersRoute,
+  AuthenticatedClientProfileRoute: AuthenticatedClientProfileRoute,
+  AuthenticatedEmployeeClientsRoute: AuthenticatedEmployeeClientsRoute,
+  AuthenticatedEmployeeDutyRoute: AuthenticatedEmployeeDutyRoute,
+  AuthenticatedEmployeeLocationRoute: AuthenticatedEmployeeLocationRoute,
+  AuthenticatedEmployeeTasksRoute: AuthenticatedEmployeeTasksRoute,
+  AuthenticatedEmployeeOrdersNewRoute: AuthenticatedEmployeeOrdersNewRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicSeedRoute: ApiPublicSeedRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
