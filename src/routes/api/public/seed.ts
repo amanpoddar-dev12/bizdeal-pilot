@@ -16,30 +16,20 @@ async function runSeed() {
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Idempotency check
-    const { data: existing } = await supabaseAdmin
-      .from("user_roles")
-      .select("user_id")
-      .eq("role", "admin")
-      .limit(1)
-      .maybeSingle();
-
-    if (existing) {
-      return Response.json({ ok: true, already_seeded: true });
-    }
-
     const DEMO_PASSWORD = "Demo1234!";
 
+    // Per-user idempotent create
     const mkUser = async (email: string, name: string, phone: string) => {
+      const { data: existing } = await supabaseAdmin.from("profiles").select("id").eq("email", email).maybeSingle();
+      if (existing) {
+        await supabaseAdmin.from("profiles").upsert({ id: existing.id, email, name, phone }, { onConflict: "id" });
+        return existing.id;
+      }
       const { data, error } = await supabaseAdmin.auth.admin.createUser({
-        email,
-        password: DEMO_PASSWORD,
-        email_confirm: true,
-        user_metadata: { name },
+        email, password: DEMO_PASSWORD, email_confirm: true, user_metadata: { name },
       });
       if (error) throw error;
       const uid = data.user!.id;
-      // Ensure profile has name/phone
       await supabaseAdmin.from("profiles").upsert({ id: uid, email, name, phone }, { onConflict: "id" });
       return uid;
     };
