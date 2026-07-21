@@ -24,11 +24,11 @@ function Profile() {
   const meFn = useServerFn(getMe);
   const clientsFn = useServerFn(listClients);
   const { data: me } = useSuspenseQuery({ queryKey: ["me"], queryFn: () => meFn() });
-  const { data: clients = [] } = useQuery({ queryKey: ["clients"], queryFn: () => clientsFn() });
-  const c = clients.find((x: any) => x.id === me.clientRecord?.id) ?? clients[0];
+  const { data: clients = [] } = useQuery<any[]>({ queryKey: ["clients"], queryFn: () => clientsFn() as any });
+  const c: any = clients.find((x: any) => x.id === me.clientRecord?.id) ?? clients[0];
 
   if (!c) return <p className="text-sm text-muted-foreground">Your client record isn't set up yet. Contact your account manager.</p>;
-  const purse = c.credit_purse?.[0];
+  const purse = Array.isArray(c.credit_purse) ? c.credit_purse[0] : c.credit_purse;
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">

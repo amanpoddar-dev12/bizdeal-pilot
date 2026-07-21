@@ -19,6 +19,10 @@ import { Route as AuthenticatedEmployeeTasksRouteImport } from './routes/_authen
 import { Route as AuthenticatedEmployeeLocationRouteImport } from './routes/_authenticated/employee/location'
 import { Route as AuthenticatedEmployeeDutyRouteImport } from './routes/_authenticated/employee/duty'
 import { Route as AuthenticatedEmployeeClientsRouteImport } from './routes/_authenticated/employee/clients'
+import { Route as AuthenticatedClientProfileRouteImport } from './routes/_authenticated/client/profile'
+import { Route as AuthenticatedClientOrdersRouteImport } from './routes/_authenticated/client/orders'
+import { Route as AuthenticatedClientLedgerRouteImport } from './routes/_authenticated/client/ledger'
+import { Route as AuthenticatedClientInvoicesRouteImport } from './routes/_authenticated/client/invoices'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin/orders'
 import { Route as AuthenticatedAdminLocationsRouteImport } from './routes/_authenticated/admin/locations'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated/admin/invoices'
@@ -81,6 +85,30 @@ const AuthenticatedEmployeeClientsRoute =
     path: '/employee/clients',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedClientProfileRoute =
+  AuthenticatedClientProfileRouteImport.update({
+    id: '/client/profile',
+    path: '/client/profile',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedClientOrdersRoute =
+  AuthenticatedClientOrdersRouteImport.update({
+    id: '/client/orders',
+    path: '/client/orders',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedClientLedgerRoute =
+  AuthenticatedClientLedgerRouteImport.update({
+    id: '/client/ledger',
+    path: '/client/ledger',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedClientInvoicesRoute =
+  AuthenticatedClientInvoicesRouteImport.update({
+    id: '/client/invoices',
+    path: '/client/invoices',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminOrdersRoute =
   AuthenticatedAdminOrdersRouteImport.update({
     id: '/admin/orders',
@@ -141,6 +169,10 @@ export interface FileRoutesByFullPath {
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/client/invoices': typeof AuthenticatedClientInvoicesRoute
+  '/client/ledger': typeof AuthenticatedClientLedgerRoute
+  '/client/orders': typeof AuthenticatedClientOrdersRoute
+  '/client/profile': typeof AuthenticatedClientProfileRoute
   '/employee/clients': typeof AuthenticatedEmployeeClientsRoute
   '/employee/duty': typeof AuthenticatedEmployeeDutyRoute
   '/employee/location': typeof AuthenticatedEmployeeLocationRoute
@@ -160,6 +192,10 @@ export interface FileRoutesByTo {
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/client/invoices': typeof AuthenticatedClientInvoicesRoute
+  '/client/ledger': typeof AuthenticatedClientLedgerRoute
+  '/client/orders': typeof AuthenticatedClientOrdersRoute
+  '/client/profile': typeof AuthenticatedClientProfileRoute
   '/employee/clients': typeof AuthenticatedEmployeeClientsRoute
   '/employee/duty': typeof AuthenticatedEmployeeDutyRoute
   '/employee/location': typeof AuthenticatedEmployeeLocationRoute
@@ -181,6 +217,10 @@ export interface FileRoutesById {
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/_authenticated/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/_authenticated/client/invoices': typeof AuthenticatedClientInvoicesRoute
+  '/_authenticated/client/ledger': typeof AuthenticatedClientLedgerRoute
+  '/_authenticated/client/orders': typeof AuthenticatedClientOrdersRoute
+  '/_authenticated/client/profile': typeof AuthenticatedClientProfileRoute
   '/_authenticated/employee/clients': typeof AuthenticatedEmployeeClientsRoute
   '/_authenticated/employee/duty': typeof AuthenticatedEmployeeDutyRoute
   '/_authenticated/employee/location': typeof AuthenticatedEmployeeLocationRoute
@@ -202,6 +242,10 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/locations'
     | '/admin/orders'
+    | '/client/invoices'
+    | '/client/ledger'
+    | '/client/orders'
+    | '/client/profile'
     | '/employee/clients'
     | '/employee/duty'
     | '/employee/location'
@@ -221,6 +265,10 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/locations'
     | '/admin/orders'
+    | '/client/invoices'
+    | '/client/ledger'
+    | '/client/orders'
+    | '/client/profile'
     | '/employee/clients'
     | '/employee/duty'
     | '/employee/location'
@@ -241,6 +289,10 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/invoices'
     | '/_authenticated/admin/locations'
     | '/_authenticated/admin/orders'
+    | '/_authenticated/client/invoices'
+    | '/_authenticated/client/ledger'
+    | '/_authenticated/client/orders'
+    | '/_authenticated/client/profile'
     | '/_authenticated/employee/clients'
     | '/_authenticated/employee/duty'
     | '/_authenticated/employee/location'
@@ -329,6 +381,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeeClientsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/client/profile': {
+      id: '/_authenticated/client/profile'
+      path: '/client/profile'
+      fullPath: '/client/profile'
+      preLoaderRoute: typeof AuthenticatedClientProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/client/orders': {
+      id: '/_authenticated/client/orders'
+      path: '/client/orders'
+      fullPath: '/client/orders'
+      preLoaderRoute: typeof AuthenticatedClientOrdersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/client/ledger': {
+      id: '/_authenticated/client/ledger'
+      path: '/client/ledger'
+      fullPath: '/client/ledger'
+      preLoaderRoute: typeof AuthenticatedClientLedgerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/client/invoices': {
+      id: '/_authenticated/client/invoices'
+      path: '/client/invoices'
+      fullPath: '/client/invoices'
+      preLoaderRoute: typeof AuthenticatedClientInvoicesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/orders': {
       id: '/_authenticated/admin/orders'
       path: '/admin/orders'
@@ -397,6 +477,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminInvoicesRoute: typeof AuthenticatedAdminInvoicesRoute
   AuthenticatedAdminLocationsRoute: typeof AuthenticatedAdminLocationsRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
+  AuthenticatedClientInvoicesRoute: typeof AuthenticatedClientInvoicesRoute
+  AuthenticatedClientLedgerRoute: typeof AuthenticatedClientLedgerRoute
+  AuthenticatedClientOrdersRoute: typeof AuthenticatedClientOrdersRoute
+  AuthenticatedClientProfileRoute: typeof AuthenticatedClientProfileRoute
   AuthenticatedEmployeeClientsRoute: typeof AuthenticatedEmployeeClientsRoute
   AuthenticatedEmployeeDutyRoute: typeof AuthenticatedEmployeeDutyRoute
   AuthenticatedEmployeeLocationRoute: typeof AuthenticatedEmployeeLocationRoute
@@ -413,6 +497,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminInvoicesRoute: AuthenticatedAdminInvoicesRoute,
   AuthenticatedAdminLocationsRoute: AuthenticatedAdminLocationsRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
+  AuthenticatedClientInvoicesRoute: AuthenticatedClientInvoicesRoute,
+  AuthenticatedClientLedgerRoute: AuthenticatedClientLedgerRoute,
+  AuthenticatedClientOrdersRoute: AuthenticatedClientOrdersRoute,
+  AuthenticatedClientProfileRoute: AuthenticatedClientProfileRoute,
   AuthenticatedEmployeeClientsRoute: AuthenticatedEmployeeClientsRoute,
   AuthenticatedEmployeeDutyRoute: AuthenticatedEmployeeDutyRoute,
   AuthenticatedEmployeeLocationRoute: AuthenticatedEmployeeLocationRoute,
