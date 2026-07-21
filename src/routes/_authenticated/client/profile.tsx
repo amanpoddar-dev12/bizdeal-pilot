@@ -23,7 +23,8 @@ export const Route = createFileRoute("/_authenticated/client/profile")({
 function Profile() {
   const meFn = useServerFn(getMe);
   const clientsFn = useServerFn(listClients);
-  const { data: me } = useSuspenseQuery({ queryKey: ["me"], queryFn: () => meFn() });
+  const { data: meData } = useSuspenseQuery({ queryKey: ["me"], queryFn: () => meFn() });
+  const me = meData as any;
   const { data: clients = [] } = useQuery<any[]>({ queryKey: ["clients"], queryFn: async () => (await clientsFn()) as any });
   const c: any = clients.find((x: any) => x.id === me.clientRecord?.id) ?? clients[0];
 
