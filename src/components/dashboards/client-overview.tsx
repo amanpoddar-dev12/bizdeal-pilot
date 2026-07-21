@@ -10,9 +10,12 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
 export function ClientOverview() {
-  const ledger = useQuery({ queryKey: ["ledger"], queryFn: () => useServerFn(getClientLedger)({ data: {} }) });
-  const invoices = useQuery({ queryKey: ["invoices"], queryFn: () => useServerFn(listInvoices)() });
-  const orders = useQuery({ queryKey: ["orders"], queryFn: () => useServerFn(listOrders)() });
+  const ledgerFn = useServerFn(getClientLedger);
+  const invoicesFn = useServerFn(listInvoices);
+  const ordersFn = useServerFn(listOrders);
+  const ledger = useQuery({ queryKey: ["ledger"], queryFn: () => ledgerFn({ data: {} }) });
+  const invoices = useQuery({ queryKey: ["invoices"], queryFn: () => invoicesFn() });
+  const orders = useQuery({ queryKey: ["orders"], queryFn: () => ordersFn() });
 
   const invs = ledger.data?.invoices ?? [];
   const outstanding = invs.reduce((s: number, i: any) => s + (Number(i.amount) - Number(i.payment_amount)), 0);
@@ -42,9 +45,7 @@ export function ClientOverview() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Awaiting your action</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Awaiting your action</CardTitle></CardHeader>
         <CardContent>
           {pendingOrders.length === 0 && openInvs.length === 0 && (
             <p className="py-6 text-center text-sm text-muted-foreground">Nothing to review</p>

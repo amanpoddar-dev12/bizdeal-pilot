@@ -10,9 +10,12 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
 export function EmployeeOverview() {
-  const duty = useQuery({ queryKey: ["duty"], queryFn: () => useServerFn(getMyDutyStatus)() });
-  const tasks = useQuery({ queryKey: ["tasks"], queryFn: () => useServerFn(listTasks)() });
-  const orders = useQuery({ queryKey: ["orders"], queryFn: () => useServerFn(listOrders)() });
+  const dutyFn = useServerFn(getMyDutyStatus);
+  const tasksFn = useServerFn(listTasks);
+  const ordersFn = useServerFn(listOrders);
+  const duty = useQuery({ queryKey: ["duty"], queryFn: () => dutyFn() });
+  const tasks = useQuery({ queryKey: ["tasks"], queryFn: () => tasksFn() });
+  const orders = useQuery({ queryKey: ["orders"], queryFn: () => ordersFn() });
 
   const openTasks = (tasks.data ?? []).filter((t: any) => t.status !== "completed").slice(0, 5);
   const myOrders = (orders.data ?? []).slice(0, 5);
