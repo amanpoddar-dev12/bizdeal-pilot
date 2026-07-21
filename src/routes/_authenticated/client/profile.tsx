@@ -24,7 +24,7 @@ function Profile() {
   const meFn = useServerFn(getMe);
   const clientsFn = useServerFn(listClients);
   const { data: me } = useSuspenseQuery({ queryKey: ["me"], queryFn: () => meFn() });
-  const { data: clients = [] } = useQuery<any[]>({ queryKey: ["clients"], queryFn: () => clientsFn() as any });
+  const { data: clients = [] } = useQuery<any[]>({ queryKey: ["clients"], queryFn: async () => (await clientsFn()) as any });
   const c: any = clients.find((x: any) => x.id === me.clientRecord?.id) ?? clients[0];
 
   if (!c) return <p className="text-sm text-muted-foreground">Your client record isn't set up yet. Contact your account manager.</p>;
