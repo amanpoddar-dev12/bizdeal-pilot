@@ -131,6 +131,7 @@ async function runSeed() {
         { user_id: clientId, type: "order", title: "New order received", message: "Order for ₹1,25,000 pending your approval", reference_id: o1?.id ?? "" },
         { user_id: adminId, type: "system", title: "Demo data loaded", message: "Sample orders, invoices, and tasks are ready." },
       ]);
+      }
     }
 
     return Response.json({ ok: true, seeded: true, credentials: {
