@@ -1,148 +1,67 @@
+# Settings Page with Admin Management, Language & Theme
 
-# B2B Trade & Credit Management Platform — v1 Plan
+Add a new **Settings** section to the app, accessible from the sidebar for all authenticated users, with role-gated features.
 
-Full-stack app on Lovable's TanStack Start + Lovable Cloud (Supabase) stack. Building the full spec in one pass, WhatsApp/cron deferred (stubbed with `wa.me` links + in-app notifications), seeded demo accounts for all three roles.
+## Sidebar entry
+- Add `Settings` (Gear icon) to every role's sidebar in `src/components/app-sidebar.tsx`, pointing to `/settings`.
 
-## Deferrals (explicit)
-- **WhatsApp Business Cloud API + daily cron reminders** — replaced by click-to-send `wa.me` links from Admin/Employee UIs and in-app notifications. Edge function scaffold NOT built.
-- **OTP auth, call recording, background GPS, OCR order slips** — per spec, out of scope.
-- **KYC third-party providers** — abstraction file created, defaults to manual admin toggle.
-- **SendGrid email** — Supabase Auth's built-in transactional email only.
+## Route
+- New route `src/routes/_authenticated/settings.tsx` rendering a tabbed layout:
+  - **Appearance** (all users): theme + language
+  - **Admin users** (admin role only, conditionally rendered)
 
-## Stack decisions
-- **Auth**: Lovable Cloud email/password + email verification. Google/Apple not requested — skip.
-- **Roles**: separate `user_roles` table + `has_role()` security definer function (per platform rules — NEVER on profiles). The spec's `profiles.role` column is replaced by this pattern.
-- **Data reads**: TanStack Query (`ensureQueryData` + `useSuspenseQuery`) via `createServerFn` with `requireSupabaseAuth`.
-- **Realtime**: Supabase channels for `orders`, `invoices`, `notifications`.
-- **Storage**: private bucket `kyc-documents` + `task-attachments`, signed URLs.
-- **PDF**: `jspdf` + `jspdf-autotable` client-side (payslips, invoice/ledger export).
-- **CSV**: `papaparse`.
-- **Charts**: `recharts`.
-- **Maps**: Google Maps Embed API iframe (requires `VITE_GOOGLE_MAPS_EMBED_KEY` — will prompt).
-- **Forms**: `react-hook-form` + `zod`.
+## Feature 1 — Admin creates admin accounts (admin only)
 
-## Route structure
+- New server fn `src/lib/admin-users.functions.ts`:
+  - `createAdminUser` — `.middleware([requireSupabaseAuth])`, verifies caller has `admin` role via `context.supabase.rpc('has_role', { _user_id, _role: 'admin' })`. On pass, dynamically imports `supabaseAdmin` and calls `auth.admin.createUser({ email, password, email_confirm: true, user_metadata: { name } })`, then inserts an `admin` row into `user_roles` (the `handle_new_user` trigger already creates the profile + default `client` role — we also remove that default `client` row so the new user is admin-only).
+  - `listAdmins` — returns profiles joined with `user_roles` where role = admin (admin-gated).
+- UI: Form with Zod validation (name ≥ 2, valid email, password ≥ 10 chars + complexity check, confirm-password match). On submit → toast success/error, refetch admin list, clear form. Show existing admin list below.
+- Section is hidden entirely for non-admin roles (double-gated: UI check + server-side role check).
+
+## Feature 2 — Language switcher (persisted)
+
+- Install `i18next`, `react-i18next`, `i18next-browser-languagedetector`.
+- New `src/i18n/index.ts` initializing i18next with resource bundles for **English** and **Hindi** (starter set; more can be added). Detector order: `localStorage` → `navigator`. Cache key: `kredix.lang`.
+- Wrap app in i18n init (import once in `src/routes/__root.tsx`).
+- Add `user_settings` table for cross-device persistence:
+  - Columns: `user_id` (PK, FK auth.users), `language` text, `theme` text, timestamps.
+  - RLS: user can select/insert/update their own row. Grants for authenticated + service_role.
+- Server fns `src/lib/user-settings.functions.ts`: `getUserSettings`, `upsertUserSettings` (both `requireSupabaseAuth`).
+- On login, hydrate i18n language + theme from `user_settings` (fallback to localStorage). On change → optimistic local update + persist to DB.
+- Translate Settings page strings as the initial translated surface; other pages can be migrated later.
+
+## Feature 3 — Dark mode
+
+- Add `ThemeProvider` in `src/components/theme-provider.tsx` managing `light | dark | system`, toggling the `dark` class on `<html>`. Persisted to localStorage under `kredix.theme` and synced to `user_settings.theme`.
+- Mount provider in `__root.tsx` around `<Outlet />`.
+- Settings → Appearance tab: theme selector (Light / Dark / System) + language selector (English / Hindi), each saving immediately.
+- Add a compact theme toggle button in the authenticated header (`_authenticated/route.tsx`) for quick access.
+
+## Database migration
+
+```sql
+CREATE TABLE public.user_settings (
+  user_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  language text NOT NULL DEFAULT 'en',
+  theme text NOT NULL DEFAULT 'system',
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.user_settings TO authenticated;
+GRANT ALL ON public.user_settings TO service_role;
+ALTER TABLE public.user_settings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "own settings" ON public.user_settings
+  FOR ALL USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE TRIGGER user_settings_updated_at BEFORE UPDATE ON public.user_settings
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 ```
-/                              → landing, redirects by role after login
-/auth                          → sign in / sign up (public)
-/reset-password                → password reset target (public)
-/_authenticated/
-  dashboard                    → role-router (redirects to /admin, /employee, or /client home)
-  admin/
-    index                      → KPIs + reporting
-    employees                  → list + CRUD + payslip
-    employees/$id
-    customers                  → list + CRUD + KYC
-    customers/$id
-    orders                     → list + create + detail
-    orders/$id
-    invoices                   → list + generate + record payment
-    invoices/$id
-    credit                     → credit purse + overdue report
-    audit                      → audit log viewer
-    locations                  → employees on map
-  employee/
-    index                      → today: tasks, clock, clients
-    clients                    → assigned client list
-    orders/new                 → order punching
-    tasks
-    location                   → share location button
-    duty                       → clock in/out
-  client/
-    index                      → outstanding + activity
-    orders                     → accept/decline/request changes
-    invoices                   → accept/decline + download
-    ledger                     → hisab view
-    profile                    → KYC docs upload
-```
 
-## Database (single migration, per platform rules)
+## Security notes
+- Admin creation is server-verified with `has_role` before touching `supabaseAdmin` — never trust the client role.
+- Password validated both client-side (zod) and by Supabase Auth policy.
+- `user_settings` scoped strictly by `auth.uid()`.
 
-Tables:
-- `profiles(id→auth.users, email, name, phone, avatar_url, created_at, updated_at)` + `handle_new_user()` trigger
-- `app_role` enum (`admin`, `employee`, `client`)
-- `user_roles(id, user_id, role, unique(user_id, role))` + `has_role(_user_id, _role)` SECURITY DEFINER
-- `employee_profiles(id→profiles, reporting_manager_id, territory, order_limit, max_order_value, commission_rate, base_salary, penalty_rate, active)`
-- `clients(id, user_id→profiles, business_name, business_type, contact_person, email, phone, gst_number, pan_encrypted, address, bank_account, credit_limit, credit_terms, penalty_rate_per_day, kyc_verified, active, ...)`
-- `client_employees(client_id, employee_id)` — assignment junction (needed so employee RLS doesn't depend on orders existing)
-- `orders(id, order_number, client_id, employee_id, order_date, delivery_date, status, total_amount, notes, change_request jsonb)`
-- `order_items(id, order_id, product_name, product_code, quantity, rate, amount)`
-- `invoices(id, invoice_number, order_id, client_id, invoice_date, due_date, amount, status, payment_date, payment_amount, penalty_amount)`
-- `payments(id, invoice_id, client_id, amount, payment_date, method, notes)` — split out for partial-payment history
-- `ledger_entries(id, client_id, type, reference_id, amount, running_balance, date, notes)`
-- `credit_purse(id, client_id unique, credit_limit, used_credit, remaining_credit, utilization_percent, last_updated)` — refreshed by trigger
-- `tasks(id, employee_id, assigned_by, title, description, due_date, status, completed_date, notes)`
-- `task_attachments(id, task_id, file_url, filename)`
-- `duty_sessions(id, employee_id, clock_in_time, clock_out_time, duration_minutes)`
-- `employee_locations(id, employee_id, latitude, longitude, accuracy_meters, timestamp)`
-- `notifications(id, user_id, type, title, message, reference_id, status, created_at, read_at)`
-- `notification_logs(id, user_id, channel, message, delivery_status, sent_at, error_message)`
-- `audit_logs(id, actor_id, action, target_type, target_id, old_value jsonb, new_value jsonb, timestamp)`
-
-Every `CREATE TABLE` in public gets `GRANT SELECT,INSERT,UPDATE,DELETE ... TO authenticated;` + `GRANT ALL ... TO service_role;` and `ALTER TABLE ... ENABLE ROW LEVEL SECURITY`.
-
-RLS pattern (examples — full set in migration):
-- Admin all-access via `has_role(auth.uid(), 'admin')` on every table
-- Client rows: `client_id IN (SELECT id FROM clients WHERE user_id = auth.uid())`
-- Employee rows: assigned via `client_employees` OR authored via `employee_id = auth.uid()`
-- `user_roles`: users read own row; only admin writes
-- `notifications`: user reads/updates own only
-
-Triggers:
-- `handle_new_user()` → creates `profiles` row + default `client` role on signup
-- `update_credit_purse()` on invoice/payment change → refresh snapshot
-- `write_ledger_entry()` on order confirm / invoice approve / payment insert
-- `updated_at` timestamps
-
-## Server functions (`src/lib/*.functions.ts`)
-`auth`, `clients`, `orders`, `invoices`, `payments`, `ledger`, `tasks`, `duty`, `locations`, `employees`, `notifications`, `audit`, `reports`, `kyc`. All use `.middleware([requireSupabaseAuth])` except public read-only (none needed here).
-
-Role checks inside handlers via `context.supabase.rpc('has_role', ...)` before privileged operations. `supabaseAdmin` used only for: creating employee/client user accounts (admin action) and seed script.
-
-## KYC abstraction
-`src/services/kycVerificationService.ts` with `verifyGST` / `verifyPAN`; provider switch reads `VITE_KYC_PROVIDER` (default `manual` → returns `{verified: null}` so admin toggles manually).
-
-## Notifications
-- In-app: insert into `notifications`; UI subscribes via Supabase channel, shows bell + toast.
-- WhatsApp v1: `wa.me/<phone>?text=<encoded>` link buttons on order/invoice detail pages for admin & employee.
-- Reminder cron: NOT built. `notification_logs` schema is present so future cron can log.
-
-## Seed data (in migration)
-Three demo accounts via `supabaseAdmin` seed migration:
-- `admin@demo.com` / `Demo1234!` → admin role
-- `employee@demo.com` / `Demo1234!` → employee + `employee_profiles`
-- `client@demo.com` / `Demo1234!` → client + `clients` row + assigned to demo employee
-
-Plus: 3 orders (pending / confirmed / invoiced), 2 invoices (one paid, one overdue with penalty), 1 payment, 2 tasks, credit purse populated.
-
-## Design system
-Dark professional business palette (deep navy `#0f172a` bg, indigo `#4f46e5` primary, emerald success, amber warn, rose destructive) — all as HSL/oklch tokens in `src/styles.css`. Inter for body, but pair with `Space Grotesk` for headings to avoid generic AI look. All shadcn components consumed via semantic tokens only.
-
-Sidebar navigation (shadcn sidebar) per role, collapsible to icon rail. Mobile-first for `/employee/*` routes (large tap targets, 16px+ text).
-
-## Build order
-1. Enable Lovable Cloud
-2. Migration: enums, tables, GRANTs, RLS, triggers, `has_role`, seed accounts + demo data
-3. Prompt for `VITE_GOOGLE_MAPS_EMBED_KEY` (optional, gate the map behind availability)
-4. Design tokens + fonts + shadcn sidebar shell
-5. `/auth`, `/reset-password`, root role-router
-6. `_authenticated` layout (managed) + role-scoped sidebars
-7. Server fns + hooks per domain (clients, orders, invoices, payments, ledger, credit, tasks, duty, locations, notifications, audit, reports, employees, kyc)
-8. Admin dashboard (KPIs, employees, customers, orders, invoices, credit, audit, locations, reports w/ Recharts)
-9. Employee dashboard (mobile-first: clients, order punching, tasks, clock, share-location, wa.me buttons)
-10. Client dashboard (orders accept/decline/request-changes, invoices accept/decline + PDF download, ledger + CSV export, KYC upload)
-11. Realtime subscriptions on notifications + orders/invoices
-12. Payslip PDF generator, ledger CSV export
-13. Head metadata per route, verify build
-
-## Technical constraints (from platform rules)
-- `supabaseAdmin` never imported at module scope of `.functions.ts` — dynamic `await import(...)` inside handlers
-- Every route has `errorComponent` + `notFoundComponent`
-- `<Link>` + `params` for all dynamic navigation
-- No og:image on `__root`; leaf routes get their own head()
-- Sign-in affordance reflects session state; sign-out clears query cache
-
-## Files not built in v1
-- `supabase/functions/send-whatsapp-*/` — deferred
-- Any cron/EasyCron wiring — deferred
-- Real KYC provider client — deferred (interface only)
+## Files touched
+- New: `src/routes/_authenticated/settings.tsx`, `src/lib/admin-users.functions.ts`, `src/lib/user-settings.functions.ts`, `src/i18n/index.ts`, `src/i18n/locales/{en,hi}.json`, `src/components/theme-provider.tsx`, `src/components/theme-toggle.tsx`
+- Edit: `src/components/app-sidebar.tsx`, `src/routes/__root.tsx`, `src/routes/_authenticated/route.tsx`
+- Migration: `user_settings` table

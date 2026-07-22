@@ -1,0 +1,65 @@
+import { createServerFn } from "@tanstack/react-start";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { z } from "zod";
+
+const createSchema = z.object({
+  name: z.string().trim().min(2).max(100),
+  email: z.string().trim().email().max(255),
+  password: z
+    .string()
+    .min(10)
+    .max(72)
+    .regex(/[A-Z]/, "Must contain uppercase")
+    .regex(/[a-z]/, "Must contain lowercase")
+    .regex(/[0-9]/, "Must contain a number"),
+});
+
+async function assertAdmin(supabase: any, userId: string) {
+  const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("Forbidden");
+}
+
+export const listAdmins = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { data, error } = await context.supabase
+      .from("user_roles")
+      .select("user_id, role, created_at, profiles:profiles!inner(id, email, name)")
+      .eq("role", "admin");
+    if (error) throw new Error(error.message);
+    return (data ?? []).map((r: any) => ({
+      user_id: r.user_id,
+      email: r.profiles?.email as string,
+      name: r.profiles?.name as string,
+      created_at: r.created_at as string,
+    }));
+  });
+
+export const createAdminUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => createSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { name: data.name },
+    });
+    if (createErr || !created.user) throw new Error(createErr?.message ?? "Failed to create user");
+    const newId = created.user.id;
+
+    // handle_new_user trigger already inserted profile + default 'client' role.
+    // Remove the default client role and grant admin.
+    await supabaseAdmin.from("user_roles").delete().eq("user_id", newId).eq("role", "client");
+    const { error: roleErr } = await supabaseAdmin
+      .from("user_roles")
+      .insert({ user_id: newId, role: "admin" });
+    if (roleErr) throw new Error(roleErr.message);
+
+    return { ok: true, userId: newId };
+  });

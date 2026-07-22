@@ -3,10 +3,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { NotificationBell } from "@/components/notification-bell";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
+import { useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMe } from "@/lib/me.functions";
+import { getUserSettings } from "@/lib/user-settings.functions";
 import { useServerFn } from "@tanstack/react-start";
+import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { useTheme } from "@/components/theme-provider";
+import { LANG_STORAGE_KEY } from "@/i18n";
 import { LogOut } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -33,6 +39,22 @@ function AuthedLayout() {
   const { data: me } = useSuspenseQuery({ queryKey: ["me"], queryFn: () => getMe() });
   const router = useRouter();
   const qc = useQueryClient();
+  const { i18n } = useTranslation();
+  const { theme, setTheme } = useTheme();
+  const getSettings = useServerFn(getUserSettings);
+  const { data: settings } = useQuery({ queryKey: ["user-settings"], queryFn: () => getSettings() });
+
+  useEffect(() => {
+    if (!settings) return;
+    if (settings.language && settings.language !== i18n.language) {
+      i18n.changeLanguage(settings.language);
+      try { localStorage.setItem(LANG_STORAGE_KEY, settings.language); } catch {}
+    }
+    if (settings.theme && settings.theme !== theme) {
+      setTheme(settings.theme as "light" | "dark" | "system");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings]);
 
   async function signOut() {
     await qc.cancelQueries();
@@ -51,6 +73,7 @@ function AuthedLayout() {
             {me.role} · <span className="text-foreground">{me.profile?.name ?? me.profile?.email}</span>
           </div>
           <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
             <NotificationBell />
             <Button variant="ghost" size="sm" onClick={signOut}>
               <LogOut className="mr-1 size-4" /> Sign out

@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard, Users, Package, Receipt, Wallet, ScrollText, MapPin,
-  ClipboardList, Clock, MapPinned, FileText, User,
+  ClipboardList, Clock, MapPinned, FileText, User, Settings,
 } from "lucide-react";
 
 type Role = "admin" | "employee" | "client";
@@ -22,6 +22,7 @@ const navByRole: Record<Role, { label: string; items: { title: string; url: stri
       { title: "Credit purse", url: "/admin/credit", icon: Wallet },
       { title: "Locations", url: "/admin/locations", icon: MapPin },
       { title: "Audit log", url: "/admin/audit", icon: ScrollText },
+      { title: "Settings", url: "/settings", icon: Settings },
     ],
   }],
   employee: [{
@@ -33,6 +34,7 @@ const navByRole: Record<Role, { label: string; items: { title: string; url: stri
       { title: "Tasks", url: "/employee/tasks", icon: ClipboardList },
       { title: "Clock in / out", url: "/employee/duty", icon: Clock },
       { title: "Share location", url: "/employee/location", icon: MapPinned },
+      { title: "Settings", url: "/settings", icon: Settings },
     ],
   }],
   client: [{
@@ -43,6 +45,7 @@ const navByRole: Record<Role, { label: string; items: { title: string; url: stri
       { title: "Invoices", url: "/client/invoices", icon: Receipt },
       { title: "Ledger", url: "/client/ledger", icon: FileText },
       { title: "Profile & KYC", url: "/client/profile", icon: User },
+      { title: "Settings", url: "/settings", icon: Settings },
     ],
   }],
 };
