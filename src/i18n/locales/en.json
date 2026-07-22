@@ -1,0 +1,38 @@
+{
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your preferences and account",
+    "tabs": {
+      "appearance": "Appearance",
+      "admins": "Admin users"
+    },
+    "appearance": {
+      "theme": "Theme",
+      "themeDesc": "Choose how the app looks",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "language": "Language",
+      "languageDesc": "Choose your preferred language",
+      "saved": "Preferences saved"
+    },
+    "admins": {
+      "title": "Create admin account",
+      "desc": "Only administrators can create new admin accounts",
+      "name": "Full name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "create": "Create admin",
+      "creating": "Creating...",
+      "success": "Admin account created",
+      "existing": "Existing admins",
+      "passwordHint": "At least 10 characters, mixed case and a number",
+      "mismatch": "Passwords do not match"
+    }
+  },
+  "common": {
+    "signOut": "Sign out",
+    "cancel": "Cancel"
+  }
+}
