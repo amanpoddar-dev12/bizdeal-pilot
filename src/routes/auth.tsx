@@ -34,14 +34,33 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [signInRole, setSignInRole] = useState<"client" | "employee">("client");
+  const [signUpRole, setSignUpRole] = useState<"client" | "employee">("client");
   const [busy, setBusy] = useState(false);
 
   async function signIn(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      setBusy(false);
+      return toast.error(error.message);
+    }
+    const userId = data.user?.id;
+    if (userId) {
+      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+      const roleSet = new Set((roles ?? []).map((r) => r.role));
+      const actual = roleSet.has("admin") ? "admin" : roleSet.has("employee") ? "employee" : "client";
+      // Admins can sign in from either tab. Other roles must match the selected role.
+      if (actual !== "admin" && actual !== signInRole) {
+        await supabase.auth.signOut();
+        setBusy(false);
+        return toast.error(
+          `This account is registered as ${actual}. Please select "${actual}" to sign in.`,
+        );
+      }
+    }
     setBusy(false);
-    if (error) return toast.error(error.message);
     toast.success(t("auth.signedIn"));
     navigate({ to: "/dashboard" });
   }
@@ -52,11 +71,12 @@ function AuthPage() {
     setBusy(true);
     const { error } = await supabase.auth.signUp({
       email, password,
-      options: { data: { name }, emailRedirectTo: window.location.origin + "/dashboard" },
+      options: { data: { name, role: signUpRole }, emailRedirectTo: window.location.origin + "/dashboard" },
     });
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success(t("auth.checkEmail"));
+    setSignInRole(signUpRole);
     setTab("signin");
   }
 
@@ -73,7 +93,36 @@ function AuthPage() {
     setEmail(`${role}@demo.com`);
     setPassword("Demo1234!");
     setTab("signin");
+    if (role !== "admin") setSignInRole(role);
   }
+
+  const RoleSelector = ({
+    value,
+    onChange,
+  }: {
+    value: "client" | "employee";
+    onChange: (v: "client" | "employee") => void;
+  }) => (
+    <div className="space-y-2">
+      <Label>{t("auth.role")}</Label>
+      <div className="grid grid-cols-2 gap-2">
+        {(["client", "employee"] as const).map((r) => (
+          <button
+            key={r}
+            type="button"
+            onClick={() => onChange(r)}
+            className={`rounded-md border px-3 py-2 text-sm capitalize transition ${
+              value === r
+                ? "border-primary bg-primary/10 text-foreground"
+                : "border-border text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {t(`auth.roles.${r}`)}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="grid min-h-screen place-items-center bg-background p-4">
@@ -92,6 +141,7 @@ function AuthPage() {
 
             <TabsContent value="signin">
               <form onSubmit={signIn} className="mt-4 space-y-4">
+                <RoleSelector value={signInRole} onChange={setSignInRole} />
                 <div className="space-y-2">
                   <Label htmlFor="email">{t("auth.email")}</Label>
                   <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -109,6 +159,7 @@ function AuthPage() {
 
             <TabsContent value="signup">
               <form onSubmit={signUp} className="mt-4 space-y-4">
+                <RoleSelector value={signUpRole} onChange={setSignUpRole} />
                 <div className="space-y-2">
                   <Label htmlFor="name">{t("auth.fullName")}</Label>
                   <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} />
@@ -122,9 +173,10 @@ function AuthPage() {
                   <Input id="password2" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
                 </div>
                 <Button className="w-full" type="submit" disabled={busy}>{busy ? t("auth.creating") : t("auth.createAccount")}</Button>
-                <p className="text-xs text-muted-foreground">{t("auth.roleNote")}</p>
+                <p className="text-xs text-muted-foreground">{t("auth.roleNoteSelfServe")}</p>
               </form>
             </TabsContent>
+
           </Tabs>
 
           <div className="mt-6 rounded-md border border-dashed border-border bg-muted/40 p-3 text-xs">
