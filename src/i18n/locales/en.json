@@ -97,13 +97,16 @@
       "saved": "Preferences saved"
     },
     "admins": {
-      "title": "Invite admin",
-      "desc": "Only administrators can invite new admins. The invitee gets an email to set their password.",
+      "title": "Create admin",
+      "desc": "Only administrators can create admin accounts. Share the password securely with the new admin.",
       "name": "Full name",
       "email": "Email",
-      "create": "Send invitation",
-      "creating": "Sending…",
-      "success": "Invitation email sent",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "passwordHint": "Min 10 chars, with uppercase, lowercase, and a number.",
+      "create": "Create admin",
+      "creating": "Creating…",
+      "success": "Admin account created",
       "existing": "Existing admins"
     }
   }
