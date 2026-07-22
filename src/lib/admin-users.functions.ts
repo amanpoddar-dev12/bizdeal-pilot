@@ -5,6 +5,13 @@ import { z } from "zod";
 const createSchema = z.object({
   name: z.string().trim().min(2).max(100),
   email: z.string().trim().email().max(255),
+  password: z
+    .string()
+    .min(10, "Password must be at least 10 characters")
+    .max(72)
+    .regex(/[A-Z]/, "Must include an uppercase letter")
+    .regex(/[a-z]/, "Must include a lowercase letter")
+    .regex(/[0-9]/, "Must include a number"),
 });
 
 async function assertAdmin(supabase: any, userId: string) {
