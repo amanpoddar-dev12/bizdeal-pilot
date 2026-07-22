@@ -52,15 +52,18 @@ export const createAdminUser = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Send an invitation email — the invitee sets their own password via the emailed link.
-    const { data: invited, error: inviteErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(
-      data.email,
-      { data: { name: data.name } },
-    );
-    if (inviteErr || !invited.user) {
-      throw new Error(inviteErr?.message ?? "Failed to send invitation");
+    // Create the user with the admin-supplied password and mark the email confirmed
+    // so the new admin can sign in immediately.
+    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
+      email: data.email,
+      password: data.password,
+      email_confirm: true,
+      user_metadata: { name: data.name },
+    });
+    if (createErr || !created.user) {
+      throw new Error(createErr?.message ?? "Failed to create admin user");
     }
-    const newId = invited.user.id;
+    const newId = created.user.id;
 
     // handle_new_user trigger inserted profile + default 'client' role.
     // Swap client role for admin.
@@ -70,5 +73,5 @@ export const createAdminUser = createServerFn({ method: "POST" })
       .insert({ user_id: newId, role: "admin" });
     if (roleErr) throw new Error(roleErr.message);
 
-    return { ok: true, userId: newId, invited: true };
+    return { ok: true, userId: newId };
   });
