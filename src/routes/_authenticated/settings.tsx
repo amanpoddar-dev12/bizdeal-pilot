@@ -136,10 +136,23 @@ function AppearanceTab() {
   );
 }
 
-const adminFormSchema = z.object({
-  name: z.string().trim().min(2, "Name too short").max(100),
-  email: z.string().trim().email("Invalid email").max(255),
-});
+const adminFormSchema = z
+  .object({
+    name: z.string().trim().min(2, "Name too short").max(100),
+    email: z.string().trim().email("Invalid email").max(255),
+    password: z
+      .string()
+      .min(10, "Password must be at least 10 characters")
+      .max(72)
+      .regex(/[A-Z]/, "Must include an uppercase letter")
+      .regex(/[a-z]/, "Must include a lowercase letter")
+      .regex(/[0-9]/, "Must include a number"),
+    confirmPassword: z.string(),
+  })
+  .refine((v) => v.password === v.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 function AdminsTab() {
   const { t } = useTranslation();
@@ -148,7 +161,7 @@ function AdminsTab() {
   const create = useServerFn(createAdminUser);
   const { data: admins, isLoading } = useQuery({ queryKey: ["admins"], queryFn: () => list() });
 
-  const [form, setForm] = useState({ name: "", email: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -164,9 +177,15 @@ function AdminsTab() {
     }
     setSubmitting(true);
     try {
-      await create({ data: { name: form.name, email: form.email } });
+      await create({
+        data: {
+          name: form.name,
+          email: form.email,
+          password: form.password,
+        },
+      });
       toast.success(t("settings.admins.success"));
-      setForm({ name: "", email: "" });
+      setForm({ name: "", email: "", password: "", confirmPassword: "" });
       qc.invalidateQueries({ queryKey: ["admins"] });
     } catch (e: any) {
       toast.error(e.message ?? "Failed");
@@ -194,7 +213,18 @@ function AdminsTab() {
               <Input id="a-email" type="email" autoComplete="off" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
             </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="a-password">{t("settings.admins.password")}</Label>
+              <Input id="a-password" type="password" autoComplete="new-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+              {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="a-confirm">{t("settings.admins.confirmPassword")}</Label>
+              <Input id="a-confirm" type="password" autoComplete="new-password" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} />
+              {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
+            </div>
             <div className="md:col-span-2">
+              <p className="mb-2 text-xs text-muted-foreground">{t("settings.admins.passwordHint")}</p>
               <Button type="submit" disabled={submitting}>
                 {submitting ? t("settings.admins.creating") : t("settings.admins.create")}
               </Button>
@@ -202,6 +232,7 @@ function AdminsTab() {
           </form>
         </CardContent>
       </Card>
+
 
       <Card>
         <CardHeader>
