@@ -15,7 +15,6 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as ApiPublicSeedRouteImport } from './routes/api/public/seed'
 import { Route as AuthenticatedEmployeeTasksRouteImport } from './routes/_authenticated/employee/tasks'
 import { Route as AuthenticatedEmployeeLocationRouteImport } from './routes/_authenticated/employee/location'
 import { Route as AuthenticatedEmployeeDutyRouteImport } from './routes/_authenticated/employee/duty'
@@ -61,11 +60,6 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const ApiPublicSeedRoute = ApiPublicSeedRouteImport.update({
-  id: '/api/public/seed',
-  path: '/api/public/seed',
-  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedEmployeeTasksRoute =
   AuthenticatedEmployeeTasksRouteImport.update({
@@ -184,7 +178,6 @@ export interface FileRoutesByFullPath {
   '/employee/duty': typeof AuthenticatedEmployeeDutyRoute
   '/employee/location': typeof AuthenticatedEmployeeLocationRoute
   '/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
-  '/api/public/seed': typeof ApiPublicSeedRoute
   '/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
 }
 export interface FileRoutesByTo {
@@ -208,7 +201,6 @@ export interface FileRoutesByTo {
   '/employee/duty': typeof AuthenticatedEmployeeDutyRoute
   '/employee/location': typeof AuthenticatedEmployeeLocationRoute
   '/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
-  '/api/public/seed': typeof ApiPublicSeedRoute
   '/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
 }
 export interface FileRoutesById {
@@ -234,7 +226,6 @@ export interface FileRoutesById {
   '/_authenticated/employee/duty': typeof AuthenticatedEmployeeDutyRoute
   '/_authenticated/employee/location': typeof AuthenticatedEmployeeLocationRoute
   '/_authenticated/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
-  '/api/public/seed': typeof ApiPublicSeedRoute
   '/_authenticated/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
 }
 export interface FileRouteTypes {
@@ -260,7 +251,6 @@ export interface FileRouteTypes {
     | '/employee/duty'
     | '/employee/location'
     | '/employee/tasks'
-    | '/api/public/seed'
     | '/employee/orders/new'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -284,7 +274,6 @@ export interface FileRouteTypes {
     | '/employee/duty'
     | '/employee/location'
     | '/employee/tasks'
-    | '/api/public/seed'
     | '/employee/orders/new'
   id:
     | '__root__'
@@ -309,7 +298,6 @@ export interface FileRouteTypes {
     | '/_authenticated/employee/duty'
     | '/_authenticated/employee/location'
     | '/_authenticated/employee/tasks'
-    | '/api/public/seed'
     | '/_authenticated/employee/orders/new'
   fileRoutesById: FileRoutesById
 }
@@ -318,7 +306,6 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
-  ApiPublicSeedRoute: typeof ApiPublicSeedRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -364,13 +351,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/api/public/seed': {
-      id: '/api/public/seed'
-      path: '/api/public/seed'
-      fullPath: '/api/public/seed'
-      preLoaderRoute: typeof ApiPublicSeedRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/employee/tasks': {
       id: '/_authenticated/employee/tasks'
@@ -537,7 +517,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   ResetPasswordRoute: ResetPasswordRoute,
-  ApiPublicSeedRoute: ApiPublicSeedRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -159,7 +159,6 @@ function AuthPage() {
 
             <TabsContent value="signup">
               <form onSubmit={signUp} className="mt-4 space-y-4">
-                <RoleSelector value={signUpRole} onChange={setSignUpRole} />
                 <div className="space-y-2">
                   <Label htmlFor="name">{t("auth.fullName")}</Label>
                   <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} />
