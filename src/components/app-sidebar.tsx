@@ -1,4 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
@@ -10,47 +11,51 @@ import {
 
 type Role = "admin" | "employee" | "client";
 
-const navByRole: Record<Role, { label: string; items: { title: string; url: string; icon: any }[] }[]> = {
+type NavItem = { key: string; url: string; icon: any };
+type NavGroup = { labelKey: string; items: NavItem[] };
+
+const navByRole: Record<Role, NavGroup[]> = {
   admin: [{
-    label: "Admin",
+    labelKey: "nav.groups.admin",
     items: [
-      { title: "Overview", url: "/dashboard", icon: LayoutDashboard },
-      { title: "Customers", url: "/admin/customers", icon: Users },
-      { title: "Employees", url: "/admin/employees", icon: User },
-      { title: "Orders", url: "/admin/orders", icon: Package },
-      { title: "Invoices", url: "/admin/invoices", icon: Receipt },
-      { title: "Credit purse", url: "/admin/credit", icon: Wallet },
-      { title: "Locations", url: "/admin/locations", icon: MapPin },
-      { title: "Audit log", url: "/admin/audit", icon: ScrollText },
-      { title: "Settings", url: "/settings", icon: Settings },
+      { key: "nav.overview", url: "/dashboard", icon: LayoutDashboard },
+      { key: "nav.customers", url: "/admin/customers", icon: Users },
+      { key: "nav.employees", url: "/admin/employees", icon: User },
+      { key: "nav.orders", url: "/admin/orders", icon: Package },
+      { key: "nav.invoices", url: "/admin/invoices", icon: Receipt },
+      { key: "nav.credit", url: "/admin/credit", icon: Wallet },
+      { key: "nav.locations", url: "/admin/locations", icon: MapPin },
+      { key: "nav.audit", url: "/admin/audit", icon: ScrollText },
+      { key: "nav.settings", url: "/settings", icon: Settings },
     ],
   }],
   employee: [{
-    label: "Field",
+    labelKey: "nav.groups.field",
     items: [
-      { title: "Today", url: "/dashboard", icon: LayoutDashboard },
-      { title: "Clients", url: "/employee/clients", icon: Users },
-      { title: "New order", url: "/employee/orders/new", icon: Package },
-      { title: "Tasks", url: "/employee/tasks", icon: ClipboardList },
-      { title: "Clock in / out", url: "/employee/duty", icon: Clock },
-      { title: "Share location", url: "/employee/location", icon: MapPinned },
-      { title: "Settings", url: "/settings", icon: Settings },
+      { key: "nav.today", url: "/dashboard", icon: LayoutDashboard },
+      { key: "nav.clients", url: "/employee/clients", icon: Users },
+      { key: "nav.newOrder", url: "/employee/orders/new", icon: Package },
+      { key: "nav.tasks", url: "/employee/tasks", icon: ClipboardList },
+      { key: "nav.duty", url: "/employee/duty", icon: Clock },
+      { key: "nav.shareLocation", url: "/employee/location", icon: MapPinned },
+      { key: "nav.settings", url: "/settings", icon: Settings },
     ],
   }],
   client: [{
-    label: "My account",
+    labelKey: "nav.groups.myAccount",
     items: [
-      { title: "Overview", url: "/dashboard", icon: LayoutDashboard },
-      { title: "Orders", url: "/client/orders", icon: Package },
-      { title: "Invoices", url: "/client/invoices", icon: Receipt },
-      { title: "Ledger", url: "/client/ledger", icon: FileText },
-      { title: "Profile & KYC", url: "/client/profile", icon: User },
-      { title: "Settings", url: "/settings", icon: Settings },
+      { key: "nav.overview", url: "/dashboard", icon: LayoutDashboard },
+      { key: "nav.orders", url: "/client/orders", icon: Package },
+      { key: "nav.invoices", url: "/client/invoices", icon: Receipt },
+      { key: "nav.ledger", url: "/client/ledger", icon: FileText },
+      { key: "nav.profile", url: "/client/profile", icon: User },
+      { key: "nav.settings", url: "/settings", icon: Settings },
     ],
   }],
 };
 
 export function AppSidebar({ role, name }: { role: Role; name: string }) {
+  const { t } = useTranslation();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -71,18 +76,19 @@ export function AppSidebar({ role, name }: { role: Role; name: string }) {
       </SidebarHeader>
       <SidebarContent>
         {groups.map((g) => (
-          <SidebarGroup key={g.label}>
-            <SidebarGroupLabel>{g.label}</SidebarGroupLabel>
+          <SidebarGroup key={g.labelKey}>
+            <SidebarGroupLabel>{t(g.labelKey)}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {g.items.map((item) => {
+                  const title = t(item.key);
                   const active = pathname === item.url || (item.url !== "/dashboard" && pathname.startsWith(item.url));
                   return (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild isActive={active} tooltip={item.title}>
+                    <SidebarMenuItem key={item.key + item.url}>
+                      <SidebarMenuButton asChild isActive={active} tooltip={title}>
                         <Link to={item.url} className="flex items-center gap-2">
                           <item.icon className="size-4" />
-                          <span>{item.title}</span>
+                          <span>{title}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

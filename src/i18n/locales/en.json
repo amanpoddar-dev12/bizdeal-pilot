@@ -1,4 +1,84 @@
 {
+  "common": {
+    "signOut": "Sign out",
+    "cancel": "Cancel",
+    "save": "Save",
+    "loading": "Loading…",
+    "search": "Search",
+    "backHome": "← Back home"
+  },
+  "nav": {
+    "groups": {
+      "admin": "Admin",
+      "field": "Field",
+      "myAccount": "My account"
+    },
+    "overview": "Overview",
+    "today": "Today",
+    "customers": "Customers",
+    "employees": "Employees",
+    "orders": "Orders",
+    "invoices": "Invoices",
+    "credit": "Credit purse",
+    "locations": "Locations",
+    "audit": "Audit log",
+    "clients": "Clients",
+    "newOrder": "New order",
+    "tasks": "Tasks",
+    "duty": "Clock in / out",
+    "shareLocation": "Share location",
+    "ledger": "Ledger",
+    "profile": "Profile & KYC",
+    "settings": "Settings"
+  },
+  "auth": {
+    "welcome": "Welcome to Kredix",
+    "subtitle": "Manage clients, orders, invoices, and credit in one place.",
+    "signIn": "Sign in",
+    "createAccount": "Create account",
+    "email": "Email",
+    "password": "Password",
+    "fullName": "Full name",
+    "forgot": "Forgot?",
+    "signingIn": "Signing in…",
+    "creating": "Creating…",
+    "passwordHint": "Password (min 8 chars)",
+    "roleNote": "New accounts start with the client role. An admin can promote you to employee/admin.",
+    "demoTitle": "Demo accounts",
+    "signedIn": "Signed in",
+    "checkEmail": "Check your email to confirm your account.",
+    "resetSent": "Reset link sent to your email",
+    "enterEmailFirst": "Enter your email first"
+  },
+  "dashboard": {
+    "admin": {
+      "title": "Admin overview",
+      "subtitle": "Real-time snapshot of your business.",
+      "outstanding": "Outstanding",
+      "totalRevenue": "Total revenue",
+      "openInvoices": "Open invoices",
+      "overdue": "Overdue",
+      "activeClients": "Active clients",
+      "orders30": "Orders — last 30 days",
+      "agingTitle": "Aging of overdue",
+      "nothingOverdue": "Nothing overdue 🎉",
+      "topOutstanding": "Top outstanding clients",
+      "noOutstanding": "No outstanding balances",
+      "salesByEmployee": "Sales by employee",
+      "noOrders": "No orders yet",
+      "overdueInvoices": "Overdue invoices",
+      "overdueSort": "Sorted by longest overdue first",
+      "client": "Client",
+      "due": "Due",
+      "daysOverdue": "Days overdue",
+      "amount": "Amount",
+      "noOverdue": "No overdue invoices",
+      "loading": "Loading overview…"
+    }
+  },
+  "header": {
+    "roleLabel": "{{role}} · "
+  },
   "settings": {
     "title": "Settings",
     "subtitle": "Manage your preferences and account",
@@ -17,22 +97,14 @@
       "saved": "Preferences saved"
     },
     "admins": {
-      "title": "Create admin account",
-      "desc": "Only administrators can create new admin accounts",
+      "title": "Invite admin",
+      "desc": "Only administrators can invite new admins. The invitee gets an email to set their password.",
       "name": "Full name",
       "email": "Email",
-      "password": "Password",
-      "confirmPassword": "Confirm password",
-      "create": "Create admin",
-      "creating": "Creating...",
-      "success": "Admin account created",
-      "existing": "Existing admins",
-      "passwordHint": "At least 10 characters, mixed case and a number",
-      "mismatch": "Passwords do not match"
+      "create": "Send invitation",
+      "creating": "Sending…",
+      "success": "Invitation email sent",
+      "existing": "Existing admins"
     }
-  },
-  "common": {
-    "signOut": "Sign out",
-    "cancel": "Cancel"
   }
 }

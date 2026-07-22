@@ -5,13 +5,6 @@ import { z } from "zod";
 const createSchema = z.object({
   name: z.string().trim().min(2).max(100),
   email: z.string().trim().email().max(255),
-  password: z
-    .string()
-    .min(10)
-    .max(72)
-    .regex(/[A-Z]/, "Must contain uppercase")
-    .regex(/[a-z]/, "Must contain lowercase")
-    .regex(/[0-9]/, "Must contain a number"),
 });
 
 async function assertAdmin(supabase: any, userId: string) {
@@ -52,22 +45,23 @@ export const createAdminUser = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
-      email: data.email,
-      password: data.password,
-      email_confirm: true,
-      user_metadata: { name: data.name },
-    });
-    if (createErr || !created.user) throw new Error(createErr?.message ?? "Failed to create user");
-    const newId = created.user.id;
+    // Send an invitation email — the invitee sets their own password via the emailed link.
+    const { data: invited, error: inviteErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(
+      data.email,
+      { data: { name: data.name } },
+    );
+    if (inviteErr || !invited.user) {
+      throw new Error(inviteErr?.message ?? "Failed to send invitation");
+    }
+    const newId = invited.user.id;
 
-    // handle_new_user trigger already inserted profile + default 'client' role.
-    // Remove the default client role and grant admin.
+    // handle_new_user trigger inserted profile + default 'client' role.
+    // Swap client role for admin.
     await supabaseAdmin.from("user_roles").delete().eq("user_id", newId).eq("role", "client");
     const { error: roleErr } = await supabaseAdmin
       .from("user_roles")
       .insert({ user_id: newId, role: "admin" });
     if (roleErr) throw new Error(roleErr.message);
 
-    return { ok: true, userId: newId };
+    return { ok: true, userId: newId, invited: true };
   });

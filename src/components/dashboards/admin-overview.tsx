@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useTranslation } from "react-i18next";
 import { adminReports } from "@/lib/reports.functions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { inr, fmtDate } from "@/lib/format";
@@ -13,35 +14,36 @@ import { AlertCircle, Wallet, Users, Receipt, TrendingUp } from "lucide-react";
 const COLORS = ["#0ea5e9", "#f59e0b", "#ef4444"];
 
 export function AdminOverview() {
+  const { t } = useTranslation();
   const fn = useServerFn(adminReports);
   const { data, isLoading } = useQuery({ queryKey: ["admin-reports"], queryFn: () => fn() });
-  if (isLoading || !data) return <div className="text-sm text-muted-foreground">Loading overview…</div>;
+  if (isLoading || !data) return <div className="text-sm text-muted-foreground">{t("dashboard.admin.loading")}</div>;
   const k = data.kpis;
 
   const agingData = [
-    { name: "0-30 days", value: data.aging.d0_30 },
-    { name: "30-60 days", value: data.aging.d30_60 },
-    { name: "60+ days", value: data.aging.d60_plus },
+    { name: "0-30", value: data.aging.d0_30 },
+    { name: "30-60", value: data.aging.d30_60 },
+    { name: "60+", value: data.aging.d60_plus },
   ].filter((x) => x.value > 0);
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-2xl font-semibold">Admin overview</h1>
-        <p className="text-sm text-muted-foreground">Real-time snapshot of your business.</p>
+        <h1 className="font-display text-2xl font-semibold">{t("dashboard.admin.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("dashboard.admin.subtitle")}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-        <Kpi icon={<Wallet />} label="Outstanding" value={inr(k.outstanding)} tone="warning" />
-        <Kpi icon={<TrendingUp />} label="Total revenue" value={inr(k.totalRevenue)} tone="success" />
-        <Kpi icon={<Receipt />} label="Open invoices" value={String(k.openInvoices)} />
-        <Kpi icon={<AlertCircle />} label="Overdue" value={String(k.overdueCount)} tone="danger" />
-        <Kpi icon={<Users />} label="Active clients" value={String(k.activeClients)} />
+        <Kpi icon={<Wallet />} label={t("dashboard.admin.outstanding")} value={inr(k.outstanding)} tone="warning" />
+        <Kpi icon={<TrendingUp />} label={t("dashboard.admin.totalRevenue")} value={inr(k.totalRevenue)} tone="success" />
+        <Kpi icon={<Receipt />} label={t("dashboard.admin.openInvoices")} value={String(k.openInvoices)} />
+        <Kpi icon={<AlertCircle />} label={t("dashboard.admin.overdue")} value={String(k.overdueCount)} tone="danger" />
+        <Kpi icon={<Users />} label={t("dashboard.admin.activeClients")} value={String(k.activeClients)} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
-          <CardHeader><CardTitle>Orders — last 30 days</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("dashboard.admin.orders30")}</CardTitle></CardHeader>
           <CardContent className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.orderTrend}>
@@ -55,10 +57,10 @@ export function AdminOverview() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle>Aging of overdue</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("dashboard.admin.agingTitle")}</CardTitle></CardHeader>
           <CardContent className="h-64">
             {agingData.length === 0 ? (
-              <div className="grid h-full place-items-center text-sm text-muted-foreground">Nothing overdue 🎉</div>
+              <div className="grid h-full place-items-center text-sm text-muted-foreground">{t("dashboard.admin.nothingOverdue")}</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -75,10 +77,10 @@ export function AdminOverview() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle>Top outstanding clients</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("dashboard.admin.topOutstanding")}</CardTitle></CardHeader>
           <CardContent>
             <ul className="divide-y divide-border text-sm">
-              {data.topClients.length === 0 && <li className="py-4 text-muted-foreground">No outstanding balances</li>}
+              {data.topClients.length === 0 && <li className="py-4 text-muted-foreground">{t("dashboard.admin.noOutstanding")}</li>}
               {data.topClients.map((c: any) => (
                 <li key={c.name} className="flex items-center justify-between py-2">
                   <span>{c.name}</span>
@@ -89,10 +91,10 @@ export function AdminOverview() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle>Sales by employee</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t("dashboard.admin.salesByEmployee")}</CardTitle></CardHeader>
           <CardContent className="h-56">
             {data.empSales.length === 0 ? (
-              <div className="grid h-full place-items-center text-sm text-muted-foreground">No orders yet</div>
+              <div className="grid h-full place-items-center text-sm text-muted-foreground">{t("dashboard.admin.noOrders")}</div>
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={data.empSales}>
@@ -110,23 +112,23 @@ export function AdminOverview() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Overdue invoices</CardTitle>
-          <CardDescription>Sorted by longest overdue first</CardDescription>
+          <CardTitle>{t("dashboard.admin.overdueInvoices")}</CardTitle>
+          <CardDescription>{t("dashboard.admin.overdueSort")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-muted-foreground">
-                  <th className="pb-2">Client</th>
-                  <th className="pb-2">Due</th>
-                  <th className="pb-2">Days overdue</th>
-                  <th className="pb-2 text-right">Amount</th>
+                  <th className="pb-2">{t("dashboard.admin.client")}</th>
+                  <th className="pb-2">{t("dashboard.admin.due")}</th>
+                  <th className="pb-2">{t("dashboard.admin.daysOverdue")}</th>
+                  <th className="pb-2 text-right">{t("dashboard.admin.amount")}</th>
                 </tr>
               </thead>
               <tbody>
                 {data.overdueList.length === 0 && (
-                  <tr><td colSpan={4} className="py-6 text-center text-muted-foreground">No overdue invoices</td></tr>
+                  <tr><td colSpan={4} className="py-6 text-center text-muted-foreground">{t("dashboard.admin.noOverdue")}</td></tr>
                 )}
                 {data.overdueList.map((r: any) => (
                   <tr key={r.id} className="border-b border-border/60">
