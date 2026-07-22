@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard, Users, Package, Receipt, Wallet, ScrollText, MapPin,
-  ClipboardList, Clock, MapPinned, FileText, User,
+  ClipboardList, Clock, MapPinned, FileText, User, Settings,
 } from "lucide-react";
 
 type Role = "admin" | "employee" | "client";
