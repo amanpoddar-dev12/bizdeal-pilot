@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { NotificationBell } from "@/components/notification-bell";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { useSuspenseQuery, useQueryClient } from "@tanstack/react-query";
 import { getMe } from "@/lib/me.functions";
@@ -51,6 +52,7 @@ function AuthedLayout() {
             {me.role} · <span className="text-foreground">{me.profile?.name ?? me.profile?.email}</span>
           </div>
           <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
             <NotificationBell />
             <Button variant="ghost" size="sm" onClick={signOut}>
               <LogOut className="mr-1 size-4" /> Sign out
