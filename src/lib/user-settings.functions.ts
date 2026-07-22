@@ -23,9 +23,11 @@ export const upsertUserSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => upsertSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const payload: Record<string, unknown> = { user_id: context.userId };
-    if (data.language) payload.language = data.language;
-    if (data.theme) payload.theme = data.theme;
+    const payload = {
+      user_id: context.userId,
+      ...(data.language ? { language: data.language } : {}),
+      ...(data.theme ? { theme: data.theme } : {}),
+    };
     const { error } = await context.supabase
       .from("user_settings")
       .upsert(payload, { onConflict: "user_id" });
