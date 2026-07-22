@@ -112,23 +112,23 @@ export function AdminOverview() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Overdue invoices</CardTitle>
-          <CardDescription>Sorted by longest overdue first</CardDescription>
+          <CardTitle>{t("dashboard.admin.overdueInvoices")}</CardTitle>
+          <CardDescription>{t("dashboard.admin.overdueSort")}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-muted-foreground">
-                  <th className="pb-2">Client</th>
-                  <th className="pb-2">Due</th>
-                  <th className="pb-2">Days overdue</th>
-                  <th className="pb-2 text-right">Amount</th>
+                  <th className="pb-2">{t("dashboard.admin.client")}</th>
+                  <th className="pb-2">{t("dashboard.admin.due")}</th>
+                  <th className="pb-2">{t("dashboard.admin.daysOverdue")}</th>
+                  <th className="pb-2 text-right">{t("dashboard.admin.amount")}</th>
                 </tr>
               </thead>
               <tbody>
                 {data.overdueList.length === 0 && (
-                  <tr><td colSpan={4} className="py-6 text-center text-muted-foreground">No overdue invoices</td></tr>
+                  <tr><td colSpan={4} className="py-6 text-center text-muted-foreground">{t("dashboard.admin.noOverdue")}</td></tr>
                 )}
                 {data.overdueList.map((r: any) => (
                   <tr key={r.id} className="border-b border-border/60">
