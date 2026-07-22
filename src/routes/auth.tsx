@@ -35,7 +35,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [signInRole, setSignInRole] = useState<"client" | "employee">("client");
-  const [signUpRole, setSignUpRole] = useState<"client" | "employee">("client");
+  
   const [busy, setBusy] = useState(false);
 
   async function signIn(e: React.FormEvent) {
@@ -71,12 +71,12 @@ function AuthPage() {
     setBusy(true);
     const { error } = await supabase.auth.signUp({
       email, password,
-      options: { data: { name, role: signUpRole }, emailRedirectTo: window.location.origin + "/dashboard" },
+      options: { data: { name }, emailRedirectTo: window.location.origin + "/dashboard" },
     });
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success(t("auth.checkEmail"));
-    setSignInRole(signUpRole);
+    setSignInRole("client");
     setTab("signin");
   }
 
@@ -159,7 +159,6 @@ function AuthPage() {
 
             <TabsContent value="signup">
               <form onSubmit={signUp} className="mt-4 space-y-4">
-                <RoleSelector value={signUpRole} onChange={setSignUpRole} />
                 <div className="space-y-2">
                   <Label htmlFor="name">{t("auth.fullName")}</Label>
                   <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} />
