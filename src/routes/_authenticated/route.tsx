@@ -43,6 +43,19 @@ function AuthedLayout() {
   const { theme, setTheme } = useTheme();
   const getSettings = useServerFn(getUserSettings);
   const { data: settings } = useQuery({ queryKey: ["user-settings"], queryFn: () => getSettings() });
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // Role-based route guard: employees/clients cannot access other roles' sections.
+  useEffect(() => {
+    if (!me) return;
+    const isAllowed =
+      me.role === "admin" ||
+      (me.role === "employee" && !pathname.startsWith("/admin/") && !pathname.startsWith("/client/")) ||
+      (me.role === "client" && !pathname.startsWith("/admin/") && !pathname.startsWith("/employee/"));
+    if (!isAllowed) {
+      router.navigate({ to: "/dashboard", replace: true });
+    }
+  }, [me, pathname, router]);
 
   useEffect(() => {
     if (!settings) return;
@@ -55,6 +68,7 @@ function AuthedLayout() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings]);
+
 
   async function signOut() {
     await qc.cancelQueries();
