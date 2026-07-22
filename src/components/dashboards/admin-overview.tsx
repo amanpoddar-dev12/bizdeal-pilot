@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
+import { useTranslation } from "react-i18next";
 import { adminReports } from "@/lib/reports.functions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { inr, fmtDate } from "@/lib/format";
@@ -13,9 +14,10 @@ import { AlertCircle, Wallet, Users, Receipt, TrendingUp } from "lucide-react";
 const COLORS = ["#0ea5e9", "#f59e0b", "#ef4444"];
 
 export function AdminOverview() {
+  const { t } = useTranslation();
   const fn = useServerFn(adminReports);
   const { data, isLoading } = useQuery({ queryKey: ["admin-reports"], queryFn: () => fn() });
-  if (isLoading || !data) return <div className="text-sm text-muted-foreground">Loading overview…</div>;
+  if (isLoading || !data) return <div className="text-sm text-muted-foreground">{t("dashboard.admin.loading")}</div>;
   const k = data.kpis;
 
   const agingData = [
