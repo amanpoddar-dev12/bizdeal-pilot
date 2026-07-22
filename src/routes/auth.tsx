@@ -141,6 +141,7 @@ function AuthPage() {
 
             <TabsContent value="signin">
               <form onSubmit={signIn} className="mt-4 space-y-4">
+                <RoleSelector value={signInRole} onChange={setSignInRole} />
                 <div className="space-y-2">
                   <Label htmlFor="email">{t("auth.email")}</Label>
                   <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
@@ -158,6 +159,7 @@ function AuthPage() {
 
             <TabsContent value="signup">
               <form onSubmit={signUp} className="mt-4 space-y-4">
+                <RoleSelector value={signUpRole} onChange={setSignUpRole} />
                 <div className="space-y-2">
                   <Label htmlFor="name">{t("auth.fullName")}</Label>
                   <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} />
@@ -171,9 +173,10 @@ function AuthPage() {
                   <Input id="password2" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
                 </div>
                 <Button className="w-full" type="submit" disabled={busy}>{busy ? t("auth.creating") : t("auth.createAccount")}</Button>
-                <p className="text-xs text-muted-foreground">{t("auth.roleNote")}</p>
+                <p className="text-xs text-muted-foreground">{t("auth.roleNoteSelfServe")}</p>
               </form>
             </TabsContent>
+
           </Tabs>
 
           <div className="mt-6 rounded-md border border-dashed border-border bg-muted/40 p-3 text-xs">
