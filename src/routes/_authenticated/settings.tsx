@@ -136,19 +136,10 @@ function AppearanceTab() {
   );
 }
 
-const adminFormSchema = z
-  .object({
-    name: z.string().trim().min(2, "Name too short").max(100),
-    email: z.string().trim().email("Invalid email").max(255),
-    password: z
-      .string()
-      .min(10, "At least 10 characters")
-      .regex(/[A-Z]/, "Must contain uppercase")
-      .regex(/[a-z]/, "Must contain lowercase")
-      .regex(/[0-9]/, "Must contain a number"),
-    confirm: z.string(),
-  })
-  .refine((v) => v.password === v.confirm, { path: ["confirm"], message: "Passwords do not match" });
+const adminFormSchema = z.object({
+  name: z.string().trim().min(2, "Name too short").max(100),
+  email: z.string().trim().email("Invalid email").max(255),
+});
 
 function AdminsTab() {
   const { t } = useTranslation();
@@ -157,7 +148,7 @@ function AdminsTab() {
   const create = useServerFn(createAdminUser);
   const { data: admins, isLoading } = useQuery({ queryKey: ["admins"], queryFn: () => list() });
 
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
+  const [form, setForm] = useState({ name: "", email: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -173,9 +164,9 @@ function AdminsTab() {
     }
     setSubmitting(true);
     try {
-      await create({ data: { name: form.name, email: form.email, password: form.password } });
+      await create({ data: { name: form.name, email: form.email } });
       toast.success(t("settings.admins.success"));
-      setForm({ name: "", email: "", password: "", confirm: "" });
+      setForm({ name: "", email: "" });
       qc.invalidateQueries({ queryKey: ["admins"] });
     } catch (e: any) {
       toast.error(e.message ?? "Failed");
@@ -202,17 +193,6 @@ function AdminsTab() {
               <Label htmlFor="a-email">{t("settings.admins.email")}</Label>
               <Input id="a-email" type="email" autoComplete="off" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="a-pass">{t("settings.admins.password")}</Label>
-              <Input id="a-pass" type="password" autoComplete="new-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-              <p className="text-xs text-muted-foreground">{t("settings.admins.passwordHint")}</p>
-              {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="a-confirm">{t("settings.admins.confirmPassword")}</Label>
-              <Input id="a-confirm" type="password" autoComplete="new-password" value={form.confirm} onChange={(e) => setForm({ ...form, confirm: e.target.value })} />
-              {errors.confirm && <p className="text-xs text-destructive">{errors.confirm}</p>}
             </div>
             <div className="md:col-span-2">
               <Button type="submit" disabled={submitting}>
