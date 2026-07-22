@@ -35,7 +35,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [signInRole, setSignInRole] = useState<"client" | "employee">("client");
-  const [signUpRole, setSignUpRole] = useState<"client" | "employee">("client");
+  
   const [busy, setBusy] = useState(false);
 
   async function signIn(e: React.FormEvent) {
