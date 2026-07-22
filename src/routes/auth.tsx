@@ -71,12 +71,12 @@ function AuthPage() {
     setBusy(true);
     const { error } = await supabase.auth.signUp({
       email, password,
-      options: { data: { name, role: signUpRole }, emailRedirectTo: window.location.origin + "/dashboard" },
+      options: { data: { name }, emailRedirectTo: window.location.origin + "/dashboard" },
     });
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success(t("auth.checkEmail"));
-    setSignInRole(signUpRole);
+    setSignInRole("client");
     setTab("signin");
   }
 
