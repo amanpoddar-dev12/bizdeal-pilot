@@ -24,15 +24,23 @@ export const listAdmins = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { data, error } = await context.supabase
+    const { data: roles, error } = await context.supabase
       .from("user_roles")
-      .select("user_id, role, created_at, profiles:profiles!inner(id, email, name)")
+      .select("user_id, role, created_at")
       .eq("role", "admin");
     if (error) throw new Error(error.message);
-    return (data ?? []).map((r: any) => ({
+    const ids = (roles ?? []).map((r: any) => r.user_id);
+    if (ids.length === 0) return [];
+    const { data: profiles, error: pErr } = await context.supabase
+      .from("profiles")
+      .select("id, email, name")
+      .in("id", ids);
+    if (pErr) throw new Error(pErr.message);
+    const pMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+    return (roles ?? []).map((r: any) => ({
       user_id: r.user_id,
-      email: r.profiles?.email as string,
-      name: r.profiles?.name as string,
+      email: (pMap.get(r.user_id) as any)?.email ?? "",
+      name: (pMap.get(r.user_id) as any)?.name ?? "",
       created_at: r.created_at as string,
     }));
   });
