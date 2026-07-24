@@ -13,10 +13,15 @@ export const listEmployees = createServerFn({ method: "GET" })
     if (!(await isAdmin(context))) throw new Error("Forbidden");
     const { data, error } = await context.supabase
       .from("employee_profiles")
-      .select("*, profiles(*)")
+      .select("*")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return data ?? [];
+    const ids = (data ?? []).map((e: any) => e.id);
+    const { data: profs } = ids.length
+      ? await context.supabase.from("profiles").select("*").in("id", ids)
+      : { data: [] as any[] };
+    const pMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
+    return (data ?? []).map((e: any) => ({ ...e, profiles: pMap.get(e.id) ?? null }));
   });
 
 export const createEmployee = createServerFn({ method: "POST" })
@@ -79,7 +84,9 @@ export const getEmployeePerformance = createServerFn({ method: "GET" })
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     if (!(await isAdmin(context))) throw new Error("Forbidden");
-    const { data: emp } = await context.supabase.from("employee_profiles").select("*, profiles(*)").eq("id", data.id).maybeSingle();
+    const { data: emp } = await context.supabase.from("employee_profiles").select("*").eq("id", data.id).maybeSingle();
+    const { data: prof } = await context.supabase.from("profiles").select("*").eq("id", data.id).maybeSingle();
+    const empWithProfile = emp ? { ...emp, profiles: prof } : null;
     const { data: orders } = await context.supabase.from("orders").select("total_amount, status, created_at").eq("employee_id", data.id);
     const { data: tasks } = await context.supabase.from("tasks").select("status").eq("employee_id", data.id);
     const { data: duty } = await context.supabase.from("duty_sessions").select("duration_minutes").eq("employee_id", data.id).not("duration_minutes", "is", null);
@@ -92,7 +99,7 @@ export const getEmployeePerformance = createServerFn({ method: "GET" })
     const dutyMin = (duty ?? []).reduce((s, d) => s + (d.duration_minutes ?? 0), 0);
 
     return {
-      employee: emp,
+      employee: empWithProfile,
       totalOrders: orders?.length ?? 0,
       monthOrders: monthOrders.length,
       totalValue, monthValue,
@@ -107,12 +114,17 @@ export const listEmployeeActivity = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     if (!(await isAdmin(context))) throw new Error("Forbidden");
     const [{ data: emps }, { data: sessions }, { data: locs }, { data: orders }, { data: tasks }] = await Promise.all([
-      context.supabase.from("employee_profiles").select("*, profiles(*)").order("created_at", { ascending: false }),
+      context.supabase.from("employee_profiles").select("*").order("created_at", { ascending: false }),
       context.supabase.from("duty_sessions").select("*").order("clock_in_time", { ascending: false }).limit(500),
       context.supabase.from("employee_locations").select("*").order("captured_at", { ascending: false }).limit(500),
       context.supabase.from("orders").select("id, employee_id, total_amount, status, created_at").order("created_at", { ascending: false }).limit(1000),
       context.supabase.from("tasks").select("employee_id, status"),
     ]);
+    const empIds = (emps ?? []).map((e: any) => e.id);
+    const { data: profs } = empIds.length
+      ? await context.supabase.from("profiles").select("*").in("id", empIds)
+      : { data: [] as any[] };
+    const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
 
     const openByEmp = new Map<string, any>();
     const lastSessionByEmp = new Map<string, any>();
@@ -145,7 +157,7 @@ export const listEmployeeActivity = createServerFn({ method: "GET" })
 
     return (emps ?? []).map((e: any) => ({
       id: e.id,
-      profile: e.profiles,
+      profile: profMap.get(e.id) ?? null,
       territory: e.territory,
       active_config: e.active,
       openSession: openByEmp.get(e.id) ?? null,
