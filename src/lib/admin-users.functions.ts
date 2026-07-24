@@ -2,9 +2,15 @@ import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
+const phoneRegex = /^\+[1-9]\d{7,14}$/;
+
 const createSchema = z.object({
   name: z.string().trim().min(2).max(100),
   email: z.string().trim().email().max(255),
+  phone: z
+    .string()
+    .trim()
+    .regex(phoneRegex, "Phone must be in E.164 format, e.g. +14155552671"),
   password: z
     .string()
     .min(10, "Password must be at least 10 characters")
@@ -33,7 +39,7 @@ export const listAdmins = createServerFn({ method: "GET" })
     if (ids.length === 0) return [];
     const { data: profiles, error: pErr } = await context.supabase
       .from("profiles")
-      .select("id, email, name")
+      .select("id, email, name, phone")
       .in("id", ids);
     if (pErr) throw new Error(pErr.message);
     const pMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
@@ -41,6 +47,7 @@ export const listAdmins = createServerFn({ method: "GET" })
       user_id: r.user_id,
       email: (pMap.get(r.user_id) as any)?.email ?? "",
       name: (pMap.get(r.user_id) as any)?.name ?? "",
+      phone: (pMap.get(r.user_id) as any)?.phone ?? "",
       created_at: r.created_at as string,
     }));
   });
@@ -52,13 +59,21 @@ export const createAdminUser = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Create the user with the admin-supplied password and mark the email confirmed
-    // so the new admin can sign in immediately.
+    // Reject phone numbers already in use.
+    const { data: existingPhone } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("phone", data.phone)
+      .maybeSingle();
+    if (existingPhone) throw new Error("Phone number is already in use.");
+
     const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
       email: data.email,
       password: data.password,
       email_confirm: true,
-      user_metadata: { name: data.name },
+      phone: data.phone,
+      phone_confirm: true,
+      user_metadata: { name: data.name, phone: data.phone },
     });
     if (createErr || !created.user) {
       throw new Error(createErr?.message ?? "Failed to create admin user");
@@ -72,6 +87,9 @@ export const createAdminUser = createServerFn({ method: "POST" })
       .from("user_roles")
       .insert({ user_id: newId, role: "admin" });
     if (roleErr) throw new Error(roleErr.message);
+
+    // Belt-and-suspenders: ensure phone is on profile.
+    await supabaseAdmin.from("profiles").update({ phone: data.phone }).eq("id", newId);
 
     return { ok: true, userId: newId };
   });
