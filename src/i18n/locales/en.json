@@ -48,7 +48,15 @@
     "roleNote": "New accounts start with the client role. An admin can promote you to employee/admin.",
     "roleNoteSelfServe": "Choose Client to buy on credit, or Employee to manage field sales. Admins are invited by another admin.",
     "role": "I am a",
-    "roles": { "client": "Client", "employee": "Employee" },
+    "roles": { "client": "Client", "employee": "Employee", "admin": "Admin" },
+    "roleDesc": {
+      "admin": "Manage the workspace",
+      "employee": "Field sales & orders",
+      "client": "Order & pay on credit"
+    },
+    "chooseRole": "Continue as",
+    "changeRole": "Change role",
+    "adminInviteNote": "Admin accounts are created by another admin from Settings.",
     "demoTitle": "Demo accounts",
     "signedIn": "Signed in",
     "checkEmail": "Check your email to confirm your account.",
