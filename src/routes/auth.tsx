@@ -2,7 +2,9 @@ import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-r
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { sendOtp, verifyOtp } from "@/lib/phone-auth.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,9 +19,9 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: "Sign in — Kredix" },
-      { name: "description", content: "Sign in to your Kredix workspace." },
+      { name: "description", content: "Sign in to your Kredix workspace with your phone number." },
       { property: "og:title", content: "Sign in — Kredix" },
-      { property: "og:description", content: "Sign in to your Kredix workspace." },
+      { property: "og:description", content: "Sign in to your Kredix workspace with your phone number." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -28,6 +30,7 @@ export const Route = createFileRoute("/auth")({
 });
 
 type Role = "admin" | "employee" | "client";
+type Step = "phone" | "code";
 
 const ROLE_META: Record<Role, { icon: typeof Shield; titleKey: string; descKey: string }> = {
   admin: { icon: Shield, titleKey: "auth.roles.admin", descKey: "auth.roleDesc.admin" },
@@ -35,72 +38,86 @@ const ROLE_META: Record<Role, { icon: typeof Shield; titleKey: string; descKey: 
   client: { icon: User, titleKey: "auth.roles.client", descKey: "auth.roleDesc.client" },
 };
 
+const phoneRegex = /^\+[1-9]\d{7,14}$/;
+
 function AuthPage() {
   const { t } = useTranslation();
   const { mode } = useSearch({ from: "/auth" });
   const navigate = useNavigate();
+  const send = useServerFn(sendOtp);
+  const verify = useServerFn(verifyOtp);
+
   const [role, setRole] = useState<Role | null>(null);
   const [tab, setTab] = useState(mode === "signup" ? "signup" : "signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [step, setStep] = useState<Step>("phone");
+  const [phone, setPhone] = useState("");
   const [name, setName] = useState("");
+  const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
 
-  async function signIn(e: React.FormEvent) {
+  const currentMode: "signin" | "signup" = role === "admin" ? "signin" : (tab as "signin" | "signup");
+
+  function resetToPhone() {
+    setStep("phone");
+    setCode("");
+  }
+
+  function changeRole() {
+    setRole(null);
+    setStep("phone");
+    setPhone("");
+    setName("");
+    setCode("");
+  }
+
+  async function onSendCode(e: React.FormEvent) {
     e.preventDefault();
     if (!role) return;
+    if (!phoneRegex.test(phone)) {
+      return toast.error("Enter a phone number in E.164 format, e.g. +14155552671");
+    }
+    if (currentMode === "signup" && name.trim().length < 2) {
+      return toast.error("Please enter your full name");
+    }
     setBusy(true);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
+    try {
+      await send({ data: { phone, role, mode: currentMode } });
+      toast.success("Verification code sent");
+      setStep("code");
+    } catch (err: any) {
+      toast.error(err?.message ?? "Failed to send code");
+    } finally {
       setBusy(false);
-      return toast.error(error.message);
     }
-    const userId = data.user?.id;
-    if (userId) {
-      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-      const roleSet = new Set((roles ?? []).map((r) => r.role));
-      const actual = roleSet.has("admin") ? "admin" : roleSet.has("employee") ? "employee" : "client";
-      if (actual !== role) {
-        await supabase.auth.signOut();
-        setBusy(false);
-        return toast.error(
-          `This account is registered as ${actual}. Please select "${actual}" to sign in.`,
-        );
-      }
-    }
-    setBusy(false);
-    toast.success(t("auth.signedIn"));
-    navigate({ to: "/dashboard" });
   }
 
-  async function signUp(e: React.FormEvent) {
+  async function onVerify(e: React.FormEvent) {
     e.preventDefault();
-    if (password.length < 8) return toast.error("Password must be at least 8 characters");
+    if (!role) return;
+    if (code.trim().length < 4) return toast.error("Enter the code you received");
     setBusy(true);
-    const { error } = await supabase.auth.signUp({
-      email, password,
-      options: { data: { name }, emailRedirectTo: window.location.origin + "/dashboard" },
-    });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success(t("auth.checkEmail"));
-    setTab("signin");
-  }
-
-  async function forgotPassword() {
-    if (!email) return toast.error(t("auth.enterEmailFirst"));
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + "/reset-password",
-    });
-    if (error) return toast.error(error.message);
-    toast.success(t("auth.resetSent"));
-  }
-
-  function fillDemo(r: Role) {
-    setRole(r);
-    setEmail(`${r}@demo.com`);
-    setPassword("Demo1234!");
-    setTab("signin");
+    try {
+      const res = await verify({
+        data: {
+          phone,
+          code: code.trim(),
+          role,
+          mode: currentMode,
+          name: currentMode === "signup" ? name.trim() : undefined,
+        },
+      });
+      const { error } = await supabase.auth.setSession({
+        access_token: res.access_token,
+        refresh_token: res.refresh_token,
+      });
+      if (error) throw error;
+      toast.success(t("auth.signedIn"));
+      navigate({ to: "/dashboard" });
+    } catch (err: any) {
+      toast.error(err?.message ?? "Verification failed");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -150,7 +167,7 @@ function AuthPage() {
             <>
               <button
                 type="button"
-                onClick={() => setRole(null)}
+                onClick={changeRole}
                 className="mb-3 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
               >
                 <ArrowLeft className="size-3" /> {t("auth.changeRole", { defaultValue: "Change role" })}
@@ -163,7 +180,7 @@ function AuthPage() {
                 <span className="capitalize text-foreground">{t(ROLE_META[role].titleKey, { defaultValue: role })}</span>
               </div>
 
-              <Tabs value={tab} onValueChange={setTab}>
+              <Tabs value={tab} onValueChange={(v) => { setTab(v); resetToPhone(); }}>
                 <TabsList className={`grid w-full ${role === "admin" ? "grid-cols-1" : "grid-cols-2"}`}>
                   <TabsTrigger value="signin">{t("auth.signIn")}</TabsTrigger>
                   {role !== "admin" && (
@@ -171,62 +188,94 @@ function AuthPage() {
                   )}
                 </TabsList>
 
-                <TabsContent value="signin">
-                  <form onSubmit={signIn} className="mt-4 space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="email">{t("auth.email")}</Label>
-                      <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="password">{t("auth.password")}</Label>
-                        <button type="button" onClick={forgotPassword} className="text-xs text-primary hover:underline">{t("auth.forgot")}</button>
-                      </div>
-                      <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                    </div>
-                    <Button className="w-full" type="submit" disabled={busy}>{busy ? t("auth.signingIn") : t("auth.signIn")}</Button>
-                    {role === "admin" && (
-                      <p className="text-xs text-muted-foreground">
-                        {t("auth.adminInviteNote", { defaultValue: "Admin accounts are created by another admin from Settings." })}
-                      </p>
-                    )}
-                  </form>
-                </TabsContent>
-
-                {role !== "admin" && (
-                  <TabsContent value="signup">
-                    <form onSubmit={signUp} className="mt-4 space-y-4">
+                <TabsContent value={tab}>
+                  {step === "phone" ? (
+                    <form onSubmit={onSendCode} className="mt-4 space-y-4">
+                      {currentMode === "signup" && (
+                        <div className="space-y-2">
+                          <Label htmlFor="name">{t("auth.fullName")}</Label>
+                          <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} />
+                        </div>
+                      )}
                       <div className="space-y-2">
-                        <Label htmlFor="name">{t("auth.fullName")}</Label>
-                        <Input id="name" required value={name} onChange={(e) => setName(e.target.value)} />
+                        <Label htmlFor="phone">Phone number</Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          required
+                          placeholder="+14155552671"
+                          value={phone}
+                          onChange={(e) => setPhone(e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">Include country code. We'll text you a verification code.</p>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="email2">{t("auth.email")}</Label>
-                        <Input id="email2" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="password2">{t("auth.passwordHint")}</Label>
-                        <Input id="password2" type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} />
-                      </div>
-                      <Button className="w-full" type="submit" disabled={busy}>{busy ? t("auth.creating") : t("auth.createAccount")}</Button>
-                      <p className="text-xs text-muted-foreground">{t("auth.roleNoteSelfServe")}</p>
+                      <Button className="w-full" type="submit" disabled={busy}>
+                        {busy ? "Sending…" : "Send code"}
+                      </Button>
+                      {role === "admin" && (
+                        <p className="text-xs text-muted-foreground">
+                          {t("auth.adminInviteNote", { defaultValue: "Admin accounts are created by another admin from Settings." })}
+                        </p>
+                      )}
+                      {role !== "admin" && currentMode === "signin" && (
+                        <p className="text-xs text-muted-foreground">
+                          Don't have an account?{" "}
+                          <button type="button" className="text-primary hover:underline" onClick={() => { setTab("signup"); resetToPhone(); }}>
+                            Create one
+                          </button>
+                        </p>
+                      )}
                     </form>
-                  </TabsContent>
-                )}
+                  ) : (
+                    <form onSubmit={onVerify} className="mt-4 space-y-4">
+                      <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs">
+                        Code sent to <span className="font-medium text-foreground">{phone}</span>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="code">Verification code</Label>
+                        <Input
+                          id="code"
+                          inputMode="numeric"
+                          autoComplete="one-time-code"
+                          required
+                          value={code}
+                          onChange={(e) => setCode(e.target.value)}
+                        />
+                      </div>
+                      <Button className="w-full" type="submit" disabled={busy}>
+                        {busy ? "Verifying…" : currentMode === "signup" ? "Create account" : "Sign in"}
+                      </Button>
+                      <div className="flex items-center justify-between text-xs">
+                        <button type="button" className="text-muted-foreground hover:text-foreground" onClick={resetToPhone}>
+                          Change phone
+                        </button>
+                        <button
+                          type="button"
+                          className="text-primary hover:underline"
+                          disabled={busy}
+                          onClick={async () => {
+                            setBusy(true);
+                            try {
+                              await send({ data: { phone, role, mode: currentMode } });
+                              toast.success("Code resent");
+                            } catch (err: any) {
+                              toast.error(err?.message ?? "Failed to resend");
+                            } finally {
+                              setBusy(false);
+                            }
+                          }}
+                        >
+                          Resend code
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </TabsContent>
               </Tabs>
             </>
           )}
 
-          <div className="mt-6 rounded-md border border-dashed border-border bg-muted/40 p-3 text-xs">
-            <p className="mb-2 font-medium text-foreground">{t("auth.demoTitle")}:</p>
-            <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="secondary" onClick={() => fillDemo("admin")}>Admin</Button>
-              <Button size="sm" variant="secondary" onClick={() => fillDemo("employee")}>Employee</Button>
-              <Button size="sm" variant="secondary" onClick={() => fillDemo("client")}>Client</Button>
-            </div>
-          </div>
-
-          <div className="mt-4 text-center text-sm">
+          <div className="mt-6 text-center text-sm">
             <Link to="/" className="text-muted-foreground hover:text-foreground">{t("common.backHome")}</Link>
           </div>
         </CardContent>
