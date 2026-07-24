@@ -140,6 +140,10 @@ const adminFormSchema = z
   .object({
     name: z.string().trim().min(2, "Name too short").max(100),
     email: z.string().trim().email("Invalid email").max(255),
+    phone: z
+      .string()
+      .trim()
+      .regex(/^\+[1-9]\d{7,14}$/, "Phone must be in E.164 format, e.g. +14155552671"),
     password: z
       .string()
       .min(10, "Password must be at least 10 characters")
@@ -161,7 +165,7 @@ function AdminsTab() {
   const create = useServerFn(createAdminUser);
   const { data: admins, isLoading } = useQuery({ queryKey: ["admins"], queryFn: () => list() });
 
-  const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirmPassword: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -181,11 +185,12 @@ function AdminsTab() {
         data: {
           name: form.name,
           email: form.email,
+          phone: form.phone,
           password: form.password,
         },
       });
       toast.success(t("settings.admins.success"));
-      setForm({ name: "", email: "", password: "", confirmPassword: "" });
+      setForm({ name: "", email: "", phone: "", password: "", confirmPassword: "" });
       qc.invalidateQueries({ queryKey: ["admins"] });
     } catch (e: any) {
       toast.error(e.message ?? "Failed");
@@ -213,6 +218,12 @@ function AdminsTab() {
               <Input id="a-email" type="email" autoComplete="off" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
               {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
             </div>
+            <div className="space-y-1.5 md:col-span-2">
+              <Label htmlFor="a-phone">Phone number</Label>
+              <Input id="a-phone" type="tel" placeholder="+14155552671" autoComplete="off" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <p className="text-xs text-muted-foreground">E.164 format, including country code. This phone is required for the admin to sign in.</p>
+              {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
+            </div>
             <div className="space-y-1.5">
               <Label htmlFor="a-password">{t("settings.admins.password")}</Label>
               <Input id="a-password" type="password" autoComplete="new-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
@@ -232,6 +243,7 @@ function AdminsTab() {
           </form>
         </CardContent>
       </Card>
+
 
 
       <Card>
