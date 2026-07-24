@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard, Users, Package, Receipt, Wallet, ScrollText, MapPin,
-  ClipboardList, Clock, MapPinned, FileText, User, Settings,
+  ClipboardList, Clock, MapPinned, FileText, User, Settings, Activity,
 } from "lucide-react";
 
 type Role = "admin" | "employee" | "client";
@@ -21,6 +21,7 @@ const navByRole: Record<Role, NavGroup[]> = {
       { key: "nav.overview", url: "/dashboard", icon: LayoutDashboard },
       { key: "nav.customers", url: "/admin/customers", icon: Users },
       { key: "nav.employees", url: "/admin/employees", icon: User },
+      { key: "nav.activity", url: "/admin/activity", icon: Activity },
       { key: "nav.orders", url: "/admin/orders", icon: Package },
       { key: "nav.products", url: "/admin/products", icon: Package },
       { key: "nav.invoices", url: "/admin/invoices", icon: Receipt },
