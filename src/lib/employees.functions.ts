@@ -112,7 +112,7 @@ export const listEmployeeActivity = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     if (!(await isAdmin(context))) throw new Error("Forbidden");
     const [{ data: emps }, { data: sessions }, { data: locs }, { data: orders }, { data: tasks }] = await Promise.all([
-      context.supabase.from("employee_profiles").select("*, profiles(*)").order("created_at", { ascending: false }),
+      context.supabase.from("employee_profiles").select("*").order("created_at", { ascending: false }),
       context.supabase.from("duty_sessions").select("*").order("clock_in_time", { ascending: false }).limit(500),
       context.supabase.from("employee_locations").select("*").order("captured_at", { ascending: false }).limit(500),
       context.supabase.from("orders").select("id, employee_id, total_amount, status, created_at").order("created_at", { ascending: false }).limit(1000),
