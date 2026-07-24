@@ -13,10 +13,15 @@ export const listEmployees = createServerFn({ method: "GET" })
     if (!(await isAdmin(context))) throw new Error("Forbidden");
     const { data, error } = await context.supabase
       .from("employee_profiles")
-      .select("*, profiles(*)")
+      .select("*")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return data ?? [];
+    const ids = (data ?? []).map((e: any) => e.id);
+    const { data: profs } = ids.length
+      ? await context.supabase.from("profiles").select("*").in("id", ids)
+      : { data: [] as any[] };
+    const pMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
+    return (data ?? []).map((e: any) => ({ ...e, profiles: pMap.get(e.id) ?? null }));
   });
 
 export const createEmployee = createServerFn({ method: "POST" })
