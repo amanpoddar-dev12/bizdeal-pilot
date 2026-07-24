@@ -74,9 +74,9 @@ function AuthedLayout() {
 
   async function signOut() {
     await qc.cancelQueries();
-    qc.clear();
-    await supabase.auth.signOut();
     router.navigate({ to: "/auth", replace: true });
+    qc.removeQueries();
+    await supabase.auth.signOut();
   }
 
   return (
