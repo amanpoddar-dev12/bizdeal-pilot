@@ -101,3 +101,55 @@ export const getEmployeePerformance = createServerFn({ method: "GET" })
       dutyHours: Math.round((dutyMin / 60) * 10) / 10,
     };
   });
+
+export const listEmployeeActivity = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    if (!(await isAdmin(context))) throw new Error("Forbidden");
+    const [{ data: emps }, { data: sessions }, { data: locs }, { data: orders }, { data: tasks }] = await Promise.all([
+      context.supabase.from("employee_profiles").select("*, profiles(*)").order("created_at", { ascending: false }),
+      context.supabase.from("duty_sessions").select("*").order("clock_in_time", { ascending: false }).limit(500),
+      context.supabase.from("employee_locations").select("*").order("captured_at", { ascending: false }).limit(500),
+      context.supabase.from("orders").select("id, employee_id, total_amount, status, created_at").order("created_at", { ascending: false }).limit(1000),
+      context.supabase.from("tasks").select("employee_id, status"),
+    ]);
+
+    const openByEmp = new Map<string, any>();
+    const lastSessionByEmp = new Map<string, any>();
+    for (const s of sessions ?? []) {
+      if (!s.clock_out_time && !openByEmp.has(s.employee_id)) openByEmp.set(s.employee_id, s);
+      if (!lastSessionByEmp.has(s.employee_id)) lastSessionByEmp.set(s.employee_id, s);
+    }
+    const lastLocByEmp = new Map<string, any>();
+    for (const l of locs ?? []) if (!lastLocByEmp.has(l.employee_id)) lastLocByEmp.set(l.employee_id, l);
+
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const todayIso = today.toISOString();
+    const ordersByEmp = new Map<string, { today: number; total: number; value: number; last: any }>();
+    for (const o of orders ?? []) {
+      const cur = ordersByEmp.get(o.employee_id) ?? { today: 0, total: 0, value: 0, last: null };
+      cur.total += 1;
+      cur.value += Number(o.total_amount);
+      if (o.created_at >= todayIso) cur.today += 1;
+      if (!cur.last) cur.last = o;
+      ordersByEmp.set(o.employee_id, cur);
+    }
+    const tasksByEmp = new Map<string, { open: number; done: number }>();
+    for (const t of tasks ?? []) {
+      const cur = tasksByEmp.get(t.employee_id) ?? { open: 0, done: 0 };
+      if (t.status === "completed") cur.done += 1; else cur.open += 1;
+      tasksByEmp.set(t.employee_id, cur);
+    }
+
+    return (emps ?? []).map((e: any) => ({
+      id: e.id,
+      profile: e.profiles,
+      territory: e.territory,
+      active_config: e.active,
+      openSession: openByEmp.get(e.id) ?? null,
+      lastSession: lastSessionByEmp.get(e.id) ?? null,
+      lastLocation: lastLocByEmp.get(e.id) ?? null,
+      orders: ordersByEmp.get(e.id) ?? { today: 0, total: 0, value: 0, last: null },
+      tasks: tasksByEmp.get(e.id) ?? { open: 0, done: 0 },
+    }));
+  });
