@@ -259,6 +259,7 @@ function AdminsTab() {
                 <TableRow>
                   <TableHead>Name</TableHead>
                   <TableHead>Email</TableHead>
+                  <TableHead>Phone</TableHead>
                   <TableHead>Since</TableHead>
                 </TableRow>
               </TableHeader>
@@ -267,16 +268,18 @@ function AdminsTab() {
                   <TableRow key={a.user_id}>
                     <TableCell>{a.name}</TableCell>
                     <TableCell>{a.email}</TableCell>
+                    <TableCell>{a.phone || <span className="text-muted-foreground">—</span>}</TableCell>
                     <TableCell>{fmtDate(a.created_at)}</TableCell>
                   </TableRow>
                 ))}
                 {(admins ?? []).length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center text-sm text-muted-foreground">No admins yet</TableCell>
+                    <TableCell colSpan={4} className="text-center text-sm text-muted-foreground">No admins yet</TableCell>
                   </TableRow>
                 )}
               </TableBody>
             </Table>
+
           )}
         </CardContent>
       </Card>
