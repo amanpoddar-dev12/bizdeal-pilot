@@ -99,7 +99,7 @@ export const getEmployeePerformance = createServerFn({ method: "GET" })
     const dutyMin = (duty ?? []).reduce((s, d) => s + (d.duration_minutes ?? 0), 0);
 
     return {
-      employee: emp,
+      employee: empWithProfile,
       totalOrders: orders?.length ?? 0,
       monthOrders: monthOrders.length,
       totalValue, monthValue,
