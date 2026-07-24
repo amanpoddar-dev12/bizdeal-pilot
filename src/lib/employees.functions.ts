@@ -118,6 +118,11 @@ export const listEmployeeActivity = createServerFn({ method: "GET" })
       context.supabase.from("orders").select("id, employee_id, total_amount, status, created_at").order("created_at", { ascending: false }).limit(1000),
       context.supabase.from("tasks").select("employee_id, status"),
     ]);
+    const empIds = (emps ?? []).map((e: any) => e.id);
+    const { data: profs } = empIds.length
+      ? await context.supabase.from("profiles").select("*").in("id", empIds)
+      : { data: [] as any[] };
+    const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
 
     const openByEmp = new Map<string, any>();
     const lastSessionByEmp = new Map<string, any>();
