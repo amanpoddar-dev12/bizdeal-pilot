@@ -121,12 +121,13 @@ export const listEmployeeActivity = createServerFn({ method: "GET" })
       if (!lastSessionByEmp.has(s.employee_id)) lastSessionByEmp.set(s.employee_id, s);
     }
     const lastLocByEmp = new Map<string, any>();
-    for (const l of locs ?? []) if (!lastLocByEmp.has(l.employee_id)) lastLocByEmp.set(l.employee_id, l);
+    for (const l of locs ?? []) if (l.employee_id && !lastLocByEmp.has(l.employee_id)) lastLocByEmp.set(l.employee_id, l);
 
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const todayIso = today.toISOString();
     const ordersByEmp = new Map<string, { today: number; total: number; value: number; last: any }>();
     for (const o of orders ?? []) {
+      if (!o.employee_id) continue;
       const cur = ordersByEmp.get(o.employee_id) ?? { today: 0, total: 0, value: 0, last: null };
       cur.total += 1;
       cur.value += Number(o.total_amount);
@@ -136,6 +137,7 @@ export const listEmployeeActivity = createServerFn({ method: "GET" })
     }
     const tasksByEmp = new Map<string, { open: number; done: number }>();
     for (const t of tasks ?? []) {
+      if (!t.employee_id) continue;
       const cur = tasksByEmp.get(t.employee_id) ?? { open: 0, done: 0 };
       if (t.status === "completed") cur.done += 1; else cur.open += 1;
       tasksByEmp.set(t.employee_id, cur);
