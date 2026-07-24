@@ -23,6 +23,7 @@ import { Route as AuthenticatedClientProfileRouteImport } from './routes/_authen
 import { Route as AuthenticatedClientOrdersRouteImport } from './routes/_authenticated/client/orders'
 import { Route as AuthenticatedClientLedgerRouteImport } from './routes/_authenticated/client/ledger'
 import { Route as AuthenticatedClientInvoicesRouteImport } from './routes/_authenticated/client/invoices'
+import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin/products'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin/orders'
 import { Route as AuthenticatedAdminLocationsRouteImport } from './routes/_authenticated/admin/locations'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated/admin/invoices'
@@ -109,6 +110,12 @@ const AuthenticatedClientInvoicesRoute =
     path: '/client/invoices',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminProductsRoute =
+  AuthenticatedAdminProductsRouteImport.update({
+    id: '/admin/products',
+    path: '/admin/products',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminOrdersRoute =
   AuthenticatedAdminOrdersRouteImport.update({
     id: '/admin/orders',
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/client/invoices': typeof AuthenticatedClientInvoicesRoute
   '/client/ledger': typeof AuthenticatedClientLedgerRoute
   '/client/orders': typeof AuthenticatedClientOrdersRoute
@@ -193,6 +201,7 @@ export interface FileRoutesByTo {
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/client/invoices': typeof AuthenticatedClientInvoicesRoute
   '/client/ledger': typeof AuthenticatedClientLedgerRoute
   '/client/orders': typeof AuthenticatedClientOrdersRoute
@@ -218,6 +227,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/_authenticated/admin/locations': typeof AuthenticatedAdminLocationsRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
+  '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRoute
   '/_authenticated/client/invoices': typeof AuthenticatedClientInvoicesRoute
   '/_authenticated/client/ledger': typeof AuthenticatedClientLedgerRoute
   '/_authenticated/client/orders': typeof AuthenticatedClientOrdersRoute
@@ -243,6 +253,7 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/locations'
     | '/admin/orders'
+    | '/admin/products'
     | '/client/invoices'
     | '/client/ledger'
     | '/client/orders'
@@ -266,6 +277,7 @@ export interface FileRouteTypes {
     | '/admin/invoices'
     | '/admin/locations'
     | '/admin/orders'
+    | '/admin/products'
     | '/client/invoices'
     | '/client/ledger'
     | '/client/orders'
@@ -290,6 +302,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/invoices'
     | '/_authenticated/admin/locations'
     | '/_authenticated/admin/orders'
+    | '/_authenticated/admin/products'
     | '/_authenticated/client/invoices'
     | '/_authenticated/client/ledger'
     | '/_authenticated/client/orders'
@@ -408,6 +421,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientInvoicesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/products': {
+      id: '/_authenticated/admin/products'
+      path: '/admin/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AuthenticatedAdminProductsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/orders': {
       id: '/_authenticated/admin/orders'
       path: '/admin/orders'
@@ -477,6 +497,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminInvoicesRoute: typeof AuthenticatedAdminInvoicesRoute
   AuthenticatedAdminLocationsRoute: typeof AuthenticatedAdminLocationsRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
+  AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRoute
   AuthenticatedClientInvoicesRoute: typeof AuthenticatedClientInvoicesRoute
   AuthenticatedClientLedgerRoute: typeof AuthenticatedClientLedgerRoute
   AuthenticatedClientOrdersRoute: typeof AuthenticatedClientOrdersRoute
@@ -498,6 +519,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminInvoicesRoute: AuthenticatedAdminInvoicesRoute,
   AuthenticatedAdminLocationsRoute: AuthenticatedAdminLocationsRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
+  AuthenticatedAdminProductsRoute: AuthenticatedAdminProductsRoute,
   AuthenticatedClientInvoicesRoute: AuthenticatedClientInvoicesRoute,
   AuthenticatedClientLedgerRoute: AuthenticatedClientLedgerRoute,
   AuthenticatedClientOrdersRoute: AuthenticatedClientOrdersRoute,

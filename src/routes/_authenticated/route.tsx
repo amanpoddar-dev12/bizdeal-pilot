@@ -13,6 +13,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/components/theme-provider";
 import { LANG_STORAGE_KEY } from "@/i18n";
+import { useAutoDuty } from "@/hooks/use-auto-duty";
 import { LogOut } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -44,6 +45,7 @@ function AuthedLayout() {
   const getSettings = useServerFn(getUserSettings);
   const { data: settings } = useQuery({ queryKey: ["user-settings"], queryFn: () => getSettings() });
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  useAutoDuty(me?.role);
 
   // Role-based route guard: employees/clients cannot access other roles' sections.
   useEffect(() => {

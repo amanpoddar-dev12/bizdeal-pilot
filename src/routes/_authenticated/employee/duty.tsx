@@ -42,10 +42,13 @@ function Duty() {
         <CardContent className="space-y-4">
           <Badge variant={isOnDuty ? "default" : "secondary"}>{isOnDuty ? "On duty" : "Off duty"}</Badge>
           {isOnDuty && data?.open && <p className="text-sm text-muted-foreground">Clocked in at {fmtDateTime(data.open.clock_in_time)}</p>}
-          <div>
+          <p className="rounded-md border border-dashed border-border p-3 text-xs text-muted-foreground">
+            Duty is now automatic — you're clocked in whenever this app is open and active, and clocked out when you close or leave the tab. Use the buttons below only if you need to override.
+          </p>
+          <div className="flex gap-2">
             {isOnDuty
-              ? <Button onClick={() => outMut.mutate()} disabled={outMut.isPending}>Clock out</Button>
-              : <Button onClick={() => inMut.mutate()} disabled={inMut.isPending}>Clock in</Button>}
+              ? <Button variant="outline" onClick={() => outMut.mutate()} disabled={outMut.isPending}>Force clock out</Button>
+              : <Button variant="outline" onClick={() => inMut.mutate()} disabled={inMut.isPending}>Force clock in</Button>}
           </div>
         </CardContent>
       </Card>

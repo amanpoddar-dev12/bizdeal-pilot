@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listClients } from "@/lib/clients.functions";
 import { createOrder } from "@/lib/orders.functions";
+import { listProducts } from "@/lib/products.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,15 +27,22 @@ export const Route = createFileRoute("/_authenticated/employee/orders/new")({
   component: NewOrder,
 });
 
+type LineItem = { product_id: string; product_name: string; product_code: string; quantity: number; rate: number };
+
+const blankItem = (): LineItem => ({ product_id: "", product_name: "", product_code: "", quantity: 1, rate: 0 });
+
 function NewOrder() {
   const clientsFn = useServerFn(listClients);
+  const productsFn = useServerFn(listProducts);
   const createFn = useServerFn(createOrder);
   const nav = useNavigate();
   const { data: clients = [] } = useQuery({ queryKey: ["clients"], queryFn: () => clientsFn() });
+  const { data: products = [] } = useQuery({ queryKey: ["products"], queryFn: () => productsFn() });
+  const activeProducts = (products as any[]).filter((p) => p.active);
   const [clientId, setClientId] = useState("");
   const [deliveryDate, setDeliveryDate] = useState("");
   const [notes, setNotes] = useState("");
-  const [items, setItems] = useState([{ product_name: "", product_code: "", quantity: 1, rate: 0 }]);
+  const [items, setItems] = useState<LineItem[]>([blankItem()]);
 
   const total = items.reduce((s, i) => s + Number(i.quantity || 0) * Number(i.rate || 0), 0);
 
@@ -44,12 +52,30 @@ function NewOrder() {
         client_id: clientId,
         delivery_date: deliveryDate || null,
         notes: notes || null,
-        items: items.map((i) => ({ ...i, quantity: Number(i.quantity), rate: Number(i.rate) })),
+        items: items.map((i) => ({
+          product_name: i.product_name,
+          product_code: i.product_code || null,
+          quantity: Number(i.quantity),
+          rate: Number(i.rate),
+        })),
       },
     }),
     onSuccess: (o: any) => { toast.success(`Order ${o.order_number} created`); nav({ to: "/dashboard" }); },
     onError: (e: any) => toast.error(e.message),
   });
+
+  function pickProduct(i: number, productId: string) {
+    const p = activeProducts.find((x) => x.id === productId);
+    setItems(items.map((it, j) => j === i
+      ? { ...it, product_id: productId, product_name: p?.name ?? "", product_code: p?.code ?? "", rate: Number(p?.unit_price ?? 0) }
+      : it));
+  }
+
+  function update(i: number, key: keyof LineItem, value: any) {
+    setItems(items.map((it, j) => j === i ? { ...it, [key]: value } : it));
+  }
+
+  const canSubmit = clientId && items.length > 0 && items.every((i) => i.product_id && i.quantity > 0 && i.rate >= 0) && !mut.isPending;
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
@@ -60,7 +86,7 @@ function NewOrder() {
           <div className="space-y-1"><Label>Client</Label>
             <select value={clientId} onChange={(e) => setClientId(e.target.value)} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
               <option value="">Select client…</option>
-              {clients.map((c: any) => <option key={c.id} value={c.id}>{c.business_name}</option>)}
+              {(clients as any[]).map((c) => <option key={c.id} value={c.id}>{c.business_name}</option>)}
             </select>
           </div>
           <div className="space-y-1"><Label>Delivery date</Label><Input type="date" value={deliveryDate} onChange={(e) => setDeliveryDate(e.target.value)} /></div>
@@ -72,19 +98,35 @@ function NewOrder() {
         <CardHeader className="flex flex-row items-center">
           <CardTitle>Line items</CardTitle>
           <Button size="sm" variant="outline" className="ml-auto"
-            onClick={() => setItems([...items, { product_name: "", product_code: "", quantity: 1, rate: 0 }])}>
+            onClick={() => setItems([...items, blankItem()])}>
             <Plus className="mr-1 size-4" />Add item
           </Button>
         </CardHeader>
         <CardContent>
+          {activeProducts.length === 0 && (
+            <p className="mb-3 rounded-md border border-dashed border-border p-3 text-sm text-muted-foreground">
+              No products in the catalog yet. Ask an admin to add products before punching orders.
+            </p>
+          )}
           <div className="space-y-2">
             {items.map((it, i) => (
               <div key={i} className="grid grid-cols-12 gap-2">
-                <Input className="col-span-5" placeholder="Product" value={it.product_name} onChange={(e) => update(i, "product_name", e.target.value)} />
-                <Input className="col-span-2" placeholder="Code" value={it.product_code} onChange={(e) => update(i, "product_code", e.target.value)} />
-                <Input className="col-span-2" type="number" placeholder="Qty" value={it.quantity} onChange={(e) => update(i, "quantity", e.target.value)} />
-                <Input className="col-span-2" type="number" placeholder="Rate" value={it.rate} onChange={(e) => update(i, "rate", e.target.value)} />
-                <Button className="col-span-1" size="icon" variant="ghost" onClick={() => setItems(items.filter((_, j) => j !== i))} disabled={items.length === 1}>
+                <select
+                  className="col-span-6 rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  value={it.product_id}
+                  onChange={(e) => pickProduct(i, e.target.value)}
+                >
+                  <option value="">Select product…</option>
+                  {activeProducts.map((p) => (
+                    <option key={p.id} value={p.id}>{p.name} ({p.code})</option>
+                  ))}
+                </select>
+                <Input className="col-span-2" type="number" min="0" step="any" placeholder="Qty" value={it.quantity}
+                  onChange={(e) => update(i, "quantity", Number(e.target.value))} />
+                <Input className="col-span-3" type="number" min="0" step="any" placeholder="Rate" value={it.rate}
+                  onChange={(e) => update(i, "rate", Number(e.target.value))} />
+                <Button className="col-span-1" size="icon" variant="ghost"
+                  onClick={() => setItems(items.filter((_, j) => j !== i))} disabled={items.length === 1}>
                   <Trash2 className="size-4" />
                 </Button>
               </div>
@@ -98,14 +140,10 @@ function NewOrder() {
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={() => mut.mutate()} disabled={!clientId || items.some((i) => !i.product_name || !i.quantity || !i.rate) || mut.isPending}>
+        <Button onClick={() => mut.mutate()} disabled={!canSubmit}>
           {mut.isPending ? "Creating…" : "Create order"}
         </Button>
       </div>
     </div>
   );
-
-  function update(i: number, key: string, value: any) {
-    setItems(items.map((it, j) => j === i ? { ...it, [key]: value } : it));
-  }
 }
