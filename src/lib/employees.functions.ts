@@ -155,7 +155,7 @@ export const listEmployeeActivity = createServerFn({ method: "GET" })
 
     return (emps ?? []).map((e: any) => ({
       id: e.id,
-      profile: e.profiles,
+      profile: profMap.get(e.id) ?? null,
       territory: e.territory,
       active_config: e.active,
       openSession: openByEmp.get(e.id) ?? null,
