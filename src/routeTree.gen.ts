@@ -31,6 +31,7 @@ import { Route as AuthenticatedAdminEmployeesRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin/customers'
 import { Route as AuthenticatedAdminCreditRouteImport } from './routes/_authenticated/admin/credit'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
+import { Route as AuthenticatedAdminActivityRouteImport } from './routes/_authenticated/admin/activity'
 import { Route as AuthenticatedEmployeeOrdersNewRouteImport } from './routes/_authenticated/employee/orders.new'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -157,6 +158,12 @@ const AuthenticatedAdminAuditRoute = AuthenticatedAdminAuditRouteImport.update({
   path: '/admin/audit',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminActivityRoute =
+  AuthenticatedAdminActivityRouteImport.update({
+    id: '/admin/activity',
+    path: '/admin/activity',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEmployeeOrdersNewRoute =
   AuthenticatedEmployeeOrdersNewRouteImport.update({
     id: '/employee/orders/new',
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/credit': typeof AuthenticatedAdminCreditRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
@@ -194,6 +202,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/admin/credit': typeof AuthenticatedAdminCreditRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
@@ -220,6 +229,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
   '/_authenticated/admin/credit': typeof AuthenticatedAdminCreditRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRoute
@@ -246,6 +256,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/dashboard'
     | '/settings'
+    | '/admin/activity'
     | '/admin/audit'
     | '/admin/credit'
     | '/admin/customers'
@@ -270,6 +281,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/dashboard'
     | '/settings'
+    | '/admin/activity'
     | '/admin/audit'
     | '/admin/credit'
     | '/admin/customers'
@@ -295,6 +307,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/dashboard'
     | '/_authenticated/settings'
+    | '/_authenticated/admin/activity'
     | '/_authenticated/admin/audit'
     | '/_authenticated/admin/credit'
     | '/_authenticated/admin/customers'
@@ -477,6 +490,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAuditRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/activity': {
+      id: '/_authenticated/admin/activity'
+      path: '/admin/activity'
+      fullPath: '/admin/activity'
+      preLoaderRoute: typeof AuthenticatedAdminActivityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/employee/orders/new': {
       id: '/_authenticated/employee/orders/new'
       path: '/employee/orders/new'
@@ -490,6 +510,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedAdminActivityRoute: typeof AuthenticatedAdminActivityRoute
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
   AuthenticatedAdminCreditRoute: typeof AuthenticatedAdminCreditRoute
   AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRoute
@@ -512,6 +533,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedAdminActivityRoute: AuthenticatedAdminActivityRoute,
   AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
   AuthenticatedAdminCreditRoute: AuthenticatedAdminCreditRoute,
   AuthenticatedAdminCustomersRoute: AuthenticatedAdminCustomersRoute,
