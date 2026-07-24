@@ -84,7 +84,9 @@ export const getEmployeePerformance = createServerFn({ method: "GET" })
   .inputValidator((d: { id: string }) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     if (!(await isAdmin(context))) throw new Error("Forbidden");
-    const { data: emp } = await context.supabase.from("employee_profiles").select("*, profiles(*)").eq("id", data.id).maybeSingle();
+    const { data: emp } = await context.supabase.from("employee_profiles").select("*").eq("id", data.id).maybeSingle();
+    const { data: prof } = await context.supabase.from("profiles").select("*").eq("id", data.id).maybeSingle();
+    const empWithProfile = emp ? { ...emp, profiles: prof } : null;
     const { data: orders } = await context.supabase.from("orders").select("total_amount, status, created_at").eq("employee_id", data.id);
     const { data: tasks } = await context.supabase.from("tasks").select("status").eq("employee_id", data.id);
     const { data: duty } = await context.supabase.from("duty_sessions").select("duration_minutes").eq("employee_id", data.id).not("duration_minutes", "is", null);
