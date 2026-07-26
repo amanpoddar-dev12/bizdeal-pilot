@@ -87,10 +87,27 @@ export const listAuditLogs = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     if (!isAdmin) throw new Error("Forbidden");
-    const { data } = await context.supabase
+    const { data: logs } = await context.supabase
       .from("audit_logs")
-      .select("*, profiles:actor_id(name, email)")
+      .select("*, profiles:actor_id(name, email, phone)")
       .order("created_at", { ascending: false })
-      .limit(200);
-    return data ?? [];
+      .limit(2000);
+
+    const actorIds = Array.from(new Set((logs ?? []).map((l: any) => l.actor_id).filter(Boolean)));
+    const roleMap = new Map<string, string>();
+    if (actorIds.length) {
+      const { data: roles } = await context.supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .in("user_id", actorIds as string[]);
+      const rank = (x: string) => (x === "admin" ? 1 : x === "employee" ? 2 : 3);
+      (roles ?? []).forEach((r: any) => {
+        const cur = roleMap.get(r.user_id);
+        if (!cur || rank(r.role) < rank(cur)) roleMap.set(r.user_id, r.role);
+      });
+    }
+    return (logs ?? []).map((l: any) => ({
+      ...l,
+      actor_role: l.actor_id ? roleMap.get(l.actor_id) ?? null : null,
+    }));
   });
