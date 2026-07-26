@@ -5,6 +5,7 @@ import { listEmployeeActivity } from "@/lib/employees.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { inr, fmtDateTime } from "@/lib/format";
+import { formatAddress } from "@/lib/reverse-geocode";
 import { MapPin, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/activity")({
