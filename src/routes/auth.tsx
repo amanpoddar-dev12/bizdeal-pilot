@@ -118,8 +118,25 @@ function AuthPage() {
       setBusy(false);
     }
   }
+  async function onDemo(r: Role) {
+    setBusy(true);
+    try {
+      const res = await demo({ data: { role: r } });
+      const { error } = await supabase.auth.setSession({
+        access_token: res.access_token,
+        refresh_token: res.refresh_token,
+      });
+      if (error) throw error;
+      toast.success(`Signed in as demo ${r}`);
+      navigate({ to: "/dashboard" });
+    } catch (err: any) {
+      toast.error(err?.message ?? "Demo sign-in failed");
+    } finally {
+      setBusy(false);
+    }
+  }
 
-  return (
+
     <div className="grid min-h-screen place-items-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
