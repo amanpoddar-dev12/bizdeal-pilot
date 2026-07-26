@@ -21,10 +21,14 @@ export type Database = {
           created_at: string
           id: string
           ip_address: string | null
+          module: string | null
           new_value: Json | null
           old_value: Json | null
+          remarks: string | null
+          status: string
           target_id: string | null
           target_type: string | null
+          user_agent: string | null
         }
         Insert: {
           action: string
@@ -32,10 +36,14 @@ export type Database = {
           created_at?: string
           id?: string
           ip_address?: string | null
+          module?: string | null
           new_value?: Json | null
           old_value?: Json | null
+          remarks?: string | null
+          status?: string
           target_id?: string | null
           target_type?: string | null
+          user_agent?: string | null
         }
         Update: {
           action?: string
@@ -43,10 +51,14 @@ export type Database = {
           created_at?: string
           id?: string
           ip_address?: string | null
+          module?: string | null
           new_value?: Json | null
           old_value?: Json | null
+          remarks?: string | null
+          status?: string
           target_id?: string | null
           target_type?: string | null
+          user_agent?: string | null
         }
         Relationships: [
           {
