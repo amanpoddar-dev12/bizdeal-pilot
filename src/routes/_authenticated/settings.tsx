@@ -136,27 +136,13 @@ function AppearanceTab() {
   );
 }
 
-const adminFormSchema = z
-  .object({
-    name: z.string().trim().min(2, "Name too short").max(100),
-    email: z.string().trim().email("Invalid email").max(255),
-    phone: z
-      .string()
-      .trim()
-      .regex(/^\+[1-9]\d{7,14}$/, "Phone must be in E.164 format, e.g. +14155552671"),
-    password: z
-      .string()
-      .min(10, "Password must be at least 10 characters")
-      .max(72)
-      .regex(/[A-Z]/, "Must include an uppercase letter")
-      .regex(/[a-z]/, "Must include a lowercase letter")
-      .regex(/[0-9]/, "Must include a number"),
-    confirmPassword: z.string(),
-  })
-  .refine((v) => v.password === v.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
+const adminFormSchema = z.object({
+  name: z.string().trim().min(2, "Name too short").max(100),
+  phone: z
+    .string()
+    .trim()
+    .regex(/^\+[1-9]\d{7,14}$/, "Phone must be in E.164 format, e.g. +919876543210"),
+});
 
 function AdminsTab() {
   const { t } = useTranslation();
