@@ -6,19 +6,22 @@ const phoneRegex = /^\+[1-9]\d{7,14}$/;
 
 const createSchema = z.object({
   name: z.string().trim().min(2).max(100),
-  email: z.string().trim().email().max(255),
   phone: z
     .string()
     .trim()
-    .regex(phoneRegex, "Phone must be in E.164 format, e.g. +14155552671"),
-  password: z
-    .string()
-    .min(10, "Password must be at least 10 characters")
-    .max(72)
-    .regex(/[A-Z]/, "Must include an uppercase letter")
-    .regex(/[a-z]/, "Must include a lowercase letter")
-    .regex(/[0-9]/, "Must include a number"),
+    .regex(phoneRegex, "Phone must be in E.164 format, e.g. +919876543210"),
 });
+
+function syntheticEmail(phone: string) {
+  const clean = phone.replace(/[^0-9]/g, "");
+  return `phone.${clean}@phone.kredix.local`;
+}
+
+function randomPassword() {
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return "P!" + Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("") + "Aa9";
+}
 
 async function assertAdmin(supabase: any, userId: string) {
   const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
