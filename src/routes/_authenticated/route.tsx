@@ -39,6 +39,11 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthedLayout() {
   const { data: me } = useSuspenseQuery({ queryKey: ["me"], queryFn: () => getMe() });
+  const getCompletion = useServerFn(getProfileCompletion);
+  const { data: completion } = useQuery({
+    queryKey: ["profile-completion"],
+    queryFn: () => getCompletion(),
+  });
   const router = useRouter();
   const qc = useQueryClient();
   const { i18n } = useTranslation();
@@ -48,9 +53,18 @@ function AuthedLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   useAutoDuty(me?.role);
 
+  // Force incomplete profiles to the setup screen before anything else.
+  useEffect(() => {
+    if (!completion) return;
+    if (!completion.complete && pathname !== "/complete-profile") {
+      router.navigate({ to: "/complete-profile", replace: true });
+    }
+  }, [completion, pathname, router]);
+
   // Role-based route guard: employees/clients cannot access other roles' sections.
   useEffect(() => {
     if (!me) return;
+    if (pathname === "/complete-profile") return;
     const isAllowed =
       me.role === "admin" ||
       (me.role === "employee" && !pathname.startsWith("/admin/") && !pathname.startsWith("/client/")) ||
@@ -59,6 +73,7 @@ function AuthedLayout() {
       router.navigate({ to: "/dashboard", replace: true });
     }
   }, [me, pathname, router]);
+
 
   useEffect(() => {
     if (!settings) return;
