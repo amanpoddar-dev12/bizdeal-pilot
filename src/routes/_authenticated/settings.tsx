@@ -151,7 +151,7 @@ function AdminsTab() {
   const create = useServerFn(createAdminUser);
   const { data: admins, isLoading } = useQuery({ queryKey: ["admins"], queryFn: () => list() });
 
-  const [form, setForm] = useState({ name: "", email: "", phone: "", password: "", confirmPassword: "" });
+  const [form, setForm] = useState({ name: "", phone: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
 
@@ -170,13 +170,11 @@ function AdminsTab() {
       await create({
         data: {
           name: form.name,
-          email: form.email,
           phone: form.phone,
-          password: form.password,
         },
       });
       toast.success(t("settings.admins.success"));
-      setForm({ name: "", email: "", phone: "", password: "", confirmPassword: "" });
+      setForm({ name: "", phone: "" });
       qc.invalidateQueries({ queryKey: ["admins"] });
     } catch (e: any) {
       toast.error(e.message ?? "Failed");
@@ -200,28 +198,12 @@ function AdminsTab() {
               {errors.name && <p className="text-xs text-destructive">{errors.name}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="a-email">{t("settings.admins.email")}</Label>
-              <Input id="a-email" type="email" autoComplete="off" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-              {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
-            </div>
-            <div className="space-y-1.5 md:col-span-2">
               <Label htmlFor="a-phone">Phone number</Label>
-              <Input id="a-phone" type="tel" placeholder="+14155552671" autoComplete="off" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-              <p className="text-xs text-muted-foreground">E.164 format, including country code. This phone is required for the admin to sign in.</p>
+              <Input id="a-phone" type="tel" placeholder="+919876543210" autoComplete="off" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
               {errors.phone && <p className="text-xs text-destructive">{errors.phone}</p>}
             </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="a-password">{t("settings.admins.password")}</Label>
-              <Input id="a-password" type="password" autoComplete="new-password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-              {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="a-confirm">{t("settings.admins.confirmPassword")}</Label>
-              <Input id="a-confirm" type="password" autoComplete="new-password" value={form.confirmPassword} onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} />
-              {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword}</p>}
-            </div>
             <div className="md:col-span-2">
-              <p className="mb-2 text-xs text-muted-foreground">{t("settings.admins.passwordHint")}</p>
+              <p className="mb-2 text-xs text-muted-foreground">E.164 format, including country code. This phone is used for OTP sign-in.</p>
               <Button type="submit" disabled={submitting}>
                 {submitting ? t("settings.admins.creating") : t("settings.admins.create")}
               </Button>
@@ -229,6 +211,7 @@ function AdminsTab() {
           </form>
         </CardContent>
       </Card>
+
 
 
 
