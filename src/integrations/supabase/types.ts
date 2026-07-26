@@ -250,27 +250,51 @@ export type Database = {
       employee_locations: {
         Row: {
           accuracy_meters: number | null
+          address: string | null
+          area: string | null
           captured_at: string
+          city: string | null
+          country: string | null
+          district: string | null
           employee_id: string
           id: string
           latitude: number
           longitude: number
+          place_name: string | null
+          source: string | null
+          state: string | null
         }
         Insert: {
           accuracy_meters?: number | null
+          address?: string | null
+          area?: string | null
           captured_at?: string
+          city?: string | null
+          country?: string | null
+          district?: string | null
           employee_id: string
           id?: string
           latitude: number
           longitude: number
+          place_name?: string | null
+          source?: string | null
+          state?: string | null
         }
         Update: {
           accuracy_meters?: number | null
+          address?: string | null
+          area?: string | null
           captured_at?: string
+          city?: string | null
+          country?: string | null
+          district?: string | null
           employee_id?: string
           id?: string
           latitude?: number
           longitude?: number
+          place_name?: string | null
+          source?: string | null
+          state?: string | null
         }
         Relationships: [
           {
