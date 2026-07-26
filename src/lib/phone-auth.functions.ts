@@ -12,15 +12,12 @@ const roleSchema = z.enum(["admin", "employee", "client"]);
 const sendSchema = z.object({
   phone: phoneSchema,
   role: roleSchema,
-  mode: z.enum(["signin", "signup"]),
 });
 
 const verifySchema = z.object({
   phone: phoneSchema,
   code: z.string().trim().min(4).max(10),
   role: roleSchema,
-  mode: z.enum(["signin", "signup"]),
-  name: z.string().trim().min(2).max(100).optional(),
 });
 
 function syntheticEmail(phone: string) {
@@ -84,14 +81,14 @@ async function twilioVerifyCheck(phone: string, code: string) {
   return body?.status === "approved";
 }
 
-async function findUserIdByPhone(phone: string): Promise<string | null> {
+async function findProfileByPhone(phone: string): Promise<{ id: string } | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin
     .from("profiles")
     .select("id")
     .eq("phone", phone)
     .maybeSingle();
-  return (data?.id as string | undefined) ?? null;
+  return data ? { id: data.id as string } : null;
 }
 
 async function getRoles(userId: string): Promise<Set<string>> {
@@ -103,31 +100,53 @@ async function getRoles(userId: string): Promise<Set<string>> {
   return new Set((data ?? []).map((r: any) => r.role));
 }
 
+async function findClientRowByPhone(phone: string) {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin
+    .from("clients")
+    .select("id, user_id, contact_person, business_name")
+    .eq("phone", phone)
+    .maybeSingle();
+  return data as { id: string; user_id: string | null; contact_person: string | null; business_name: string | null } | null;
+}
+
 /**
- * Verifies the phone/role combo is valid for the requested mode, then sends
- * a Twilio Verify OTP via SMS. Public endpoint — no auth required.
+ * Validate (phone, role) is eligible to sign in, then send an OTP via Twilio Verify.
+ * - admin/employee: phone must be attached to a profile that has the given role.
+ * - client: phone must belong to a profile with the client role, OR to a
+ *   pre-created client record (auto-provisioned on first successful verify).
  */
 export const sendOtp = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => sendSchema.parse(data))
   .handler(async ({ data }) => {
-    const existingId = await findUserIdByPhone(data.phone);
+    const existing = await findProfileByPhone(data.phone);
 
-    if (data.mode === "signin") {
-      if (!existingId) {
-        throw new Error("No account found for this phone number. Create one first.");
+    if (data.role === "client") {
+      let allowed = false;
+      if (existing) {
+        const roles = await getRoles(existing.id);
+        allowed = roles.has("client");
       }
-      const roles = await getRoles(existingId);
+      if (!allowed) {
+        const clientRow = await findClientRowByPhone(data.phone);
+        allowed = !!clientRow;
+      }
+      if (!allowed) {
+        throw new Error(
+          "This phone number is not registered as a client. Please contact your account manager.",
+        );
+      }
+    } else {
+      if (!existing) {
+        throw new Error(
+          `This phone number is not registered as ${data.role}. Please contact an administrator.`,
+        );
+      }
+      const roles = await getRoles(existing.id);
       if (!roles.has(data.role)) {
         throw new Error(
           `This phone number is not registered as ${data.role}.`,
         );
-      }
-    } else {
-      if (data.role === "admin") {
-        throw new Error("Admin accounts are created by another admin.");
-      }
-      if (existingId) {
-        throw new Error("An account with this phone number already exists.");
       }
     }
 
@@ -136,9 +155,10 @@ export const sendOtp = createServerFn({ method: "POST" })
   });
 
 /**
- * Verifies the OTP with Twilio, then either signs the user in or creates a
- * new account (for signup mode). Returns a Supabase session for
- * `supabase.auth.setSession()` on the client. Public endpoint.
+ * Verifies OTP with Twilio. For clients that exist only in the `clients`
+ * table (pre-created by an employee), auto-provisions the auth user, links
+ * the client record, and assigns the client role. Returns a Supabase session
+ * for `supabase.auth.setSession()` on the client.
  */
 export const verifyOtp = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => verifySchema.parse(data))
@@ -148,16 +168,16 @@ export const verifyOtp = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    let userId = await findUserIdByPhone(data.phone);
+    let profile = await findProfileByPhone(data.phone);
+    let userId: string | null = profile?.id ?? null;
 
-    if (data.mode === "signup") {
-      if (data.role === "admin") throw new Error("Admin sign-up is not allowed.");
-      if (userId) throw new Error("An account with this phone number already exists.");
-      if (!data.name) throw new Error("Name is required to create an account.");
+    // Auto-provision client accounts from a pre-created client row.
+    if (!userId && data.role === "client") {
+      const clientRow = await findClientRowByPhone(data.phone);
+      if (!clientRow) throw new Error("This phone number is not registered as a client.");
 
       const email = syntheticEmail(data.phone);
       const password = randomPassword();
-
       const { data: created, error: createErr } =
         await supabaseAdmin.auth.admin.createUser({
           email,
@@ -165,38 +185,40 @@ export const verifyOtp = createServerFn({ method: "POST" })
           email_confirm: true,
           phone: data.phone,
           phone_confirm: true,
-          user_metadata: { name: data.name, phone: data.phone },
+          user_metadata: {
+            name: clientRow.contact_person ?? clientRow.business_name ?? "",
+            phone: data.phone,
+          },
         });
       if (createErr || !created.user) {
-        throw new Error(createErr?.message ?? "Failed to create account");
+        throw new Error(createErr?.message ?? "Failed to create client account");
       }
       userId = created.user.id;
 
-      // Trigger inserts default 'client' role + profile. If the user picked
-      // 'employee', swap the role.
-      if (data.role === "employee") {
-        await supabaseAdmin.from("user_roles").delete().eq("user_id", userId).eq("role", "client");
-        await supabaseAdmin.from("user_roles").insert({ user_id: userId, role: "employee" });
-      }
-      // Ensure phone is set on the profile (trigger already tries, but safe upsert).
+      // handle_new_user trigger created profile + default 'client' role.
+      // Backfill phone (belt & suspenders) and link the pre-created client row.
       await supabaseAdmin
         .from("profiles")
         .update({ phone: data.phone })
         .eq("id", userId);
-    } else {
-      if (!userId) throw new Error("No account found for this phone number.");
-      const roles = await getRoles(userId);
-      if (!roles.has(data.role)) {
-        throw new Error(`This phone number is not registered as ${data.role}.`);
-      }
+      await supabaseAdmin
+        .from("clients")
+        .update({ user_id: userId })
+        .eq("id", clientRow.id);
     }
 
-    // Rotate to a fresh random password, then sign in with it to mint a
-    // session. The password is never stored anywhere and is discarded after
-    // this call.
+    if (!userId) throw new Error("No account found for this phone number.");
+
+    // Enforce role match at verify time too.
+    const roles = await getRoles(userId);
+    if (!roles.has(data.role)) {
+      throw new Error(`This phone number is not registered as ${data.role}.`);
+    }
+
+    // Rotate to a one-shot password, sign in to mint a session.
     const password = randomPassword();
     const { data: updated, error: updErr } =
-      await supabaseAdmin.auth.admin.updateUserById(userId!, { password });
+      await supabaseAdmin.auth.admin.updateUserById(userId, { password });
     if (updErr) throw new Error(updErr.message);
     const email = updated.user?.email;
     if (!email) throw new Error("Account is missing an email; contact support.");

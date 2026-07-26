@@ -7,6 +7,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMe } from "@/lib/me.functions";
+import { getProfileCompletion } from "@/lib/profile-completion.functions";
 import { getUserSettings } from "@/lib/user-settings.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect } from "react";
@@ -38,6 +39,11 @@ export const Route = createFileRoute("/_authenticated")({
 
 function AuthedLayout() {
   const { data: me } = useSuspenseQuery({ queryKey: ["me"], queryFn: () => getMe() });
+  const getCompletion = useServerFn(getProfileCompletion);
+  const { data: completion } = useQuery({
+    queryKey: ["profile-completion"],
+    queryFn: () => getCompletion(),
+  });
   const router = useRouter();
   const qc = useQueryClient();
   const { i18n } = useTranslation();
@@ -47,9 +53,18 @@ function AuthedLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   useAutoDuty(me?.role);
 
+  // Force incomplete profiles to the setup screen before anything else.
+  useEffect(() => {
+    if (!completion) return;
+    if (!completion.complete && pathname !== "/complete-profile") {
+      router.navigate({ to: "/complete-profile", replace: true });
+    }
+  }, [completion, pathname, router]);
+
   // Role-based route guard: employees/clients cannot access other roles' sections.
   useEffect(() => {
     if (!me) return;
+    if (pathname === "/complete-profile") return;
     const isAllowed =
       me.role === "admin" ||
       (me.role === "employee" && !pathname.startsWith("/admin/") && !pathname.startsWith("/client/")) ||
@@ -58,6 +73,7 @@ function AuthedLayout() {
       router.navigate({ to: "/dashboard", replace: true });
     }
   }, [me, pathname, router]);
+
 
   useEffect(() => {
     if (!settings) return;
