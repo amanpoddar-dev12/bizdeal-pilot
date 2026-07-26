@@ -126,7 +126,7 @@ function EmpClients() {
               </Field>
               <Field label="Mobile number *">
                 <Input
-                  placeholder="+14155552671"
+                  placeholder="+919876543210"
                   value={form.phone}
                   onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                 />
