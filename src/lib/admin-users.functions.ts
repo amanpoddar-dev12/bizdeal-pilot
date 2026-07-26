@@ -71,8 +71,8 @@ export const createAdminUser = createServerFn({ method: "POST" })
     if (existingPhone) throw new Error("Phone number is already in use.");
 
     const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
-      email: data.email,
-      password: data.password,
+      email: syntheticEmail(data.phone),
+      password: randomPassword(),
       email_confirm: true,
       phone: data.phone,
       phone_confirm: true,
