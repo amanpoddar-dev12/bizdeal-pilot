@@ -183,7 +183,28 @@ function AuthPage() {
                   </button>
                 );
               })}
+              <div className="mt-4 rounded-lg border border-dashed border-border p-3">
+                <p className="mb-2 text-center text-xs font-medium text-muted-foreground">
+                  Dev demo — quick sign-in
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(Object.keys(ROLE_META) as Role[]).map((r) => (
+                    <Button
+                      key={r}
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      disabled={busy}
+                      onClick={() => onDemo(r)}
+                      className="capitalize"
+                    >
+                      {r}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </div>
+
           ) : (
             <>
               <button
