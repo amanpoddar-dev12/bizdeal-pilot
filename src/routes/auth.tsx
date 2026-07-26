@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { sendOtp, verifyOtp } from "@/lib/phone-auth.functions";
+import { demoSignIn } from "@/lib/demo-auth.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,6 +42,7 @@ function AuthPage() {
   const navigate = useNavigate();
   const send = useServerFn(sendOtp);
   const verify = useServerFn(verifyOtp);
+  const demo = useServerFn(demoSignIn);
 
   const [role, setRole] = useState<Role | null>(null);
   const [step, setStep] = useState<Step>("phone");
@@ -116,9 +118,27 @@ function AuthPage() {
       setBusy(false);
     }
   }
+  async function onDemo(r: Role) {
+    setBusy(true);
+    try {
+      const res = await demo({ data: { role: r } });
+      const { error } = await supabase.auth.setSession({
+        access_token: res.access_token,
+        refresh_token: res.refresh_token,
+      });
+      if (error) throw error;
+      toast.success(`Signed in as demo ${r}`);
+      navigate({ to: "/dashboard" });
+    } catch (err: any) {
+      toast.error(err?.message ?? "Demo sign-in failed");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   return (
     <div className="grid min-h-screen place-items-center bg-background p-4">
+
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-2 grid size-10 place-items-center rounded-md bg-primary text-primary-foreground font-bold">K</div>
@@ -163,7 +183,28 @@ function AuthPage() {
                   </button>
                 );
               })}
+              <div className="mt-4 rounded-lg border border-dashed border-border p-3">
+                <p className="mb-2 text-center text-xs font-medium text-muted-foreground">
+                  Dev demo — quick sign-in
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(Object.keys(ROLE_META) as Role[]).map((r) => (
+                    <Button
+                      key={r}
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      disabled={busy}
+                      onClick={() => onDemo(r)}
+                      className="capitalize"
+                    >
+                      {r}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </div>
+
           ) : (
             <>
               <button
@@ -191,7 +232,7 @@ function AuthPage() {
                       id="phone"
                       type="tel"
                       required
-                      placeholder="+14155552671"
+                      placeholder="+91 98765 43210"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                     />
