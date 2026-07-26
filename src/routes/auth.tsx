@@ -136,8 +136,9 @@ function AuthPage() {
     }
   }
 
-
+  return (
     <div className="grid min-h-screen place-items-center bg-background p-4">
+
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-2 grid size-10 place-items-center rounded-md bg-primary text-primary-foreground font-bold">K</div>
