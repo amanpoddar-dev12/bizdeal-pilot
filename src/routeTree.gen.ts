@@ -34,6 +34,7 @@ import { Route as AuthenticatedAdminCreditRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
 import { Route as AuthenticatedAdminActivityRouteImport } from './routes/_authenticated/admin/activity'
 import { Route as AuthenticatedEmployeeOrdersNewRouteImport } from './routes/_authenticated/employee/orders.new'
+import { Route as AuthenticatedAdminLocationsEmployeeIdRouteImport } from './routes/_authenticated/admin/locations/$employeeId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -177,6 +178,12 @@ const AuthenticatedEmployeeOrdersNewRoute =
     path: '/employee/orders/new',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminLocationsEmployeeIdRoute =
+  AuthenticatedAdminLocationsEmployeeIdRouteImport.update({
+    id: '/$employeeId',
+    path: '/$employeeId',
+    getParentRoute: () => AuthenticatedAdminLocationsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -191,7 +198,7 @@ export interface FileRoutesByFullPath {
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
-  '/admin/locations': typeof AuthenticatedAdminLocationsRoute
+  '/admin/locations': typeof AuthenticatedAdminLocationsRouteWithChildren
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/client/invoices': typeof AuthenticatedClientInvoicesRoute
@@ -202,6 +209,7 @@ export interface FileRoutesByFullPath {
   '/employee/duty': typeof AuthenticatedEmployeeDutyRoute
   '/employee/location': typeof AuthenticatedEmployeeLocationRoute
   '/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
+  '/admin/locations/$employeeId': typeof AuthenticatedAdminLocationsEmployeeIdRoute
   '/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
 }
 export interface FileRoutesByTo {
@@ -217,7 +225,7 @@ export interface FileRoutesByTo {
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
-  '/admin/locations': typeof AuthenticatedAdminLocationsRoute
+  '/admin/locations': typeof AuthenticatedAdminLocationsRouteWithChildren
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/client/invoices': typeof AuthenticatedClientInvoicesRoute
@@ -228,6 +236,7 @@ export interface FileRoutesByTo {
   '/employee/duty': typeof AuthenticatedEmployeeDutyRoute
   '/employee/location': typeof AuthenticatedEmployeeLocationRoute
   '/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
+  '/admin/locations/$employeeId': typeof AuthenticatedAdminLocationsEmployeeIdRoute
   '/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
 }
 export interface FileRoutesById {
@@ -245,7 +254,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/_authenticated/admin/employees': typeof AuthenticatedAdminEmployeesRoute
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
-  '/_authenticated/admin/locations': typeof AuthenticatedAdminLocationsRoute
+  '/_authenticated/admin/locations': typeof AuthenticatedAdminLocationsRouteWithChildren
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRoute
   '/_authenticated/client/invoices': typeof AuthenticatedClientInvoicesRoute
@@ -256,6 +265,7 @@ export interface FileRoutesById {
   '/_authenticated/employee/duty': typeof AuthenticatedEmployeeDutyRoute
   '/_authenticated/employee/location': typeof AuthenticatedEmployeeLocationRoute
   '/_authenticated/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
+  '/_authenticated/admin/locations/$employeeId': typeof AuthenticatedAdminLocationsEmployeeIdRoute
   '/_authenticated/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
 }
 export interface FileRouteTypes {
@@ -284,6 +294,7 @@ export interface FileRouteTypes {
     | '/employee/duty'
     | '/employee/location'
     | '/employee/tasks'
+    | '/admin/locations/$employeeId'
     | '/employee/orders/new'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -310,6 +321,7 @@ export interface FileRouteTypes {
     | '/employee/duty'
     | '/employee/location'
     | '/employee/tasks'
+    | '/admin/locations/$employeeId'
     | '/employee/orders/new'
   id:
     | '__root__'
@@ -337,6 +349,7 @@ export interface FileRouteTypes {
     | '/_authenticated/employee/duty'
     | '/_authenticated/employee/location'
     | '/_authenticated/employee/tasks'
+    | '/_authenticated/admin/locations/$employeeId'
     | '/_authenticated/employee/orders/new'
   fileRoutesById: FileRoutesById
 }
@@ -524,8 +537,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeeOrdersNewRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/locations/$employeeId': {
+      id: '/_authenticated/admin/locations/$employeeId'
+      path: '/$employeeId'
+      fullPath: '/admin/locations/$employeeId'
+      preLoaderRoute: typeof AuthenticatedAdminLocationsEmployeeIdRouteImport
+      parentRoute: typeof AuthenticatedAdminLocationsRoute
+    }
   }
 }
+
+interface AuthenticatedAdminLocationsRouteChildren {
+  AuthenticatedAdminLocationsEmployeeIdRoute: typeof AuthenticatedAdminLocationsEmployeeIdRoute
+}
+
+const AuthenticatedAdminLocationsRouteChildren: AuthenticatedAdminLocationsRouteChildren =
+  {
+    AuthenticatedAdminLocationsEmployeeIdRoute:
+      AuthenticatedAdminLocationsEmployeeIdRoute,
+  }
+
+const AuthenticatedAdminLocationsRouteWithChildren =
+  AuthenticatedAdminLocationsRoute._addFileChildren(
+    AuthenticatedAdminLocationsRouteChildren,
+  )
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCompleteProfileRoute: typeof AuthenticatedCompleteProfileRoute
@@ -537,7 +572,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRoute
   AuthenticatedAdminEmployeesRoute: typeof AuthenticatedAdminEmployeesRoute
   AuthenticatedAdminInvoicesRoute: typeof AuthenticatedAdminInvoicesRoute
-  AuthenticatedAdminLocationsRoute: typeof AuthenticatedAdminLocationsRoute
+  AuthenticatedAdminLocationsRoute: typeof AuthenticatedAdminLocationsRouteWithChildren
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
   AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRoute
   AuthenticatedClientInvoicesRoute: typeof AuthenticatedClientInvoicesRoute
@@ -561,7 +596,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminCustomersRoute: AuthenticatedAdminCustomersRoute,
   AuthenticatedAdminEmployeesRoute: AuthenticatedAdminEmployeesRoute,
   AuthenticatedAdminInvoicesRoute: AuthenticatedAdminInvoicesRoute,
-  AuthenticatedAdminLocationsRoute: AuthenticatedAdminLocationsRoute,
+  AuthenticatedAdminLocationsRoute:
+    AuthenticatedAdminLocationsRouteWithChildren,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
   AuthenticatedAdminProductsRoute: AuthenticatedAdminProductsRoute,
   AuthenticatedClientInvoicesRoute: AuthenticatedClientInvoicesRoute,
