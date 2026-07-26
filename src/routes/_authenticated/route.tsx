@@ -7,6 +7,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getMe } from "@/lib/me.functions";
+import { getProfileCompletion } from "@/lib/profile-completion.functions";
 import { getUserSettings } from "@/lib/user-settings.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { useEffect } from "react";
