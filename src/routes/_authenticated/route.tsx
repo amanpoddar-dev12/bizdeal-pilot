@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { useTheme } from "@/components/theme-provider";
 import { LANG_STORAGE_KEY } from "@/i18n";
 import { useAutoDuty } from "@/hooks/use-auto-duty";
+import { LocationPermissionBanner } from "@/components/location-permission-banner";
 import { LogOut } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated")({
