@@ -211,7 +211,7 @@ function AuthPage() {
                       id="phone"
                       type="tel"
                       required
-                      placeholder="+14155552671"
+                      placeholder="+91 98765 43210"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                     />
