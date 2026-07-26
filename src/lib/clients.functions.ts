@@ -49,8 +49,21 @@ export const upsertClient = createServerFn({ method: "POST" })
     z.object({ id: z.string().uuid().optional(), values: clientSchema }).parse(d),
   )
   .handler(async ({ data, context }) => {
-    if (!(await isAdmin(context))) throw new Error("Forbidden");
+    const admin = await isAdmin(context);
+    const { data: empRole } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "employee",
+    });
+    if (!admin && !empRole) throw new Error("Forbidden");
     const values = data.values;
+    // Non-admins may never set credit/KYC fields via this path — the DB
+    // trigger enforces it on update; strip them here to make inserts safe too.
+    if (!admin) {
+      delete (values as any).credit_limit;
+      delete (values as any).credit_terms;
+      delete (values as any).penalty_rate_per_day;
+      delete (values as any).kyc_verified;
+    }
     if (data.id) {
       const { error } = await context.supabase.from("clients").update(values).eq("id", data.id);
       if (error) throw new Error(error.message);
@@ -66,6 +79,7 @@ export const upsertClient = createServerFn({ method: "POST" })
     });
     return { id: inserted.id };
   });
+
 
 export const setKycVerified = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

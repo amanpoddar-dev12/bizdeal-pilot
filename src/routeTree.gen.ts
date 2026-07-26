@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCompleteProfileRouteImport } from './routes/_authenticated/complete-profile'
 import { Route as AuthenticatedEmployeeTasksRouteImport } from './routes/_authenticated/employee/tasks'
 import { Route as AuthenticatedEmployeeLocationRouteImport } from './routes/_authenticated/employee/location'
 import { Route as AuthenticatedEmployeeDutyRouteImport } from './routes/_authenticated/employee/duty'
@@ -63,6 +64,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedCompleteProfileRoute =
+  AuthenticatedCompleteProfileRouteImport.update({
+    id: '/complete-profile',
+    path: '/complete-profile',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEmployeeTasksRoute =
   AuthenticatedEmployeeTasksRouteImport.update({
     id: '/employee/tasks',
@@ -175,6 +182,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/complete-profile': typeof AuthenticatedCompleteProfileRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/admin/activity': typeof AuthenticatedAdminActivityRoute
@@ -200,6 +208,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/complete-profile': typeof AuthenticatedCompleteProfileRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/admin/activity': typeof AuthenticatedAdminActivityRoute
@@ -227,6 +236,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/_authenticated/complete-profile': typeof AuthenticatedCompleteProfileRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/admin/activity': typeof AuthenticatedAdminActivityRoute
@@ -254,6 +264,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/complete-profile'
     | '/dashboard'
     | '/settings'
     | '/admin/activity'
@@ -279,6 +290,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/reset-password'
+    | '/complete-profile'
     | '/dashboard'
     | '/settings'
     | '/admin/activity'
@@ -305,6 +317,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/reset-password'
+    | '/_authenticated/complete-profile'
     | '/_authenticated/dashboard'
     | '/_authenticated/settings'
     | '/_authenticated/admin/activity'
@@ -376,6 +389,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/complete-profile': {
+      id: '/_authenticated/complete-profile'
+      path: '/complete-profile'
+      fullPath: '/complete-profile'
+      preLoaderRoute: typeof AuthenticatedCompleteProfileRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/employee/tasks': {
@@ -508,6 +528,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCompleteProfileRoute: typeof AuthenticatedCompleteProfileRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedAdminActivityRoute: typeof AuthenticatedAdminActivityRoute
@@ -531,6 +552,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCompleteProfileRoute: AuthenticatedCompleteProfileRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedAdminActivityRoute: AuthenticatedAdminActivityRoute,
