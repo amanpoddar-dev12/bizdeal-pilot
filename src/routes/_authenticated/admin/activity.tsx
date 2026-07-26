@@ -65,15 +65,17 @@ function Activity() {
                 <div className="text-xs">
                   {loc ? (
                     <a
-                      className="inline-flex items-center gap-1 text-primary hover:underline"
+                      className="inline-flex items-start gap-1 text-primary hover:underline"
                       href={`https://www.google.com/maps?q=${loc.latitude},${loc.longitude}`}
                       target="_blank" rel="noreferrer"
                     >
-                      <MapPin className="size-3.5" />
-                      {Number(loc.latitude).toFixed(4)}, {Number(loc.longitude).toFixed(4)}
-                      <span className="text-muted-foreground">· {fmtDateTime(loc.captured_at)}</span>
+                      <MapPin className="mt-0.5 size-3.5 shrink-0" />
+                      <span>
+                        {formatAddress(loc) || `${Number(loc.latitude).toFixed(4)}, ${Number(loc.longitude).toFixed(4)}`}
+                        <span className="ml-1 text-muted-foreground">· {fmtDateTime(loc.captured_at)}</span>
+                      </span>
                     </a>
-                  ) : <span className="text-muted-foreground">No location ping yet</span>}
+                  ) : <span className="text-muted-foreground">Location permission disabled or not shared yet</span>}
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/60 text-center">
