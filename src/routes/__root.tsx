@@ -124,8 +124,12 @@ function RootComponent() {
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       if (event === "SIGNED_OUT") {
-        queryClient.clear();
+        // Navigate away FIRST so protected-route observers unmount, then
+        // clear the cache. Clearing while observers are still mounted makes
+        // them refetch immediately and 401 with no bearer.
+        queryClient.cancelQueries();
         router.navigate({ to: "/auth", replace: true });
+        setTimeout(() => queryClient.clear(), 0);
         return;
       }
       router.invalidate();
