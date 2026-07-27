@@ -5,40 +5,18 @@ import { z } from "zod";
 export const clockIn = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    // Close any dangling open session first
-    await context.supabase
-      .from("duty_sessions")
-      .update({ clock_out_time: new Date().toISOString() })
-      .eq("employee_id", context.userId)
-      .is("clock_out_time", null);
-    const { data, error } = await context.supabase
-      .from("duty_sessions")
-      .insert({ employee_id: context.userId, clock_in_time: new Date().toISOString() })
-      .select().single();
+    // All timestamps and ownership enforced server-side inside the RPC.
+    const { data, error } = await context.supabase.rpc("duty_clock_in");
     if (error) throw new Error(error.message);
-    return data;
+    return { id: data };
   });
 
 export const clockOut = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: open } = await context.supabase
-      .from("duty_sessions")
-      .select("*")
-      .eq("employee_id", context.userId)
-      .is("clock_out_time", null)
-      .order("clock_in_time", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (!open) return { ok: false, message: "No open session" };
-    const out = new Date();
-    const duration = Math.round((out.getTime() - new Date(open.clock_in_time).getTime()) / 60000);
-    const { error } = await context.supabase
-      .from("duty_sessions")
-      .update({ clock_out_time: out.toISOString(), duration_minutes: duration })
-      .eq("id", open.id);
+    const { data, error } = await context.supabase.rpc("duty_clock_out");
     if (error) throw new Error(error.message);
-    return { ok: true, duration };
+    return { ok: true, duration: data ?? 0 };
   });
 
 export const getMyDutyStatus = createServerFn({ method: "GET" })
