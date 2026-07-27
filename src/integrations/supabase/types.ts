@@ -922,9 +922,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      client_cancel_order: { Args: { p_id: string }; Returns: undefined }
+      client_respond_invoice: {
+        Args: { p_action: string; p_id: string }
+        Returns: undefined
+      }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
+      }
+      duty_clock_in: { Args: never; Returns: string }
+      duty_clock_out: { Args: never; Returns: number }
+      emp_update_order_meta: {
+        Args: { p_delivery_date: string; p_id: string; p_notes: string }
+        Returns: undefined
       }
       has_role: {
         Args: {
