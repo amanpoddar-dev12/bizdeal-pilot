@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Shield, Briefcase, User, ArrowLeft } from "lucide-react";
+import { Spinner } from "@/components/global-loader";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -241,7 +242,7 @@ function AuthPage() {
                     </p>
                   </div>
                   <Button className="w-full" type="submit" disabled={busy}>
-                    {busy ? "Sending…" : "Send code"}
+                    {busy ? (<><Spinner className="mr-2" /> Sending…</>) : "Send code"}
                   </Button>
                   <p className="text-center text-xs text-muted-foreground">
                     {role === "admin"
@@ -268,7 +269,7 @@ function AuthPage() {
                     />
                   </div>
                   <Button className="w-full" type="submit" disabled={busy}>
-                    {busy ? "Verifying…" : "Sign in"}
+                    {busy ? (<><Spinner className="mr-2" /> Verifying…</>) : "Sign in"}
                   </Button>
                   <div className="flex items-center justify-between text-xs">
                     <button
