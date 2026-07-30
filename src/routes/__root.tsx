@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeProvider } from "@/components/theme-provider";
+import { GlobalLoader } from "@/components/global-loader";
 import "@/i18n";
 
 function NotFoundComponent() {
