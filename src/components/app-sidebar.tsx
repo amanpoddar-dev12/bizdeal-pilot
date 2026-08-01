@@ -1,5 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
+import { prefetchRouteData } from "@/lib/route-prefetch";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
@@ -8,6 +10,7 @@ import {
   LayoutDashboard, Users, Package, Receipt, Wallet, ScrollText, MapPin,
   ClipboardList, Clock, MapPinned, FileText, User, Settings, Activity,
 } from "lucide-react";
+
 
 type Role = "admin" | "employee" | "client";
 
