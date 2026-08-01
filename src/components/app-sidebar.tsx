@@ -94,7 +94,15 @@ export function AppSidebar({ role, name }: { role: Role; name: string }) {
                   return (
                     <SidebarMenuItem key={item.key + item.url}>
                       <SidebarMenuButton asChild isActive={active} tooltip={title}>
-                        <Link to={item.url} className="flex items-center gap-2">
+                        <Link
+                          to={item.url}
+                          preload="intent"
+                          className="flex items-center gap-2"
+                          onMouseEnter={() => warm(item.url)}
+                          onFocus={() => warm(item.url)}
+                          onTouchStart={() => warm(item.url)}
+                        >
+
                           <item.icon className="size-4" />
                           <span>{title}</span>
                         </Link>
