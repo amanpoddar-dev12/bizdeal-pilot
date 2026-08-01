@@ -1,5 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
+import { prefetchRouteData } from "@/lib/route-prefetch";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
@@ -8,6 +10,7 @@ import {
   LayoutDashboard, Users, Package, Receipt, Wallet, ScrollText, MapPin,
   ClipboardList, Clock, MapPinned, FileText, User, Settings, Activity,
 } from "lucide-react";
+
 
 type Role = "admin" | "employee" | "client";
 
@@ -62,6 +65,9 @@ export function AppSidebar({ role, name }: { role: Role; name: string }) {
   const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const groups = navByRole[role] ?? navByRole.client;
+  const qc = useQueryClient();
+  const warm = (url: string) => prefetchRouteData(qc, url, role);
+
 
   return (
     <Sidebar collapsible="icon">
@@ -88,7 +94,15 @@ export function AppSidebar({ role, name }: { role: Role; name: string }) {
                   return (
                     <SidebarMenuItem key={item.key + item.url}>
                       <SidebarMenuButton asChild isActive={active} tooltip={title}>
-                        <Link to={item.url} className="flex items-center gap-2">
+                        <Link
+                          to={item.url}
+                          preload="intent"
+                          className="flex items-center gap-2"
+                          onMouseEnter={() => warm(item.url)}
+                          onFocus={() => warm(item.url)}
+                          onTouchStart={() => warm(item.url)}
+                        >
+
                           <item.icon className="size-4" />
                           <span>{title}</span>
                         </Link>
