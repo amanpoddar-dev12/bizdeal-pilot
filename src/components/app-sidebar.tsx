@@ -65,6 +65,9 @@ export function AppSidebar({ role, name }: { role: Role; name: string }) {
   const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const groups = navByRole[role] ?? navByRole.client;
+  const qc = useQueryClient();
+  const warm = (url: string) => prefetchRouteData(qc, url, role);
+
 
   return (
     <Sidebar collapsible="icon">
