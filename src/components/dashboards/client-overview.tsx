@@ -1,3 +1,4 @@
+import { useRealtimeOrders } from "@/hooks/use-realtime-orders";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getClientLedger } from "@/lib/ledger.functions";
@@ -10,6 +11,7 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
 export function ClientOverview() {
+  useRealtimeOrders();
   const ledgerFn = useServerFn(getClientLedger);
   const invoicesFn = useServerFn(listInvoices);
   const ordersFn = useServerFn(listOrders);
@@ -20,7 +22,7 @@ export function ClientOverview() {
   const invs = ledger.data?.invoices ?? [];
   const outstanding = invs.reduce((s: number, i: any) => s + (Number(i.amount) - Number(i.payment_amount)), 0);
   const openInvs = (invoices.data ?? []).filter((i: any) => i.status !== "paid" && i.status !== "declined");
-  const pendingOrders = (orders.data ?? []).filter((o: any) => o.status === "pending" || o.status === "change_requested");
+  const pendingOrders = (orders.data ?? []).filter((o: any) => o.status === "pending_client" || o.status === "pending" || o.status === "change_requested");
 
   return (
     <div className="space-y-6">

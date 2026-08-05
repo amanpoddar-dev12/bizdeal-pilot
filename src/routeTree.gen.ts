@@ -33,6 +33,7 @@ import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminCreditRouteImport } from './routes/_authenticated/admin/credit'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
 import { Route as AuthenticatedAdminActivityRouteImport } from './routes/_authenticated/admin/activity'
+import { Route as AuthenticatedEmployeeOrdersIndexRouteImport } from './routes/_authenticated/employee/orders.index'
 import { Route as AuthenticatedEmployeeOrdersNewRouteImport } from './routes/_authenticated/employee/orders.new'
 import { Route as AuthenticatedAdminLocationsEmployeeIdRouteImport } from './routes/_authenticated/admin/locations/$employeeId'
 
@@ -172,6 +173,12 @@ const AuthenticatedAdminActivityRoute =
     path: '/admin/activity',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedEmployeeOrdersIndexRoute =
+  AuthenticatedEmployeeOrdersIndexRouteImport.update({
+    id: '/employee/orders/',
+    path: '/employee/orders/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEmployeeOrdersNewRoute =
   AuthenticatedEmployeeOrdersNewRouteImport.update({
     id: '/employee/orders/new',
@@ -211,6 +218,7 @@ export interface FileRoutesByFullPath {
   '/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
   '/admin/locations/$employeeId': typeof AuthenticatedAdminLocationsEmployeeIdRoute
   '/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
+  '/employee/orders/': typeof AuthenticatedEmployeeOrdersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -238,6 +246,7 @@ export interface FileRoutesByTo {
   '/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
   '/admin/locations/$employeeId': typeof AuthenticatedAdminLocationsEmployeeIdRoute
   '/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
+  '/employee/orders': typeof AuthenticatedEmployeeOrdersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -267,6 +276,7 @@ export interface FileRoutesById {
   '/_authenticated/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
   '/_authenticated/admin/locations/$employeeId': typeof AuthenticatedAdminLocationsEmployeeIdRoute
   '/_authenticated/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
+  '/_authenticated/employee/orders/': typeof AuthenticatedEmployeeOrdersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -296,6 +306,7 @@ export interface FileRouteTypes {
     | '/employee/tasks'
     | '/admin/locations/$employeeId'
     | '/employee/orders/new'
+    | '/employee/orders/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -323,6 +334,7 @@ export interface FileRouteTypes {
     | '/employee/tasks'
     | '/admin/locations/$employeeId'
     | '/employee/orders/new'
+    | '/employee/orders'
   id:
     | '__root__'
     | '/'
@@ -351,6 +363,7 @@ export interface FileRouteTypes {
     | '/_authenticated/employee/tasks'
     | '/_authenticated/admin/locations/$employeeId'
     | '/_authenticated/employee/orders/new'
+    | '/_authenticated/employee/orders/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -530,6 +543,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminActivityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/employee/orders/': {
+      id: '/_authenticated/employee/orders/'
+      path: '/employee/orders'
+      fullPath: '/employee/orders/'
+      preLoaderRoute: typeof AuthenticatedEmployeeOrdersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/employee/orders/new': {
       id: '/_authenticated/employee/orders/new'
       path: '/employee/orders/new'
@@ -584,6 +604,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEmployeeLocationRoute: typeof AuthenticatedEmployeeLocationRoute
   AuthenticatedEmployeeTasksRoute: typeof AuthenticatedEmployeeTasksRoute
   AuthenticatedEmployeeOrdersNewRoute: typeof AuthenticatedEmployeeOrdersNewRoute
+  AuthenticatedEmployeeOrdersIndexRoute: typeof AuthenticatedEmployeeOrdersIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -609,6 +630,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEmployeeLocationRoute: AuthenticatedEmployeeLocationRoute,
   AuthenticatedEmployeeTasksRoute: AuthenticatedEmployeeTasksRoute,
   AuthenticatedEmployeeOrdersNewRoute: AuthenticatedEmployeeOrdersNewRoute,
+  AuthenticatedEmployeeOrdersIndexRoute: AuthenticatedEmployeeOrdersIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

@@ -1,3 +1,4 @@
+import { useRealtimeOrders } from "@/hooks/use-realtime-orders";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getMyDutyStatus } from "@/lib/duty.functions";
@@ -10,6 +11,7 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
 export function EmployeeOverview() {
+  useRealtimeOrders();
   const dutyFn = useServerFn(getMyDutyStatus);
   const tasksFn = useServerFn(listTasks);
   const ordersFn = useServerFn(listOrders);

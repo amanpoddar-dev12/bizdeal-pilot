@@ -29,6 +29,7 @@ const map: Record<string, Entry[]> = {
   "/admin/audit": [{ queryKey: ["audit"], queryFn: () => listAuditLogs() as any }],
   "/employee/clients": [clients],
   "/employee/orders/new": [clients, products],
+  "/employee/orders": [orders],
   "/employee/tasks": [{ queryKey: ["tasks"], queryFn: () => listTasks() as any }],
   "/employee/duty": [{ queryKey: ["duty"], queryFn: () => getMyDutyStatus() as any }],
   "/client/orders": [orders],
