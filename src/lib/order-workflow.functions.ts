@@ -28,7 +28,7 @@ export const clientReviewOrder = createServerFn({ method: "POST" })
       p_id: data.id,
       p_action: data.action,
       p_checklist: data.checklist,
-      p_remarks: data.remarks ?? null,
+      p_remarks: data.remarks ?? undefined,
     });
     if (error) throw new Error(error.message);
     return { ok: true, status: data.action === "approve" ? "client_approved" : "client_rejected" };
