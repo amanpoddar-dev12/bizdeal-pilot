@@ -12,7 +12,7 @@ export function useRealtimeOrders(orderId?: string) {
   useEffect(() => {
     const refresh = () => {
       qc.invalidateQueries({ queryKey: ["orders"] });
-      qc.invalidateQueries({ queryKey: ["dashboard"] });
+      qc.invalidateQueries({ queryKey: ["admin-reports"] });
       if (orderId) qc.invalidateQueries({ queryKey: ["order-workflow", orderId] });
     };
 
