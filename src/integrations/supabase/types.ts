@@ -555,6 +555,99 @@ export type Database = {
           },
         ]
       }
+      order_approvals: {
+        Row: {
+          action: string
+          actor_id: string | null
+          checklist: Json
+          created_at: string
+          id: string
+          order_id: string
+          remarks: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          checklist?: Json
+          created_at?: string
+          id?: string
+          order_id: string
+          remarks?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          checklist?: Json
+          created_at?: string
+          id?: string
+          order_id?: string
+          remarks?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_approvals_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_approvals_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event: string
+          from_status: string | null
+          id: string
+          note: string | null
+          order_id: string
+          to_status: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event: string
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          order_id: string
+          to_status?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event?: string
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          order_id?: string
+          to_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_events_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           amount: number
@@ -927,6 +1020,15 @@ export type Database = {
         Args: { p_action: string; p_id: string }
         Returns: undefined
       }
+      client_review_order: {
+        Args: {
+          p_action: string
+          p_checklist?: Json
+          p_id: string
+          p_remarks?: string
+        }
+        Returns: undefined
+      }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
@@ -945,6 +1047,7 @@ export type Database = {
         Returns: boolean
       }
       refresh_credit_purse: { Args: { _client_id: string }; Returns: undefined }
+      submit_order_for_client: { Args: { p_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "employee" | "client"
