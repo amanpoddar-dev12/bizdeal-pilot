@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { OrdersTable } from "@/routes/_authenticated/admin/orders";
 
-export const Route = createFileRoute("/_authenticated/employee/orders")({
+export const Route = createFileRoute("/_authenticated/employee/orders/")({
   head: () => ({
     meta: [
       { title: "My orders — Kredix" },

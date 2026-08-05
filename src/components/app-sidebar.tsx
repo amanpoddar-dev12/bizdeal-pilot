@@ -40,6 +40,7 @@ const navByRole: Record<Role, NavGroup[]> = {
       { key: "nav.today", url: "/dashboard", icon: LayoutDashboard },
       { key: "nav.clients", url: "/employee/clients", icon: Users },
       { key: "nav.newOrder", url: "/employee/orders/new", icon: Package },
+      { key: "nav.orders", url: "/employee/orders", icon: Package },
       { key: "nav.tasks", url: "/employee/tasks", icon: ClipboardList },
       { key: "nav.duty", url: "/employee/duty", icon: Clock },
       { key: "nav.shareLocation", url: "/employee/location", icon: MapPinned },

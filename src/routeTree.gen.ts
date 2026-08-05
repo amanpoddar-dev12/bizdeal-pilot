@@ -17,7 +17,6 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCompleteProfileRouteImport } from './routes/_authenticated/complete-profile'
 import { Route as AuthenticatedEmployeeTasksRouteImport } from './routes/_authenticated/employee/tasks'
-import { Route as AuthenticatedEmployeeOrdersRouteImport } from './routes/_authenticated/employee/orders'
 import { Route as AuthenticatedEmployeeLocationRouteImport } from './routes/_authenticated/employee/location'
 import { Route as AuthenticatedEmployeeDutyRouteImport } from './routes/_authenticated/employee/duty'
 import { Route as AuthenticatedEmployeeClientsRouteImport } from './routes/_authenticated/employee/clients'
@@ -34,6 +33,7 @@ import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminCreditRouteImport } from './routes/_authenticated/admin/credit'
 import { Route as AuthenticatedAdminAuditRouteImport } from './routes/_authenticated/admin/audit'
 import { Route as AuthenticatedAdminActivityRouteImport } from './routes/_authenticated/admin/activity'
+import { Route as AuthenticatedEmployeeOrdersIndexRouteImport } from './routes/_authenticated/employee/orders.index'
 import { Route as AuthenticatedEmployeeOrdersNewRouteImport } from './routes/_authenticated/employee/orders.new'
 import { Route as AuthenticatedAdminLocationsEmployeeIdRouteImport } from './routes/_authenticated/admin/locations/$employeeId'
 
@@ -76,12 +76,6 @@ const AuthenticatedEmployeeTasksRoute =
   AuthenticatedEmployeeTasksRouteImport.update({
     id: '/employee/tasks',
     path: '/employee/tasks',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedEmployeeOrdersRoute =
-  AuthenticatedEmployeeOrdersRouteImport.update({
-    id: '/employee/orders',
-    path: '/employee/orders',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedEmployeeLocationRoute =
@@ -179,11 +173,17 @@ const AuthenticatedAdminActivityRoute =
     path: '/admin/activity',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedEmployeeOrdersIndexRoute =
+  AuthenticatedEmployeeOrdersIndexRouteImport.update({
+    id: '/employee/orders/',
+    path: '/employee/orders/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEmployeeOrdersNewRoute =
   AuthenticatedEmployeeOrdersNewRouteImport.update({
-    id: '/new',
-    path: '/new',
-    getParentRoute: () => AuthenticatedEmployeeOrdersRoute,
+    id: '/employee/orders/new',
+    path: '/employee/orders/new',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminLocationsEmployeeIdRoute =
   AuthenticatedAdminLocationsEmployeeIdRouteImport.update({
@@ -215,10 +215,10 @@ export interface FileRoutesByFullPath {
   '/employee/clients': typeof AuthenticatedEmployeeClientsRoute
   '/employee/duty': typeof AuthenticatedEmployeeDutyRoute
   '/employee/location': typeof AuthenticatedEmployeeLocationRoute
-  '/employee/orders': typeof AuthenticatedEmployeeOrdersRouteWithChildren
   '/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
   '/admin/locations/$employeeId': typeof AuthenticatedAdminLocationsEmployeeIdRoute
   '/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
+  '/employee/orders/': typeof AuthenticatedEmployeeOrdersIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -243,10 +243,10 @@ export interface FileRoutesByTo {
   '/employee/clients': typeof AuthenticatedEmployeeClientsRoute
   '/employee/duty': typeof AuthenticatedEmployeeDutyRoute
   '/employee/location': typeof AuthenticatedEmployeeLocationRoute
-  '/employee/orders': typeof AuthenticatedEmployeeOrdersRouteWithChildren
   '/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
   '/admin/locations/$employeeId': typeof AuthenticatedAdminLocationsEmployeeIdRoute
   '/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
+  '/employee/orders': typeof AuthenticatedEmployeeOrdersIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -273,10 +273,10 @@ export interface FileRoutesById {
   '/_authenticated/employee/clients': typeof AuthenticatedEmployeeClientsRoute
   '/_authenticated/employee/duty': typeof AuthenticatedEmployeeDutyRoute
   '/_authenticated/employee/location': typeof AuthenticatedEmployeeLocationRoute
-  '/_authenticated/employee/orders': typeof AuthenticatedEmployeeOrdersRouteWithChildren
   '/_authenticated/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
   '/_authenticated/admin/locations/$employeeId': typeof AuthenticatedAdminLocationsEmployeeIdRoute
   '/_authenticated/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
+  '/_authenticated/employee/orders/': typeof AuthenticatedEmployeeOrdersIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -303,10 +303,10 @@ export interface FileRouteTypes {
     | '/employee/clients'
     | '/employee/duty'
     | '/employee/location'
-    | '/employee/orders'
     | '/employee/tasks'
     | '/admin/locations/$employeeId'
     | '/employee/orders/new'
+    | '/employee/orders/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -331,10 +331,10 @@ export interface FileRouteTypes {
     | '/employee/clients'
     | '/employee/duty'
     | '/employee/location'
-    | '/employee/orders'
     | '/employee/tasks'
     | '/admin/locations/$employeeId'
     | '/employee/orders/new'
+    | '/employee/orders'
   id:
     | '__root__'
     | '/'
@@ -360,10 +360,10 @@ export interface FileRouteTypes {
     | '/_authenticated/employee/clients'
     | '/_authenticated/employee/duty'
     | '/_authenticated/employee/location'
-    | '/_authenticated/employee/orders'
     | '/_authenticated/employee/tasks'
     | '/_authenticated/admin/locations/$employeeId'
     | '/_authenticated/employee/orders/new'
+    | '/_authenticated/employee/orders/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -429,13 +429,6 @@ declare module '@tanstack/react-router' {
       path: '/employee/tasks'
       fullPath: '/employee/tasks'
       preLoaderRoute: typeof AuthenticatedEmployeeTasksRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/employee/orders': {
-      id: '/_authenticated/employee/orders'
-      path: '/employee/orders'
-      fullPath: '/employee/orders'
-      preLoaderRoute: typeof AuthenticatedEmployeeOrdersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/employee/location': {
@@ -550,12 +543,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminActivityRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/employee/orders/': {
+      id: '/_authenticated/employee/orders/'
+      path: '/employee/orders'
+      fullPath: '/employee/orders/'
+      preLoaderRoute: typeof AuthenticatedEmployeeOrdersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/employee/orders/new': {
       id: '/_authenticated/employee/orders/new'
-      path: '/new'
+      path: '/employee/orders/new'
       fullPath: '/employee/orders/new'
       preLoaderRoute: typeof AuthenticatedEmployeeOrdersNewRouteImport
-      parentRoute: typeof AuthenticatedEmployeeOrdersRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/locations/$employeeId': {
       id: '/_authenticated/admin/locations/$employeeId'
@@ -582,20 +582,6 @@ const AuthenticatedAdminLocationsRouteWithChildren =
     AuthenticatedAdminLocationsRouteChildren,
   )
 
-interface AuthenticatedEmployeeOrdersRouteChildren {
-  AuthenticatedEmployeeOrdersNewRoute: typeof AuthenticatedEmployeeOrdersNewRoute
-}
-
-const AuthenticatedEmployeeOrdersRouteChildren: AuthenticatedEmployeeOrdersRouteChildren =
-  {
-    AuthenticatedEmployeeOrdersNewRoute: AuthenticatedEmployeeOrdersNewRoute,
-  }
-
-const AuthenticatedEmployeeOrdersRouteWithChildren =
-  AuthenticatedEmployeeOrdersRoute._addFileChildren(
-    AuthenticatedEmployeeOrdersRouteChildren,
-  )
-
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCompleteProfileRoute: typeof AuthenticatedCompleteProfileRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -616,8 +602,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEmployeeClientsRoute: typeof AuthenticatedEmployeeClientsRoute
   AuthenticatedEmployeeDutyRoute: typeof AuthenticatedEmployeeDutyRoute
   AuthenticatedEmployeeLocationRoute: typeof AuthenticatedEmployeeLocationRoute
-  AuthenticatedEmployeeOrdersRoute: typeof AuthenticatedEmployeeOrdersRouteWithChildren
   AuthenticatedEmployeeTasksRoute: typeof AuthenticatedEmployeeTasksRoute
+  AuthenticatedEmployeeOrdersNewRoute: typeof AuthenticatedEmployeeOrdersNewRoute
+  AuthenticatedEmployeeOrdersIndexRoute: typeof AuthenticatedEmployeeOrdersIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -641,9 +628,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEmployeeClientsRoute: AuthenticatedEmployeeClientsRoute,
   AuthenticatedEmployeeDutyRoute: AuthenticatedEmployeeDutyRoute,
   AuthenticatedEmployeeLocationRoute: AuthenticatedEmployeeLocationRoute,
-  AuthenticatedEmployeeOrdersRoute:
-    AuthenticatedEmployeeOrdersRouteWithChildren,
   AuthenticatedEmployeeTasksRoute: AuthenticatedEmployeeTasksRoute,
+  AuthenticatedEmployeeOrdersNewRoute: AuthenticatedEmployeeOrdersNewRoute,
+  AuthenticatedEmployeeOrdersIndexRoute: AuthenticatedEmployeeOrdersIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
