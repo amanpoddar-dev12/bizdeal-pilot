@@ -965,6 +965,9 @@ export type Database = {
         | "change_requested"
         | "invoiced"
         | "paid"
+        | "pending_client"
+        | "client_approved"
+        | "client_rejected"
       task_status: "todo" | "in_progress" | "completed"
     }
     CompositeTypes: {
@@ -1112,6 +1115,9 @@ export const Constants = {
         "change_requested",
         "invoiced",
         "paid",
+        "pending_client",
+        "client_approved",
+        "client_rejected",
       ],
       task_status: ["todo", "in_progress", "completed"],
     },
