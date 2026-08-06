@@ -79,7 +79,7 @@ function NewOrder() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
-      <div><h1 className="font-display text-2xl font-semibold">New order</h1></div>
+      <div><h1 className="font-display text-xl font-semibold sm:text-2xl">New order</h1></div>
       <Card>
         <CardHeader><CardTitle>Client & delivery</CardTitle></CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">

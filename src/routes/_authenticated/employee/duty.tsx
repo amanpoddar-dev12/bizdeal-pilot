@@ -36,7 +36,7 @@ function Duty() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-4">
-      <div><h1 className="font-display text-2xl font-semibold">Duty</h1></div>
+      <div><h1 className="font-display text-xl font-semibold sm:text-2xl">Duty</h1></div>
       <Card>
         <CardHeader><CardTitle className="flex items-center gap-2"><Clock className="size-5" />Current status</CardTitle></CardHeader>
         <CardContent className="space-y-4">

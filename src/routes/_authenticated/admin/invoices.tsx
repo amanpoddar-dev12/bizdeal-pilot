@@ -168,7 +168,7 @@ function PayForm({ inv, payFn, onDone }: any) {
     onError: (e: any) => toast.error(e.message),
   });
   return (
-    <DialogContent>
+    <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-lg">
       <DialogHeader><DialogTitle>Record payment · {inv.invoice_number}</DialogTitle></DialogHeader>
       <div className="space-y-3">
         <div className="text-sm text-muted-foreground">Balance {inr(bal)}</div>

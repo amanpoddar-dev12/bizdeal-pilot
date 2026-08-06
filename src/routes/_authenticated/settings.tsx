@@ -44,7 +44,7 @@ function SettingsPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div>
-        <h1 className="font-display text-2xl font-semibold">{t("settings.title")}</h1>
+        <h1 className="font-display text-xl font-semibold sm:text-2xl">{t("settings.title")}</h1>
         <p className="text-sm text-muted-foreground">{t("settings.subtitle")}</p>
       </div>
       <Tabs defaultValue="appearance">

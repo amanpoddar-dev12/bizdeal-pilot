@@ -210,7 +210,7 @@ function Audit() {
     <div className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-semibold">Audit log</h1>
+          <h1 className="font-display text-xl font-semibold sm:text-2xl">Audit log</h1>
           <p className="text-sm text-muted-foreground">
             Immutable record of every system activity — for compliance, GST filing, and reconciliation.
           </p>
@@ -340,7 +340,7 @@ function Audit() {
         <CardContent className="p-0">
           {/* Desktop table */}
           <div className="hidden overflow-x-auto md:block">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[680px] text-sm">
               <thead className="bg-muted/40">
                 <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
                   <th className="w-8 px-2 py-3"></th>

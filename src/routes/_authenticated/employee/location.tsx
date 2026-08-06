@@ -31,7 +31,7 @@ function LocationPage() {
   return (
     <div className="mx-auto max-w-xl space-y-4">
       <div>
-        <h1 className="font-display text-2xl font-semibold">My location</h1>
+        <h1 className="font-display text-xl font-semibold sm:text-2xl">My location</h1>
         <p className="text-sm text-muted-foreground">
           Location updates automatically every 5 minutes while you're signed in. Used for attendance verification and field activity.
         </p>

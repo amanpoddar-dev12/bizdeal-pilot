@@ -26,7 +26,7 @@ export function EmployeeOverview() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-2xl font-semibold">Today</h1>
+        <h1 className="font-display text-xl font-semibold sm:text-2xl">Today</h1>
         <p className="text-sm text-muted-foreground">Your day at a glance.</p>
       </div>
 

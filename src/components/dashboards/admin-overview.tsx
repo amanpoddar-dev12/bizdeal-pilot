@@ -31,7 +31,7 @@ export function AdminOverview() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-2xl font-semibold">{t("dashboard.admin.title")}</h1>
+        <h1 className="font-display text-xl font-semibold sm:text-2xl">{t("dashboard.admin.title")}</h1>
         <p className="text-sm text-muted-foreground">{t("dashboard.admin.subtitle")}</p>
       </div>
 
@@ -119,7 +119,7 @@ export function AdminOverview() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[680px] text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-muted-foreground">
                   <th className="pb-2">{t("dashboard.admin.client")}</th>
@@ -158,7 +158,7 @@ function Kpi({ icon, label, value, tone }: { icon: React.ReactNode; label: strin
           <span className={`grid size-6 place-items-center rounded ${toneCls}`}>{icon}</span>
           {label}
         </div>
-        <div className="mt-2 font-display text-2xl font-semibold">{value}</div>
+        <div className="mt-2 font-display text-xl font-semibold sm:text-2xl">{value}</div>
       </CardContent>
     </Card>
   );
