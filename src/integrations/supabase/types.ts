@@ -1035,6 +1035,7 @@ export type Database = {
       }
       duty_clock_in: { Args: never; Returns: string }
       duty_clock_out: { Args: never; Returns: number }
+      emp_create_client: { Args: { p_values: Json }; Returns: string }
       emp_update_order_meta: {
         Args: { p_delivery_date: string; p_id: string; p_notes: string }
         Returns: undefined

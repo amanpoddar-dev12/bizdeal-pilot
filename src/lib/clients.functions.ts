@@ -72,6 +72,15 @@ export const upsertClient = createServerFn({ method: "POST" })
       });
       return { id: data.id };
     }
+    if (!admin) {
+      // Employees create clients through a scoped RPC that also links the new
+      // client to the creating employee.
+      const { data: newId, error: rpcErr } = await context.supabase.rpc("emp_create_client", {
+        p_values: values as any,
+      });
+      if (rpcErr) throw new Error(rpcErr.message);
+      return { id: newId as string };
+    }
     const { data: inserted, error } = await context.supabase.from("clients").insert(values).select("id").single();
     if (error) throw new Error(error.message);
     await context.supabase.from("audit_logs").insert({
