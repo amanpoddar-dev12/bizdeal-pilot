@@ -1047,6 +1047,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_assigned_employee: { Args: { _client_id: string }; Returns: boolean }
       refresh_credit_purse: { Args: { _client_id: string }; Returns: undefined }
       submit_order_for_client: { Args: { p_id: string }; Returns: undefined }
     }
