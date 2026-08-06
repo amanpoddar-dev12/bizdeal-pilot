@@ -10,9 +10,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { inr } from "@/lib/format";
+import { PhoneDisplay } from "@/components/phone-display";
+import { downloadCsv, num, csvDate } from "@/lib/csv";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, ShieldCheck, ShieldX, Users } from "lucide-react";
+import { Download, Plus, ShieldCheck, ShieldX, Users } from "lucide-react";
 import { AssignClientDialog } from "@/components/admin/assign-client-dialog";
 
 
@@ -48,15 +50,43 @@ function Customers() {
 
   const filtered = data.filter((c: any) => !q || c.business_name.toLowerCase().includes(q.toLowerCase()));
 
+  function exportCsv() {
+    downloadCsv(
+      "customers.csv",
+      filtered.map((c: any) => {
+        const purse = Array.isArray(c.credit_purse) ? c.credit_purse[0] : c.credit_purse;
+        return {
+          "Business name": c.business_name,
+          "Contact person": c.contact_person ?? "",
+          Phone: c.phone ?? "",
+          Email: c.email ?? "",
+          GST: c.gst_number ?? "",
+          PAN: c.pan ?? "",
+          Address: c.address ?? "",
+          "Credit limit (INR)": num(c.credit_limit),
+          "Credit terms (days)": Number(c.credit_terms ?? 0),
+          "Interest rate per day (%)": num(Number(c.penalty_rate_per_day ?? 0) * 100, 3),
+          "Used credit (INR)": num(purse?.used_credit),
+          "Remaining credit (INR)": num(purse?.remaining_credit),
+          "Utilization (%)": num(purse?.utilization_percent),
+          KYC: c.kyc_verified ? "Verified" : "Pending",
+          Status: c.active ? "Active" : "Inactive",
+          "Created on": csvDate(c.created_at),
+        };
+      }),
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
         <div>
-          <h1 className="font-display text-2xl font-semibold">Customers</h1>
+          <h1 className="font-display text-xl font-semibold sm:text-2xl">Customers</h1>
           <p className="text-sm text-muted-foreground">Manage clients, KYC, and credit terms.</p>
         </div>
-        <div className="ml-auto flex gap-2">
-          <Input placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} className="w-56" />
+        <div className="ml-auto flex w-full flex-wrap gap-2 sm:w-auto">
+          <Input placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} className="w-full sm:w-56" />
+          <Button variant="outline" onClick={exportCsv}><Download className="mr-1 size-4" />CSV</Button>
           <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
             <DialogTrigger asChild>
               <Button onClick={() => setEditing(null)}><Plus className="mr-1 size-4" />New client</Button>
@@ -69,7 +99,7 @@ function Customers() {
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[720px] text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-muted-foreground">
                   <th className="px-4 py-3">Business</th>
@@ -89,13 +119,13 @@ function Customers() {
                     <td className="px-4 py-3 font-medium">{c.business_name}
                       {!c.active && <Badge variant="secondary" className="ml-2">inactive</Badge>}
                     </td>
-                    <td className="py-3">{c.contact_person ?? "—"}<div className="text-xs text-muted-foreground">{c.phone}</div></td>
+                    <td className="py-3">{c.contact_person ?? "—"}<div className="text-xs text-muted-foreground"><PhoneDisplay phone={c.phone} canReveal /></div></td>
                     <td className="py-3">{inr(c.credit_limit)}</td>
                     <td className="py-3">{c.credit_terms}d</td>
                     <td className="py-3">
                       {c.kyc_verified ? <Badge className="bg-emerald-600">Verified</Badge> : <Badge variant="outline">Pending</Badge>}
                     </td>
-                    <td className="py-3 pr-4 text-right">
+                    <td className="whitespace-nowrap py-3 pr-4 text-right">
                       <Button size="sm" variant="ghost" onClick={() => kyc.mutate({ id: c.id, verified: !c.kyc_verified })}>
                         {c.kyc_verified ? <ShieldX className="size-4" /> : <ShieldCheck className="size-4" />}
                       </Button>
@@ -150,7 +180,7 @@ function ClientForm({ editing, onDone, upsert }: { editing: any; onDone: () => v
   });
 
   return (
-    <DialogContent className="max-w-2xl">
+    <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-2xl">
       <DialogHeader><DialogTitle>{editing ? "Edit client" : "New client"}</DialogTitle></DialogHeader>
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Business name" required><Input value={v.business_name} onChange={(e) => setV({ ...v, business_name: e.target.value })} /></Field>
