@@ -12,7 +12,9 @@ import { Switch } from "@/components/ui/switch";
 import { inr } from "@/lib/format";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, ShieldCheck, ShieldX } from "lucide-react";
+import { Plus, ShieldCheck, ShieldX, Users } from "lucide-react";
+import { AssignClientDialog } from "@/components/admin/assign-client-dialog";
+
 
 export const Route = createFileRoute("/_authenticated/admin/customers")({
   head: () => ({
