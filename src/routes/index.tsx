@@ -34,7 +34,7 @@ function Landing() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border/60">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-3">
             <div className="grid size-8 place-items-center rounded-md bg-primary text-primary-foreground font-bold">K</div>
             <span className="font-display text-lg font-semibold">Kredix</span>
           </div>
