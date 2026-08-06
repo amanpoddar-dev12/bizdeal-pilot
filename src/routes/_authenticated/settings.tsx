@@ -237,7 +237,7 @@ function AdminsTab() {
                   <TableRow key={a.user_id}>
                     <TableCell>{a.name}</TableCell>
                     <TableCell>{a.email}</TableCell>
-                    <TableCell>{a.phone || <span className="text-muted-foreground">—</span>}</TableCell>
+                    <TableCell>{a.phone ? <PhoneDisplay phone={a.phone} canReveal /> : <span className="text-muted-foreground">—</span>}</TableCell>
                     <TableCell>{fmtDate(a.created_at)}</TableCell>
                   </TableRow>
                 ))}

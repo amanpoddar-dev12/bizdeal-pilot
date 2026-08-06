@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { fmtDateTime } from "@/lib/format";
+import { fmtDateTime, maskPhone } from "@/lib/format";
 import {
   ArrowUpDown,
   ChevronDown,
@@ -388,7 +388,7 @@ function Audit() {
                         <td className="whitespace-nowrap px-3 py-3 font-mono text-xs">{fmtDateTime(r.created_at)}</td>
                         <td className="py-3">
                           <div className="font-medium">{r.profiles?.name ?? "system"}</div>
-                          <div className="text-xs text-muted-foreground">{r.profiles?.email ?? r.profiles?.phone ?? "—"}</div>
+                          <div className="text-xs text-muted-foreground">{r.profiles?.email ?? maskPhone(r.profiles?.phone) ?? "—"}</div>
                         </td>
                         <td className="py-3">
                           {r.actor_role ? <Badge variant="outline" className="capitalize">{r.actor_role}</Badge> : <span className="text-xs text-muted-foreground">—</span>}
@@ -507,7 +507,7 @@ function FilterField({ label, children }: { label: string; children: React.React
 function ExpandedDetails({ row }: { row: Row }) {
   const fields: [string, React.ReactNode][] = [
     ["Timestamp", <span className="font-mono">{new Date(row.created_at).toISOString()}</span>],
-    ["User", `${row.profiles?.name ?? "—"} (${row.profiles?.email ?? row.profiles?.phone ?? "—"})`],
+    ["User", `${row.profiles?.name ?? "—"} (${row.profiles?.email ?? maskPhone(row.profiles?.phone) ?? "—"})`],
     ["Role", row.actor_role ?? "—"],
     ["Action", row.action],
     ["Module", row.module ?? "—"],
