@@ -34,7 +34,7 @@ function History() {
         </Link>
       </div>
       <div>
-        <h1 className="font-display text-2xl font-semibold">Location history</h1>
+        <h1 className="font-display text-xl font-semibold sm:text-2xl">Location history</h1>
         <p className="text-sm text-muted-foreground">Most recent 200 pings, newest first.</p>
       </div>
       <div className="space-y-2">

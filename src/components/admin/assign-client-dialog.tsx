@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { PhoneDisplay } from "@/components/phone-display";
 
 export function AssignClientDialog({
   client,
@@ -63,7 +64,7 @@ export function AssignClientDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Assign employees</DialogTitle>
           <DialogDescription>
@@ -89,7 +90,7 @@ export function AssignClientDialog({
                 <span className="text-sm">
                   <span className="font-medium">{e.profiles?.name ?? "Employee"}</span>
                   <span className="ml-2 text-xs text-muted-foreground">
-                    {e.profiles?.phone ?? e.profiles?.email ?? ""}
+                    {e.profiles?.phone ? <PhoneDisplay phone={e.profiles.phone} /> : (e.profiles?.email ?? "")}
                   </span>
                 </span>
               </label>

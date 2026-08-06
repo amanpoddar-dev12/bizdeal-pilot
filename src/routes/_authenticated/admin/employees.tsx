@@ -10,9 +10,11 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { inr } from "@/lib/format";
+import { PhoneDisplay } from "@/components/phone-display";
+import { downloadCsv, num } from "@/lib/csv";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/employees")({
   head: () => ({
@@ -35,16 +37,34 @@ function Employees() {
   const { data = [] } = useQuery({ queryKey: ["employees"], queryFn: () => listFn() });
   const [open, setOpen] = useState(false);
 
+  function exportCsv() {
+    downloadCsv(
+      "employees.csv",
+      (data as any[]).map((e) => ({
+        Name: e.profiles?.name ?? "",
+        Email: e.profiles?.email ?? "",
+        Phone: e.profiles?.phone ?? "",
+        Territory: e.territory ?? "",
+        "Max order value (INR)": num(e.max_order_value),
+        "Order limit (count)": Number(e.order_limit ?? 0),
+        "Base salary (INR)": num(e.base_salary),
+        "Commission rate (%)": num(Number(e.commission_rate ?? 0) * 100),
+        Status: e.active ? "Active" : "Inactive",
+      })),
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center">
-        <div>
-          <h1 className="font-display text-2xl font-semibold">Employees</h1>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="min-w-0">
+          <h1 className="font-display text-xl font-semibold sm:text-2xl">Employees</h1>
           <p className="text-sm text-muted-foreground">Field staff, order limits, and commission.</p>
         </div>
+        <Button variant="outline" className="ml-auto" onClick={exportCsv}><Download className="mr-1 size-4" />CSV</Button>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="ml-auto"><Plus className="mr-1 size-4" />Add employee</Button>
+            <Button><Plus className="mr-1 size-4" />Add employee</Button>
           </DialogTrigger>
           <CreateForm createFn={createFn} onDone={() => { setOpen(false); qc.invalidateQueries({ queryKey: ["employees"] }); }} />
         </Dialog>
@@ -53,7 +73,7 @@ function Employees() {
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[720px] text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-muted-foreground">
                   <th className="px-4 py-3">Name</th>
@@ -87,13 +107,16 @@ function EmployeeRow({ e, updateFn, onSaved }: any) {
   });
   return (
     <tr className="border-b border-border/60">
-      <td className="px-4 py-3 font-medium">{e.profiles?.name ?? "—"}<div className="text-xs text-muted-foreground">{e.profiles?.email}</div></td>
+      <td className="px-4 py-3 font-medium">{e.profiles?.name ?? "—"}
+        <div className="text-xs text-muted-foreground">{e.profiles?.email}</div>
+        <div className="text-xs text-muted-foreground"><PhoneDisplay phone={e.profiles?.phone} canReveal /></div>
+      </td>
       <td className="py-3">{e.territory ?? "—"}</td>
       <td className="py-3">{inr(e.max_order_value)}</td>
       <td className="py-3">{e.order_limit}</td>
       <td className="py-3">{(Number(e.commission_rate) * 100).toFixed(2)}%</td>
       <td className="py-3">{e.active ? <Badge>Active</Badge> : <Badge variant="secondary">Inactive</Badge>}</td>
-      <td className="py-3 pr-4 text-right">
+      <td className="whitespace-nowrap py-3 pr-4 text-right">
         <Button size="sm" variant="ghost" onClick={() => mut.mutate({ active: !e.active })}>{e.active ? "Deactivate" : "Activate"}</Button>
       </td>
     </tr>
@@ -111,13 +134,13 @@ function CreateForm({ createFn, onDone }: any) {
     onError: (e: any) => toast.error(e.message),
   });
   return (
-    <DialogContent>
+    <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-lg">
       <DialogHeader><DialogTitle>New employee</DialogTitle></DialogHeader>
       <div className="grid gap-3 md:grid-cols-2">
         <F label="Name"><Input value={v.name} onChange={(e) => setV({ ...v, name: e.target.value })} /></F>
         <F label="Email"><Input type="email" value={v.email} onChange={(e) => setV({ ...v, email: e.target.value })} /></F>
         <F label="Password"><Input type="password" value={v.password} onChange={(e) => setV({ ...v, password: e.target.value })} /></F>
-        <F label="Phone"><Input value={v.phone} onChange={(e) => setV({ ...v, phone: e.target.value })} /></F>
+        <F label="Phone"><Input placeholder="+919876543210" value={v.phone} onChange={(e) => setV({ ...v, phone: e.target.value })} /></F>
         <F label="Territory"><Input value={v.territory} onChange={(e) => setV({ ...v, territory: e.target.value })} /></F>
         <F label="Max order value (₹)"><Input type="number" value={v.max_order_value} onChange={(e) => setV({ ...v, max_order_value: e.target.value as any })} /></F>
         <F label="Order limit (count)"><Input type="number" value={v.order_limit} onChange={(e) => setV({ ...v, order_limit: e.target.value as any })} /></F>

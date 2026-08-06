@@ -89,7 +89,7 @@ export function OrderReviewPanel({
         ) : (
           <div className="space-y-6 pb-6">
             <SheetHeader className="space-y-2 text-left">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-3">
                 <SheetTitle className="font-display">{order.order_number}</SheetTitle>
                 <OrderStatusBadge status={order.status} />
               </div>

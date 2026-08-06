@@ -65,17 +65,17 @@ function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <div>
-          <h1 className="font-display text-2xl font-semibold">Orders</h1>
+          <h1 className="font-display text-xl font-semibold sm:text-2xl">Orders</h1>
           <p className="text-sm text-muted-foreground">
             {scope === "client" ? "Orders awaiting your review and past approvals." : "All orders across the business."}
           </p>
         </div>
-        <Input placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} className="ml-auto w-56" />
+        <Input placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} className="w-full sm:ml-auto sm:w-56" />
       </div>
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[680px] text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-muted-foreground">
                   <th className="px-4 py-3">Order</th>

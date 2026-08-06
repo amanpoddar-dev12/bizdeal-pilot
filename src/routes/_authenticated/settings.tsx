@@ -1,3 +1,4 @@
+import { PhoneDisplay } from "@/components/phone-display";
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -44,7 +45,7 @@ function SettingsPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-6">
       <div>
-        <h1 className="font-display text-2xl font-semibold">{t("settings.title")}</h1>
+        <h1 className="font-display text-xl font-semibold sm:text-2xl">{t("settings.title")}</h1>
         <p className="text-sm text-muted-foreground">{t("settings.subtitle")}</p>
       </div>
       <Tabs defaultValue="appearance">
@@ -237,7 +238,7 @@ function AdminsTab() {
                   <TableRow key={a.user_id}>
                     <TableCell>{a.name}</TableCell>
                     <TableCell>{a.email}</TableCell>
-                    <TableCell>{a.phone || <span className="text-muted-foreground">—</span>}</TableCell>
+                    <TableCell>{a.phone ? <PhoneDisplay phone={a.phone} canReveal /> : <span className="text-muted-foreground">—</span>}</TableCell>
                     <TableCell>{fmtDate(a.created_at)}</TableCell>
                   </TableRow>
                 ))}

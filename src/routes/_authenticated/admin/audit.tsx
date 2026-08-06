@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { fmtDateTime } from "@/lib/format";
+import { fmtDateTime, maskPhone } from "@/lib/format";
 import {
   ArrowUpDown,
   ChevronDown,
@@ -210,7 +210,7 @@ function Audit() {
     <div className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-semibold">Audit log</h1>
+          <h1 className="font-display text-xl font-semibold sm:text-2xl">Audit log</h1>
           <p className="text-sm text-muted-foreground">
             Immutable record of every system activity — for compliance, GST filing, and reconciliation.
           </p>
@@ -340,7 +340,7 @@ function Audit() {
         <CardContent className="p-0">
           {/* Desktop table */}
           <div className="hidden overflow-x-auto md:block">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[680px] text-sm">
               <thead className="bg-muted/40">
                 <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
                   <th className="w-8 px-2 py-3"></th>
@@ -388,7 +388,7 @@ function Audit() {
                         <td className="whitespace-nowrap px-3 py-3 font-mono text-xs">{fmtDateTime(r.created_at)}</td>
                         <td className="py-3">
                           <div className="font-medium">{r.profiles?.name ?? "system"}</div>
-                          <div className="text-xs text-muted-foreground">{r.profiles?.email ?? r.profiles?.phone ?? "—"}</div>
+                          <div className="text-xs text-muted-foreground">{r.profiles?.email ?? maskPhone(r.profiles?.phone) ?? "—"}</div>
                         </td>
                         <td className="py-3">
                           {r.actor_role ? <Badge variant="outline" className="capitalize">{r.actor_role}</Badge> : <span className="text-xs text-muted-foreground">—</span>}
@@ -507,7 +507,7 @@ function FilterField({ label, children }: { label: string; children: React.React
 function ExpandedDetails({ row }: { row: Row }) {
   const fields: [string, React.ReactNode][] = [
     ["Timestamp", <span className="font-mono">{new Date(row.created_at).toISOString()}</span>],
-    ["User", `${row.profiles?.name ?? "—"} (${row.profiles?.email ?? row.profiles?.phone ?? "—"})`],
+    ["User", `${row.profiles?.name ?? "—"} (${row.profiles?.email ?? maskPhone(row.profiles?.phone) ?? "—"})`],
     ["Role", row.actor_role ?? "—"],
     ["Action", row.action],
     ["Module", row.module ?? "—"],

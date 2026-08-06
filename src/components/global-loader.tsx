@@ -27,10 +27,14 @@ export function GlobalLoader() {
   const routerPending = useRouterState({
     select: (s) => s.status === "pending" || s.isLoading,
   });
-  const fetching = useIsFetching();
+  // Background refetches must stay invisible: only count queries that have
+  // nothing to show yet (first load) plus user-initiated mutations.
+  const coldFetching = useIsFetching({
+    predicate: (q) => q.state.status === "pending" && q.state.data === undefined,
+  });
   const mutating = useIsMutating();
 
-  const active = routerPending || fetching > 0 || mutating > 0;
+  const active = routerPending || coldFetching > 0 || mutating > 0;
   const [showBar, setShowBar] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
 
@@ -41,7 +45,7 @@ export function GlobalLoader() {
       return;
     }
     const barId = setTimeout(() => setShowBar(true), 150);
-    const overlayId = setTimeout(() => setShowOverlay(true), 800);
+    const overlayId = setTimeout(() => setShowOverlay(true), 1200);
     return () => {
       clearTimeout(barId);
       clearTimeout(overlayId);

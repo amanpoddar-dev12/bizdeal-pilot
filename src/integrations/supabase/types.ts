@@ -812,7 +812,6 @@ export type Database = {
           active: boolean
           code: string
           created_at: string
-          description: string | null
           id: string
           name: string
           unit: string | null
@@ -823,7 +822,6 @@ export type Database = {
           active?: boolean
           code: string
           created_at?: string
-          description?: string | null
           id?: string
           name: string
           unit?: string | null
@@ -834,7 +832,6 @@ export type Database = {
           active?: boolean
           code?: string
           created_at?: string
-          description?: string | null
           id?: string
           name?: string
           unit?: string | null

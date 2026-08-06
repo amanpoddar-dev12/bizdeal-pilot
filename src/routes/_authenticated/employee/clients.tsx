@@ -16,9 +16,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { inr } from "@/lib/format";
+import { PhoneDisplay } from "@/components/phone-display";
+import { downloadCsv, num } from "@/lib/csv";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/employee/clients")({
   head: () => ({
@@ -89,25 +91,50 @@ function EmpClients() {
       (c.phone ?? "").includes(q),
   );
 
+  function exportCsv() {
+    downloadCsv(
+      "clients.csv",
+      filtered.map((c: any) => {
+        const purse = Array.isArray(c.credit_purse) ? c.credit_purse[0] : c.credit_purse;
+        return {
+          "Business name": c.business_name,
+          "Contact person": c.contact_person ?? "",
+          Phone: c.phone ?? "",
+          Email: c.email ?? "",
+          GST: c.gst_number ?? "",
+          "Credit limit (INR)": num(c.credit_limit),
+          "Credit terms (days)": Number(c.credit_terms ?? 0),
+          "Interest rate per day (%)": num(Number(c.penalty_rate_per_day ?? 0) * 100, 3),
+          "Used credit (INR)": num(purse?.used_credit),
+          "Remaining credit (INR)": num(purse?.remaining_credit),
+          KYC: c.kyc_verified ? "Verified" : "Pending",
+        };
+      }),
+    );
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <div>
-          <h1 className="font-display text-2xl font-semibold">My clients</h1>
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="min-w-0">
+          <h1 className="font-display text-xl font-semibold sm:text-2xl">My clients</h1>
         </div>
         <Input
           placeholder="Search…"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          className="ml-auto w-56"
+          className="w-full sm:ml-auto sm:w-56"
         />
+        <Button variant="outline" onClick={exportCsv}>
+          <Download className="mr-1 size-4" /> CSV
+        </Button>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button variant="outline">
               <Plus className="mr-1 size-4" /> New client
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-lg">
             <DialogHeader>
               <DialogTitle>Add a new client</DialogTitle>
             </DialogHeader>
@@ -131,7 +158,7 @@ function EmpClients() {
                   onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
                 />
               </Field>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <Field label="Email">
                   <Input
                     type="email"
@@ -183,8 +210,10 @@ function EmpClients() {
                   <Badge variant="outline">KYC pending</Badge>
                 )}
               </div>
-              <div className="text-xs text-muted-foreground">
-                {c.contact_person} · {c.phone}
+              <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+                <span className="truncate">{c.contact_person ?? "—"}</span>
+                <span>·</span>
+                <PhoneDisplay phone={c.phone} />
               </div>
               <div className="text-xs">
                 Credit limit: <span className="font-medium">{inr(c.credit_limit)}</span> · Terms:{" "}

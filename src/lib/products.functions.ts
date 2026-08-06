@@ -16,7 +16,6 @@ export const listProducts = createServerFn({ method: "GET" })
 const productSchema = z.object({
   code: z.string().min(1).max(64),
   name: z.string().min(1).max(200),
-  description: z.string().optional().nullable(),
   unit: z.string().optional().nullable(),
   unit_price: z.number().nonnegative(),
   active: z.boolean().optional(),

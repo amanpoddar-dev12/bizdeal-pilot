@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import Papa from "papaparse";
+import { downloadCsv, num, csvDate } from "@/lib/csv";
 import { Download, FileText } from "lucide-react";
 
 const stColor: Record<string, string> = {
@@ -39,15 +39,31 @@ function InvoicesTable({ scope }: { scope: "admin" | "client" }) {
   });
 
   function exportCsv() {
-    const rows = data.map((i: any) => ({
-      invoice: i.invoice_number, client: i.clients?.business_name, amount: i.amount,
-      paid: i.payment_amount, due: i.due_date, status: i.status,
-    }));
-    const csv = Papa.unparse(rows);
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "invoices.csv"; a.click();
-    URL.revokeObjectURL(url);
+    downloadCsv(
+      "invoices.csv",
+      data.map((i: any) => {
+        const amount = Number(i.amount ?? 0);
+        const paid = Number(i.payment_amount ?? 0);
+        const balance = amount - paid;
+        const days = Math.max(0, Math.floor((Date.now() - new Date(i.due_date).getTime()) / 864e5));
+        const rate = Number(i.clients?.penalty_rate_per_day ?? 0);
+        const interest = calcPenalty(balance, rate, days);
+        return {
+          "Invoice number": i.invoice_number,
+          Client: i.clients?.business_name ?? "",
+          "Invoice date": csvDate(i.invoice_date),
+          "Due date": csvDate(i.due_date),
+          "Amount (INR)": num(amount),
+          "Paid (INR)": num(paid),
+          "Balance (INR)": num(balance),
+          "Days overdue": days,
+          "Interest rate per day (%)": num(rate * 100, 3),
+          "Interest (INR)": num(interest),
+          "Total payable (INR)": num(balance + interest),
+          Status: i.status,
+        };
+      }),
+    );
   }
 
   function exportPdf(inv: any) {
@@ -72,9 +88,9 @@ function InvoicesTable({ scope }: { scope: "admin" | "client" }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center">
-        <div>
-          <h1 className="font-display text-2xl font-semibold">Invoices</h1>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="min-w-0">
+          <h1 className="font-display text-xl font-semibold sm:text-2xl">Invoices</h1>
           <p className="text-sm text-muted-foreground">Track invoices, approvals, and payments.</p>
         </div>
         <div className="ml-auto"><Button size="sm" variant="outline" onClick={exportCsv}><Download className="mr-1 size-4" />Export CSV</Button></div>
@@ -82,7 +98,7 @@ function InvoicesTable({ scope }: { scope: "admin" | "client" }) {
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[860px] text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-muted-foreground">
                   <th className="px-4 py-3">Invoice</th>
@@ -91,7 +107,7 @@ function InvoicesTable({ scope }: { scope: "admin" | "client" }) {
                   <th className="py-3">Paid</th>
                   <th className="py-3">Balance</th>
                   <th className="py-3">Due</th>
-                  <th className="py-3">Penalty</th>
+                  <th className="py-3">Interest</th>
                   <th className="py-3">Status</th>
                   <th className="py-3 pr-4 text-right">Actions</th>
                 </tr>
@@ -152,7 +168,7 @@ function PayForm({ inv, payFn, onDone }: any) {
     onError: (e: any) => toast.error(e.message),
   });
   return (
-    <DialogContent>
+    <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-lg">
       <DialogHeader><DialogTitle>Record payment · {inv.invoice_number}</DialogTitle></DialogHeader>
       <div className="space-y-3">
         <div className="text-sm text-muted-foreground">Balance {inr(bal)}</div>

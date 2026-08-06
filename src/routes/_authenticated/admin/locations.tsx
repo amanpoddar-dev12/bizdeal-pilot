@@ -33,7 +33,7 @@ function Locations() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="font-display text-2xl font-semibold">Employee locations</h1>
+        <h1 className="font-display text-xl font-semibold sm:text-2xl">Employee locations</h1>
         <p className="text-sm text-muted-foreground">Latest reported location per employee. Updates automatically every 5 minutes.</p>
       </div>
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">

@@ -26,7 +26,7 @@ function Credit() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="font-display text-2xl font-semibold">Credit purse</h1>
+        <h1 className="font-display text-xl font-semibold sm:text-2xl">Credit purse</h1>
         <p className="text-sm text-muted-foreground">Utilization per client, refreshed automatically.</p>
       </div>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

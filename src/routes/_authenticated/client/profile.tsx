@@ -33,7 +33,7 @@ function Profile() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
-      <div><h1 className="font-display text-2xl font-semibold">Profile & KYC</h1></div>
+      <div><h1 className="font-display text-xl font-semibold sm:text-2xl">Profile & KYC</h1></div>
       <Card>
         <CardHeader className="flex flex-row items-center"><CardTitle>{c.business_name}</CardTitle>
           <div className="ml-auto">{c.kyc_verified ? <Badge className="bg-emerald-600">KYC verified</Badge> : <Badge variant="outline">KYC pending</Badge>}</div>
