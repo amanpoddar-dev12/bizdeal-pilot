@@ -9,6 +9,11 @@ import { inr, fmtDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { OrderReviewPanel } from "@/components/orders/order-review-panel";
+import { OrderStatusBadge } from "@/components/orders/order-status-badge";
+import { playNotificationChime } from "@/lib/notify-sound";
+import { useEffect, useRef, useState } from "react";
+import { BellRing, ChevronRight } from "lucide-react";
 
 export function ClientOverview() {
   useRealtimeOrders();
@@ -19,10 +24,27 @@ export function ClientOverview() {
   const invoices = useQuery({ queryKey: ["invoices"], queryFn: () => invoicesFn() });
   const orders = useQuery({ queryKey: ["orders"], queryFn: () => ordersFn() });
 
+  const [reviewId, setReviewId] = useState<string | null>(null);
+
   const invs = ledger.data?.invoices ?? [];
   const outstanding = invs.reduce((s: number, i: any) => s + (Number(i.amount) - Number(i.payment_amount)), 0);
   const openInvs = (invoices.data ?? []).filter((i: any) => i.status !== "paid" && i.status !== "declined");
   const pendingOrders = (orders.data ?? []).filter((o: any) => o.status === "pending_client" || o.status === "pending" || o.status === "change_requested");
+
+  // Orders explicitly awaiting this client's approval — surfaced as alert cards.
+  const awaiting = (orders.data ?? []).filter((o: any) => o.status === "pending_client");
+
+  // Chime once per newly arriving approval request (skip the first load).
+  const seen = useRef<Set<string> | null>(null);
+  useEffect(() => {
+    if (!orders.data) return;
+    const ids = new Set<string>(awaiting.map((o: any) => o.id));
+    if (seen.current === null) { seen.current = ids; return; }
+    const isNew = [...ids].some((id) => !seen.current!.has(id));
+    seen.current = ids;
+    if (isNew) playNotificationChime();
+  }, [orders.data, awaiting]);
+
 
   return (
     <div className="space-y-6">
@@ -30,6 +52,35 @@ export function ClientOverview() {
         <h1 className="font-display text-2xl font-semibold">Your account</h1>
         <p className="text-sm text-muted-foreground">Orders, invoices, and running balance.</p>
       </div>
+
+      {awaiting.length > 0 && (
+        <div className="space-y-2">
+          {awaiting.map((o: any) => (
+            <button
+              key={o.id}
+              type="button"
+              onClick={() => setReviewId(o.id)}
+              className="flex w-full items-center gap-3 rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 text-left transition-colors animate-in fade-in slide-in-from-top-1 hover:bg-primary/10"
+            >
+              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary/15 text-primary">
+                <BellRing className="size-4" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-2 text-sm font-medium">
+                  <span className="truncate">Order {o.order_number}</span>
+                  <OrderStatusBadge status={o.status} />
+                </span>
+                <span className="block truncate text-xs text-muted-foreground">
+                  {o.clients?.business_name ?? "Your account"} · {inr(o.total_amount)} · {fmtDate(o.created_at)}
+                </span>
+              </span>
+              <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+            </button>
+          ))}
+        </div>
+      )}
+
+
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
@@ -59,7 +110,12 @@ export function ClientOverview() {
                   <div className="font-medium">Order {o.order_number}</div>
                   <div className="text-xs text-muted-foreground">{fmtDate(o.created_at)} · {inr(o.total_amount)}</div>
                 </div>
-                <Button asChild size="sm" variant="outline"><Link to="/client/orders">Review</Link></Button>
+                {o.status === "pending_client" ? (
+                  <Button size="sm" variant="outline" onClick={() => setReviewId(o.id)}>Review</Button>
+                ) : (
+                  <Button asChild size="sm" variant="outline"><Link to="/client/orders">Review</Link></Button>
+                )}
+
               </li>
             ))}
             {openInvs.filter((i: any) => i.status === "sent").map((i: any) => (
@@ -74,6 +130,14 @@ export function ClientOverview() {
           </ul>
         </CardContent>
       </Card>
+
+      <OrderReviewPanel
+        orderId={reviewId}
+        open={!!reviewId}
+        onOpenChange={(v) => !v && setReviewId(null)}
+        canReview
+      />
+
     </div>
   );
 }
