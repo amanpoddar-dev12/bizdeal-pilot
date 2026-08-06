@@ -70,7 +70,7 @@ function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
             {scope === "client" ? "Orders awaiting your review and past approvals." : "All orders across the business."}
           </p>
         </div>
-        <Input placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} className="ml-auto w-56" />
+        <Input placeholder="Search…" value={q} onChange={(e) => setQ(e.target.value)} className="w-full sm:ml-auto sm:w-56" />
       </div>
       <Card>
         <CardContent className="p-0">
