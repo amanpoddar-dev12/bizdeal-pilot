@@ -110,7 +110,12 @@ export function ClientOverview() {
                   <div className="font-medium">Order {o.order_number}</div>
                   <div className="text-xs text-muted-foreground">{fmtDate(o.created_at)} · {inr(o.total_amount)}</div>
                 </div>
-                <Button asChild size="sm" variant="outline"><Link to="/client/orders">Review</Link></Button>
+                {o.status === "pending_client" ? (
+                  <Button size="sm" variant="outline" onClick={() => setReviewId(o.id)}>Review</Button>
+                ) : (
+                  <Button asChild size="sm" variant="outline"><Link to="/client/orders">Review</Link></Button>
+                )}
+
               </li>
             ))}
             {openInvs.filter((i: any) => i.status === "sent").map((i: any) => (
