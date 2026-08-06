@@ -15,11 +15,16 @@ export const fmtDateTime = (d: string | Date | null | undefined) => {
   return dt.toLocaleString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" });
 };
 
+/** 9876543210 → 987*****10 (keeps country code prefix visible). */
 export const maskPhone = (phone: string | null | undefined) => {
   if (!phone) return "—";
   const clean = phone.replace(/\s/g, "");
-  if (clean.length < 6) return clean;
-  return clean.slice(0, 3) + "••••••" + clean.slice(-2);
+  const plus = clean.startsWith("+") ? "+" : "";
+  const digits = clean.replace(/\D/g, "");
+  if (digits.length < 6) return clean;
+  const head = digits.slice(0, 3);
+  const tail = digits.slice(-2);
+  return `${plus}${head}${"*".repeat(Math.max(3, digits.length - 5))}${tail}`;
 };
 
 export const daysBetween = (a: Date | string, b: Date | string) => {
