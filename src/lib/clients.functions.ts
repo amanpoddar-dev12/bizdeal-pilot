@@ -106,6 +106,18 @@ export const setKycVerified = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Admin-only: every client→employee assignment, for the assignment UI. */
+export const listClientAssignments = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    if (!(await isAdmin(context))) throw new Error("Forbidden");
+    const { data, error } = await context.supabase
+      .from("client_employees")
+      .select("client_id, employee_id, assigned_at");
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
 export const assignClientToEmployee = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { client_id: string; employee_id: string }) =>
@@ -113,7 +125,12 @@ export const assignClientToEmployee = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     if (!(await isAdmin(context))) throw new Error("Forbidden");
-    await context.supabase.from("client_employees").insert(data).select();
+    const { error } = await context.supabase.from("client_employees").upsert(data).select();
+    if (error) throw new Error(error.message);
+    await context.supabase.from("audit_logs").insert({
+      actor_id: context.userId, action: "client_assigned", module: "clients", status: "success",
+      target_type: "client", target_id: data.client_id, new_value: data,
+    });
     return { ok: true };
   });
 
@@ -124,6 +141,12 @@ export const unassignClientFromEmployee = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     if (!(await isAdmin(context))) throw new Error("Forbidden");
-    await context.supabase.from("client_employees").delete().match(data);
+    const { error } = await context.supabase.from("client_employees").delete().match(data);
+    if (error) throw new Error(error.message);
+    await context.supabase.from("audit_logs").insert({
+      actor_id: context.userId, action: "client_unassigned", module: "clients", status: "success",
+      target_type: "client", target_id: data.client_id, old_value: data,
+    });
     return { ok: true };
   });
+

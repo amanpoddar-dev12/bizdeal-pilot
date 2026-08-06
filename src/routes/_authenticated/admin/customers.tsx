@@ -12,7 +12,9 @@ import { Switch } from "@/components/ui/switch";
 import { inr } from "@/lib/format";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, ShieldCheck, ShieldX } from "lucide-react";
+import { Plus, ShieldCheck, ShieldX, Users } from "lucide-react";
+import { AssignClientDialog } from "@/components/admin/assign-client-dialog";
+
 
 export const Route = createFileRoute("/_authenticated/admin/customers")({
   head: () => ({
@@ -36,6 +38,8 @@ function Customers() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [q, setQ] = useState("");
+  const [assigning, setAssigning] = useState<any>(null);
+
 
   const kyc = useMutation({
     mutationFn: (v: { id: string; verified: boolean }) => kycFn({ data: v }),
@@ -95,6 +99,9 @@ function Customers() {
                       <Button size="sm" variant="ghost" onClick={() => kyc.mutate({ id: c.id, verified: !c.kyc_verified })}>
                         {c.kyc_verified ? <ShieldX className="size-4" /> : <ShieldCheck className="size-4" />}
                       </Button>
+                      <Button size="sm" variant="ghost" title="Assign employees" onClick={() => setAssigning(c)}>
+                        <Users className="size-4" />
+                      </Button>
                       <Button size="sm" variant="ghost" onClick={() => { setEditing(c); setOpen(true); }}>Edit</Button>
                     </td>
                   </tr>
@@ -104,6 +111,8 @@ function Customers() {
           </div>
         </CardContent>
       </Card>
+      <AssignClientDialog client={assigning} open={!!assigning} onOpenChange={(o) => !o && setAssigning(null)} />
+
     </div>
   );
 }
