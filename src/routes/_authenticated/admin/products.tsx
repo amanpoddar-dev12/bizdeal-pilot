@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { inr } from "@/lib/format";
@@ -31,13 +30,12 @@ type ProductForm = {
   id?: string;
   code: string;
   name: string;
-  description: string;
   unit: string;
   unit_price: string;
   active: boolean;
 };
 
-const empty: ProductForm = { code: "", name: "", description: "", unit: "", unit_price: "0", active: true };
+const empty: ProductForm = { code: "", name: "", unit: "", unit_price: "0", active: true };
 
 function ProductsPage() {
   const listFn = useServerFn(listProducts);
@@ -54,7 +52,6 @@ function ProductsPage() {
       const payload = {
         code: form.code.trim(),
         name: form.name.trim(),
-        description: form.description || null,
         unit: form.unit || null,
         unit_price: Number(form.unit_price) || 0,
         active: form.active,
@@ -80,7 +77,7 @@ function ProductsPage() {
   function openEdit(p: any) {
     setForm({
       id: p.id, code: p.code, name: p.name,
-      description: p.description ?? "", unit: p.unit ?? "",
+      unit: p.unit ?? "",
       unit_price: String(p.unit_price ?? 0), active: !!p.active,
     });
     setOpen(true);
@@ -88,16 +85,16 @@ function ProductsPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-2xl font-semibold">Products</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="font-display text-xl font-semibold sm:text-2xl">Products</h1>
           <p className="text-sm text-muted-foreground">Catalog used by employees when punching orders.</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button onClick={openNew}><Plus className="mr-1 size-4" />Add product</Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-lg">
             <DialogHeader><DialogTitle>{form.id ? "Edit product" : "New product"}</DialogTitle></DialogHeader>
             <div className="grid gap-3">
               <div className="grid grid-cols-2 gap-3">
@@ -108,8 +105,6 @@ function ProductsPage() {
               </div>
               <div className="space-y-1"><Label>Name</Label>
                 <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-              <div className="space-y-1"><Label>Description</Label>
-                <Textarea rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1"><Label>Unit price (₹)</Label>
                   <Input type="number" min="0" step="0.01" value={form.unit_price} onChange={(e) => setForm({ ...form, unit_price: e.target.value })} /></div>
@@ -139,18 +134,18 @@ function ProductsPage() {
           {products.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">No products yet — add your first item.</p>}
           <div className="divide-y divide-border">
             {products.map((p: any) => (
-              <div key={p.id} className="flex items-center justify-between gap-3 py-3 text-sm">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{p.name}</span>
+              <div key={p.id} className="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
+                <div className="min-w-0 flex-1 basis-full sm:basis-auto">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="truncate font-medium">{p.name}</span>
                     <Badge variant="outline" className="font-mono text-[10px]">{p.code}</Badge>
                     {!p.active && <Badge variant="secondary" className="text-[10px]">Inactive</Badge>}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {p.unit ? `${p.unit} · ` : ""}{p.description || "—"}
+                    {p.unit ? `${p.unit} · ` : ""}{p.code}
                   </div>
                 </div>
-                <div className="w-24 text-right font-medium">{inr(p.unit_price)}</div>
+                <div className="ml-auto w-24 shrink-0 text-right font-medium">{inr(p.unit_price)}</div>
                 <Button size="icon" variant="ghost" onClick={() => openEdit(p)}><Pencil className="size-4" /></Button>
                 <Button size="icon" variant="ghost" onClick={() => { if (confirm(`Delete ${p.name}?`)) delMut.mutate(p.id); }}>
                   <Trash2 className="size-4" />
