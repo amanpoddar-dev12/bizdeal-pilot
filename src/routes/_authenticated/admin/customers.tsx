@@ -38,6 +38,8 @@ function Customers() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [q, setQ] = useState("");
+  const [assigning, setAssigning] = useState<any>(null);
+
 
   const kyc = useMutation({
     mutationFn: (v: { id: string; verified: boolean }) => kycFn({ data: v }),
