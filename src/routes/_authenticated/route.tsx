@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, redirect, useRouter, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, Navigate, Outlet, redirect, useRouter, useRouterState } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -25,17 +25,25 @@ export const Route = createFileRoute("/_authenticated")({
     if (error || !data.user) throw redirect({ to: "/auth" });
     return { user: data.user };
   },
-  loader: ({ context }) =>
-    context.queryClient.ensureQueryData({ queryKey: ["me"], queryFn: () => getMe() }),
+  loader: async ({ context }) => {
+    // The session can disappear between beforeLoad and here (e.g. sign-out
+    // re-runs the route). Without a token getMe() 401s and blanks the app.
+    const { data } = await supabase.auth.getSession();
+    if (!data.session) throw redirect({ to: "/auth" });
+    return context.queryClient.ensureQueryData({ queryKey: ["me"], queryFn: () => getMe() });
+  },
   component: AuthedLayout,
-  errorComponent: ({ error }) => (
-    <div className="grid min-h-screen place-items-center p-4">
-      <div className="max-w-md text-center">
-        <h2 className="text-lg font-semibold">Something went wrong</h2>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+  errorComponent: ({ error }) =>
+    /unauthorized/i.test(error.message) ? (
+      <Navigate to="/auth" replace />
+    ) : (
+      <div className="grid min-h-screen place-items-center p-4">
+        <div className="max-w-md text-center">
+          <h2 className="text-lg font-semibold">Something went wrong</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+        </div>
       </div>
-    </div>
-  ),
+    ),
 });
 
 function AuthedLayout() {
