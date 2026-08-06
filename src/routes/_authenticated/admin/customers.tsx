@@ -99,6 +99,9 @@ function Customers() {
                       <Button size="sm" variant="ghost" onClick={() => kyc.mutate({ id: c.id, verified: !c.kyc_verified })}>
                         {c.kyc_verified ? <ShieldX className="size-4" /> : <ShieldCheck className="size-4" />}
                       </Button>
+                      <Button size="sm" variant="ghost" title="Assign employees" onClick={() => setAssigning(c)}>
+                        <Users className="size-4" />
+                      </Button>
                       <Button size="sm" variant="ghost" onClick={() => { setEditing(c); setOpen(true); }}>Edit</Button>
                     </td>
                   </tr>
@@ -108,6 +111,8 @@ function Customers() {
           </div>
         </CardContent>
       </Card>
+      <AssignClientDialog client={assigning} open={!!assigning} onOpenChange={(o) => !o && setAssigning(null)} />
+
     </div>
   );
 }
