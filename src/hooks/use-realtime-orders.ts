@@ -17,7 +17,7 @@ export function useRealtimeOrders(orderId?: string) {
     };
 
     const channel = supabase
-      .channel(`orders-live${orderId ? `-${orderId}` : ""}`)
+      .channel(`orders-live-${orderId ?? "all"}-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, refresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "order_events" }, refresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "order_approvals" }, refresh)
