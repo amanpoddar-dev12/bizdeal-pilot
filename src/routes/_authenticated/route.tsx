@@ -33,14 +33,17 @@ export const Route = createFileRoute("/_authenticated")({
     return context.queryClient.ensureQueryData({ queryKey: ["me"], queryFn: () => getMe() });
   },
   component: AuthedLayout,
-  errorComponent: ({ error }) => (
-    <div className="grid min-h-screen place-items-center p-4">
-      <div className="max-w-md text-center">
-        <h2 className="text-lg font-semibold">Something went wrong</h2>
-        <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+  errorComponent: ({ error }) =>
+    /unauthorized/i.test(error.message) ? (
+      <Navigate to="/auth" replace />
+    ) : (
+      <div className="grid min-h-screen place-items-center p-4">
+        <div className="max-w-md text-center">
+          <h2 className="text-lg font-semibold">Something went wrong</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{error.message}</p>
+        </div>
       </div>
-    </div>
-  ),
+    ),
 });
 
 function AuthedLayout() {
