@@ -90,7 +90,7 @@ export function AssignClientDialog({
                 <span className="text-sm">
                   <span className="font-medium">{e.profiles?.name ?? "Employee"}</span>
                   <span className="ml-2 text-xs text-muted-foreground">
-                    {e.profiles?.phone ?? e.profiles?.email ?? ""}
+                    {e.profiles?.phone ? <PhoneDisplay phone={e.profiles.phone} /> : (e.profiles?.email ?? "")}
                   </span>
                 </span>
               </label>
