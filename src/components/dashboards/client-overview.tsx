@@ -130,6 +130,14 @@ export function ClientOverview() {
           </ul>
         </CardContent>
       </Card>
+
+      <OrderReviewPanel
+        orderId={reviewId}
+        open={!!reviewId}
+        onOpenChange={(v) => !v && setReviewId(null)}
+        canReview
+      />
+
     </div>
   );
 }
