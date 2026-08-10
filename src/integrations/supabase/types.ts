@@ -1070,6 +1070,12 @@ export type Database = {
         | "pending_client"
         | "client_approved"
         | "client_rejected"
+        | "payment_pending"
+        | "payment_submitted"
+        | "payment_verified"
+        | "out_for_delivery"
+        | "completed"
+      payment_verification_status: "submitted" | "verified" | "rejected"
       task_status: "todo" | "in_progress" | "completed"
     }
     CompositeTypes: {
@@ -1220,7 +1226,13 @@ export const Constants = {
         "pending_client",
         "client_approved",
         "client_rejected",
+        "payment_pending",
+        "payment_submitted",
+        "payment_verified",
+        "out_for_delivery",
+        "completed",
       ],
+      payment_verification_status: ["submitted", "verified", "rejected"],
       task_status: ["todo", "in_progress", "completed"],
     },
   },
