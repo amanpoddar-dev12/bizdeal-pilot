@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { getActivityHistory, type ActivityItem } from "@/lib/task-center.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { OrderReviewPanel } from "@/components/orders/order-review-panel";
 import { useRealtimeOrders } from "@/hooks/use-realtime-orders";
 import { inr, fmtDateTime } from "@/lib/format";
-import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/history")({
   head: () => ({
@@ -86,12 +85,8 @@ function HistoryPage() {
                     View order
                   </Button>
                 ) : i.route ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => toast.info("Open the related section from the sidebar to review this record.")}
-                  >
-                    Reference: {i.entity}
+                  <Button asChild size="sm" variant="outline">
+                    <Link to={i.route as any}>Open {i.entity}</Link>
                   </Button>
                 ) : null}
               </li>

@@ -10,7 +10,7 @@ import { AssignClientDialog } from "@/components/admin/assign-client-dialog";
 import { useRealtimeOrders } from "@/hooks/use-realtime-orders";
 import { inr, fmtDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, ChevronRight } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 const PRIORITY_STYLE: Record<string, { dot: string; ring: string; label: string }> = {
   action_required: { dot: "bg-red-500", ring: "border-red-500/40 bg-red-500/5", label: "Action required" },
@@ -67,7 +67,7 @@ export function PendingActions({ initial = 4 }: { initial?: number }) {
               </Button>
             ) : t.route ? (
               <Button asChild size="sm" className="w-full sm:w-auto">
-                <Link to={t.route}>{t.actionLabel}</Link>
+                <Link to={t.route as any}>{t.actionLabel}</Link>
               </Button>
             ) : null;
 
@@ -113,13 +113,5 @@ export function PendingActions({ initial = 4 }: { initial?: number }) {
         onOpenChange={(o) => !o && setAssigning(null)}
       />
     </>
-  );
-}
-
-export function PendingActionsLinkRow() {
-  return (
-    <Link to="/history" className="flex items-center gap-1 text-xs text-primary hover:underline">
-      View history <ChevronRight className="size-3" />
-    </Link>
   );
 }
