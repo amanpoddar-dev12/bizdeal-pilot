@@ -15,6 +15,8 @@ export function useRealtimeOrders(orderId?: string) {
       qc.invalidateQueries({ queryKey: ["admin-reports"] });
       qc.invalidateQueries({ queryKey: ["payments"] });
       qc.invalidateQueries({ queryKey: ["notifications"] });
+      qc.invalidateQueries({ queryKey: ["pending-tasks"] });
+      qc.invalidateQueries({ queryKey: ["activity-history"] });
       if (orderId) {
         qc.invalidateQueries({ queryKey: ["order-workflow", orderId] });
         qc.invalidateQueries({ queryKey: ["order-delivery", orderId] });
