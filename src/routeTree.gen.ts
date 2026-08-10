@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticated/history'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCompleteProfileRouteImport } from './routes/_authenticated/complete-profile'
 import { Route as AuthenticatedEmployeeTasksRouteImport } from './routes/_authenticated/employee/tasks'
@@ -60,6 +61,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHistoryRoute = AuthenticatedHistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -205,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/complete-profile': typeof AuthenticatedCompleteProfileRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/history': typeof AuthenticatedHistoryRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -234,6 +241,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/complete-profile': typeof AuthenticatedCompleteProfileRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/history': typeof AuthenticatedHistoryRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -265,6 +273,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/complete-profile': typeof AuthenticatedCompleteProfileRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/history': typeof AuthenticatedHistoryRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/admin/activity': typeof AuthenticatedAdminActivityRoute
   '/_authenticated/admin/audit': typeof AuthenticatedAdminAuditRoute
@@ -296,6 +305,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/complete-profile'
     | '/dashboard'
+    | '/history'
     | '/settings'
     | '/admin/activity'
     | '/admin/audit'
@@ -325,6 +335,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/complete-profile'
     | '/dashboard'
+    | '/history'
     | '/settings'
     | '/admin/activity'
     | '/admin/audit'
@@ -355,6 +366,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/_authenticated/complete-profile'
     | '/_authenticated/dashboard'
+    | '/_authenticated/history'
     | '/_authenticated/settings'
     | '/_authenticated/admin/activity'
     | '/_authenticated/admin/audit'
@@ -421,6 +433,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/history': {
+      id: '/_authenticated/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof AuthenticatedHistoryRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -605,6 +624,7 @@ const AuthenticatedAdminLocationsRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCompleteProfileRoute: typeof AuthenticatedCompleteProfileRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedHistoryRoute: typeof AuthenticatedHistoryRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedAdminActivityRoute: typeof AuthenticatedAdminActivityRoute
   AuthenticatedAdminAuditRoute: typeof AuthenticatedAdminAuditRoute
@@ -631,6 +651,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCompleteProfileRoute: AuthenticatedCompleteProfileRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedHistoryRoute: AuthenticatedHistoryRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedAdminActivityRoute: AuthenticatedAdminActivityRoute,
   AuthenticatedAdminAuditRoute: AuthenticatedAdminAuditRoute,
@@ -667,13 +688,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
