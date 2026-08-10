@@ -212,6 +212,77 @@ export type Database = {
           },
         ]
       }
+      delivery_otps: {
+        Row: {
+          active: boolean
+          attempts: number
+          client_id: string
+          code: string
+          created_at: string
+          employee_id: string | null
+          expires_at: string
+          id: string
+          order_id: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          active?: boolean
+          attempts?: number
+          client_id: string
+          code: string
+          created_at?: string
+          employee_id?: string | null
+          expires_at: string
+          id?: string
+          order_id: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          active?: boolean
+          attempts?: number
+          client_id?: string
+          code?: string
+          created_at?: string
+          employee_id?: string | null
+          expires_at?: string
+          id?: string
+          order_id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_otps_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_otps_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_otps_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "delivery_otps_used_by_fkey"
+            columns: ["used_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       duty_sessions: {
         Row: {
           clock_in_time: string
@@ -689,6 +760,92 @@ export type Database = {
           },
         ]
       }
+      order_payments: {
+        Row: {
+          amount: number
+          client_id: string
+          created_at: string
+          id: string
+          method: string
+          note: string | null
+          order_id: string
+          proof_path: string | null
+          reference_id: string | null
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["payment_verification_status"]
+          submitted_at: string
+          submitted_by: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          client_id: string
+          created_at?: string
+          id?: string
+          method: string
+          note?: string | null
+          order_id: string
+          proof_path?: string | null
+          reference_id?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["payment_verification_status"]
+          submitted_at?: string
+          submitted_by?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          created_at?: string
+          id?: string
+          method?: string
+          note?: string | null
+          order_id?: string
+          proof_path?: string | null
+          reference_id?: string | null
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["payment_verification_status"]
+          submitted_at?: string
+          submitted_by?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_payments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_payments_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_payments_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           change_request: Json | null
@@ -1012,6 +1169,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_review_payment: {
+        Args: { p_action: string; p_payment_id: string; p_reason?: string }
+        Returns: undefined
+      }
       client_cancel_order: { Args: { p_id: string }; Returns: undefined }
       client_respond_invoice: {
         Args: { p_action: string; p_id: string }
@@ -1026,6 +1187,17 @@ export type Database = {
         }
         Returns: undefined
       }
+      client_submit_payment: {
+        Args: {
+          p_amount: number
+          p_method: string
+          p_note?: string
+          p_order_id: string
+          p_proof_path?: string
+          p_reference?: string
+        }
+        Returns: string
+      }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
@@ -1033,8 +1205,20 @@ export type Database = {
       duty_clock_in: { Args: never; Returns: string }
       duty_clock_out: { Args: never; Returns: number }
       emp_create_client: { Args: { p_values: Json }; Returns: string }
+      emp_mark_out_for_delivery: {
+        Args: { p_order_id: string }
+        Returns: undefined
+      }
+      emp_regenerate_delivery_otp: {
+        Args: { p_order_id: string }
+        Returns: undefined
+      }
       emp_update_order_meta: {
         Args: { p_delivery_date: string; p_id: string; p_notes: string }
+        Returns: undefined
+      }
+      emp_verify_delivery_otp: {
+        Args: { p_code: string; p_order_id: string }
         Returns: undefined
       }
       has_role: {
@@ -1045,6 +1229,10 @@ export type Database = {
         Returns: boolean
       }
       is_assigned_employee: { Args: { _client_id: string }; Returns: boolean }
+      issue_delivery_otp: {
+        Args: { p_order_id: string; p_regenerated: boolean }
+        Returns: undefined
+      }
       refresh_credit_purse: { Args: { _client_id: string }; Returns: undefined }
       submit_order_for_client: { Args: { p_id: string }; Returns: undefined }
     }
@@ -1070,6 +1258,12 @@ export type Database = {
         | "pending_client"
         | "client_approved"
         | "client_rejected"
+        | "payment_pending"
+        | "payment_submitted"
+        | "payment_verified"
+        | "out_for_delivery"
+        | "completed"
+      payment_verification_status: "submitted" | "verified" | "rejected"
       task_status: "todo" | "in_progress" | "completed"
     }
     CompositeTypes: {
@@ -1220,7 +1414,13 @@ export const Constants = {
         "pending_client",
         "client_approved",
         "client_rejected",
+        "payment_pending",
+        "payment_submitted",
+        "payment_verified",
+        "out_for_delivery",
+        "completed",
       ],
+      payment_verification_status: ["submitted", "verified", "rejected"],
       task_status: ["todo", "in_progress", "completed"],
     },
   },
