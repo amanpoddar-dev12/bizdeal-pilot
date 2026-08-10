@@ -32,7 +32,8 @@
     "ledger": "Ledger",
     "profile": "Profile & KYC",
     "settings": "Settings",
-    "payments": "Payment verification"
+    "payments": "Payment verification",
+    "history": "History"
   },
   "auth": {
     "welcome": "Welcome to Kredix",
