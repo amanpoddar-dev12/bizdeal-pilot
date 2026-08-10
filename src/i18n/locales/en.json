@@ -31,7 +31,8 @@
     "shareLocation": "Share location",
     "ledger": "Ledger",
     "profile": "Profile & KYC",
-    "settings": "Settings"
+    "settings": "Settings",
+    "payments": "Payment verification"
   },
   "auth": {
     "welcome": "Welcome to Kredix",
@@ -48,7 +49,11 @@
     "roleNote": "New accounts start with the client role. An admin can promote you to employee/admin.",
     "roleNoteSelfServe": "Choose Client to buy on credit, or Employee to manage field sales. Admins are invited by another admin.",
     "role": "I am a",
-    "roles": { "client": "Client", "employee": "Employee", "admin": "Admin" },
+    "roles": {
+      "client": "Client",
+      "employee": "Employee",
+      "admin": "Admin"
+    },
     "roleDesc": {
       "admin": "Manage the workspace",
       "employee": "Field sales & orders",
