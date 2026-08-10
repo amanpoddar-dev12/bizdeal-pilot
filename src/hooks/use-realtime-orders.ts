@@ -13,7 +13,12 @@ export function useRealtimeOrders(orderId?: string) {
     const refresh = () => {
       qc.invalidateQueries({ queryKey: ["orders"] });
       qc.invalidateQueries({ queryKey: ["admin-reports"] });
-      if (orderId) qc.invalidateQueries({ queryKey: ["order-workflow", orderId] });
+      qc.invalidateQueries({ queryKey: ["payments"] });
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+      if (orderId) {
+        qc.invalidateQueries({ queryKey: ["order-workflow", orderId] });
+        qc.invalidateQueries({ queryKey: ["order-delivery", orderId] });
+      }
     };
 
     const channel = supabase
@@ -21,7 +26,10 @@ export function useRealtimeOrders(orderId?: string) {
       .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, refresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "order_events" }, refresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "order_approvals" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "order_payments" }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "delivery_otps" }, refresh)
       .subscribe();
+
 
     return () => {
       supabase.removeChannel(channel);
