@@ -29,7 +29,7 @@ export function ClientOverview() {
   const invs = ledger.data?.invoices ?? [];
   const outstanding = invs.reduce((s: number, i: any) => s + (Number(i.amount) - Number(i.payment_amount)), 0);
   const openInvs = (invoices.data ?? []).filter((i: any) => i.status !== "paid" && i.status !== "declined");
-  const pendingOrders = (orders.data ?? []).filter((o: any) => o.status === "pending_client" || o.status === "pending" || o.status === "change_requested");
+  const pendingOrders = (orders.data ?? []).filter((o: any) => ["pending_client", "pending", "change_requested", "payment_pending", "payment_submitted", "out_for_delivery"].includes(o.status));
 
   // Orders explicitly awaiting this client's approval — surfaced as alert cards.
   const awaiting = (orders.data ?? []).filter((o: any) => o.status === "pending_client");
@@ -109,9 +109,12 @@ export function ClientOverview() {
                 <div>
                   <div className="font-medium">Order {o.order_number}</div>
                   <div className="text-xs text-muted-foreground">{fmtDate(o.created_at)} · {inr(o.total_amount)}</div>
+                  <div className="mt-1"><OrderStatusBadge status={o.status} /></div>
                 </div>
-                {o.status === "pending_client" ? (
-                  <Button size="sm" variant="outline" onClick={() => setReviewId(o.id)}>Review</Button>
+                {["pending_client", "payment_pending", "payment_submitted", "out_for_delivery"].includes(o.status) ? (
+                  <Button size="sm" variant="outline" onClick={() => setReviewId(o.id)}>
+                    {o.status === "payment_pending" ? "Pay" : o.status === "out_for_delivery" ? "View code" : "Review"}
+                  </Button>
                 ) : (
                   <Button asChild size="sm" variant="outline"><Link to="/client/orders">Review</Link></Button>
                 )}

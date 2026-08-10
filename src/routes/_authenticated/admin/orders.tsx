@@ -102,8 +102,15 @@ function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
                     <td className="py-3 font-medium">{inr(o.total_amount)}</td>
                     <td className="py-3"><OrderStatusBadge status={o.status} /></td>
                     <td className="py-3 pr-4 text-right space-x-1" onClick={(e) => e.stopPropagation()}>
-                      {me?.role === "client" && o.status === "pending_client" && (
-                        <Button size="sm" onClick={() => setOpenId(o.id)}>Review</Button>
+                      {me?.role === "client" && ["pending_client", "payment_pending", "out_for_delivery"].includes(o.status) && (
+                        <Button size="sm" onClick={() => setOpenId(o.id)}>
+                          {o.status === "payment_pending" ? "Pay" : o.status === "out_for_delivery" ? "View code" : "Review"}
+                        </Button>
+                      )}
+                      {scope !== "client" && ["payment_verified", "out_for_delivery"].includes(o.status) && (
+                        <Button size="sm" onClick={() => setOpenId(o.id)}>
+                          {o.status === "payment_verified" ? "Dispatch" : "Enter OTP"}
+                        </Button>
                       )}
                       {scope !== "client" && canSubmit(o) && (
                         <Button size="sm" variant="outline" disabled={submit.isPending}
@@ -114,7 +121,7 @@ function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
                           {o.status === "pending" && (
                             <Button size="sm" onClick={() => setStatus.mutate({ id: o.id, status: "confirmed" })}>Confirm</Button>
                           )}
-                          {(o.status === "confirmed" || o.status === "client_approved") && (
+                          {(o.status === "confirmed" || o.status === "client_approved" || o.status === "completed") && (
                             <Button size="sm" onClick={() => invoice.mutate(o.id)}>Generate invoice</Button>
                           )}
                         </>
