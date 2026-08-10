@@ -10,6 +10,11 @@ const styles: Record<string, string> = {
   change_requested: "bg-purple-500/15 text-purple-600 ring-purple-500/30 dark:text-purple-400",
   invoiced: "bg-indigo-500/15 text-indigo-600 ring-indigo-500/30 dark:text-indigo-400",
   paid: "bg-emerald-500/15 text-emerald-600 ring-emerald-500/30 dark:text-emerald-400",
+  payment_pending: "bg-amber-500/15 text-amber-600 ring-amber-500/30 dark:text-amber-400",
+  payment_submitted: "bg-sky-500/15 text-sky-600 ring-sky-500/30 dark:text-sky-400",
+  payment_verified: "bg-emerald-500/15 text-emerald-600 ring-emerald-500/30 dark:text-emerald-400",
+  out_for_delivery: "bg-indigo-500/15 text-indigo-600 ring-indigo-500/30 dark:text-indigo-400",
+  completed: "bg-emerald-500/15 text-emerald-600 ring-emerald-500/30 dark:text-emerald-400",
 };
 
 const labels: Record<string, string> = {
@@ -22,6 +27,11 @@ const labels: Record<string, string> = {
   change_requested: "Change requested",
   invoiced: "Invoiced",
   paid: "Paid",
+  payment_pending: "Payment pending",
+  payment_submitted: "Payment under verification",
+  payment_verified: "Payment verified",
+  out_for_delivery: "Out for delivery",
+  completed: "Completed",
 };
 
 export function OrderStatusBadge({ status, className }: { status: string; className?: string }) {
