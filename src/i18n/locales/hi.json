@@ -32,7 +32,8 @@
     "ledger": "बहीखाता",
     "profile": "प्रोफ़ाइल और KYC",
     "settings": "सेटिंग्स",
-    "payments": "भुगतान सत्यापन"
+    "payments": "भुगतान सत्यापन",
+    "history": "इतिहास"
   },
   "auth": {
     "welcome": "Kredix में आपका स्वागत है",

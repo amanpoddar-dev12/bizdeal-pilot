@@ -14,6 +14,8 @@ import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { playNotificationChime } from "@/lib/notify-sound";
 import { useEffect, useRef, useState } from "react";
 import { BellRing, ChevronRight } from "lucide-react";
+import { PendingActions } from "@/components/tasks/pending-actions";
+import { RecentActivity } from "@/components/tasks/recent-activity";
 
 export function ClientOverview() {
   useRealtimeOrders();
@@ -82,6 +84,8 @@ export function ClientOverview() {
 
 
 
+      <PendingActions />
+
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader><CardTitle className="text-sm">Outstanding</CardTitle></CardHeader>
@@ -133,6 +137,8 @@ export function ClientOverview() {
           </ul>
         </CardContent>
       </Card>
+
+      <RecentActivity />
 
       <OrderReviewPanel
         orderId={reviewId}

@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { inr, fmtDateTime } from "@/lib/format";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { PendingActions } from "@/components/tasks/pending-actions";
+import { RecentActivity } from "@/components/tasks/recent-activity";
 
 export function EmployeeOverview() {
   useRealtimeOrders();
@@ -29,6 +31,8 @@ export function EmployeeOverview() {
         <h1 className="font-display text-xl font-semibold sm:text-2xl">Today</h1>
         <p className="text-sm text-muted-foreground">Your day at a glance.</p>
       </div>
+
+      <PendingActions />
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
@@ -89,6 +93,8 @@ export function EmployeeOverview() {
           </CardContent>
         </Card>
       </div>
+
+      <RecentActivity />
     </div>
   );
 }

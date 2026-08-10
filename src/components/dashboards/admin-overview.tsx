@@ -10,6 +10,8 @@ import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
   BarChart, Bar, PieChart, Pie, Cell,
 } from "recharts";
+import { PendingActions } from "@/components/tasks/pending-actions";
+import { RecentActivity } from "@/components/tasks/recent-activity";
 import { AlertCircle, Wallet, Users, Receipt, TrendingUp } from "lucide-react";
 
 const COLORS = ["#0ea5e9", "#f59e0b", "#ef4444"];
@@ -34,6 +36,8 @@ export function AdminOverview() {
         <h1 className="font-display text-xl font-semibold sm:text-2xl">{t("dashboard.admin.title")}</h1>
         <p className="text-sm text-muted-foreground">{t("dashboard.admin.subtitle")}</p>
       </div>
+
+      <PendingActions />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Kpi icon={<Wallet />} label={t("dashboard.admin.outstanding")} value={inr(k.outstanding)} tone="warning" />
@@ -111,6 +115,8 @@ export function AdminOverview() {
           </CardContent>
         </Card>
       </div>
+
+      <RecentActivity />
 
       <Card>
         <CardHeader>
