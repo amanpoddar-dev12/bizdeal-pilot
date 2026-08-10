@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { OrderStatusBadge } from "./order-status-badge";
 import { getOrderWorkflow, clientReviewOrder } from "@/lib/order-workflow.functions";
+import { getMe } from "@/lib/me.functions";
+import { OrderDeliverySection } from "./order-delivery-section";
 import { useRealtimeOrders } from "@/hooks/use-realtime-orders";
 import { inr, fmtDate, fmtDateTime } from "@/lib/format";
 import { toast } from "sonner";
@@ -31,6 +33,7 @@ export function OrderReviewPanel({
   canReview: boolean;
 }) {
   const detailFn = useServerFn(getOrderWorkflow);
+  const meFn = useServerFn(getMe);
   const reviewFn = useServerFn(clientReviewOrder);
   const qc = useQueryClient();
   const [checked, setChecked] = useState<Record<string, boolean>>({});
@@ -44,6 +47,7 @@ export function OrderReviewPanel({
     enabled: !!orderId && open,
   });
 
+  const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => meFn() });
   const order: any = data?.order;
   const allChecked = useMemo(() => CHECKS.every((c) => checked[c.key]), [checked]);
 
@@ -54,7 +58,7 @@ export function OrderReviewPanel({
     onMutate: async (action) => {
       await qc.cancelQueries({ queryKey: ["orders"] });
       const prev = qc.getQueryData<any[]>(["orders"]);
-      const next = action === "approve" ? "client_approved" : "client_rejected";
+      const next = action === "approve" ? "payment_pending" : "client_rejected";
       qc.setQueryData<any[]>(["orders"], (rows) =>
         (rows ?? []).map((o) => (o.id === orderId ? { ...o, status: next } : o)),
       );
@@ -65,13 +69,14 @@ export function OrderReviewPanel({
       toast.error(e.message);
     },
     onSuccess: (_r, action) => {
-      toast.success(action === "approve" ? "Order approved" : "Order rejected");
-      onOpenChange(false);
+      toast.success(action === "approve" ? "Order accepted — submit payment next" : "Order rejected");
+      if (action !== "approve") onOpenChange(false);
       setChecked({});
       setRemarks("");
     },
     onSettled: () => {
       qc.invalidateQueries({ queryKey: ["orders"] });
+      qc.invalidateQueries({ queryKey: ["order-delivery", orderId] });
       qc.invalidateQueries({ queryKey: ["order-workflow", orderId] });
       qc.invalidateQueries({ queryKey: ["notifications"] });
     },
@@ -183,6 +188,10 @@ export function OrderReviewPanel({
                   )}
                 </section>
               </>
+            )}
+
+            {me?.role && (
+              <OrderDeliverySection order={order} role={me.role as any} />
             )}
 
             {(data?.approvals ?? []).length > 0 && (
