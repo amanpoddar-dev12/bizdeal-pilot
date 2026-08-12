@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -24,6 +24,8 @@ export const Route = createFileRoute("/_authenticated/history")({
   component: HistoryPage,
 });
 
+const PAGE = 50;
+
 function HistoryPage() {
   const fn = useServerFn(getActivityHistory);
   useRealtimeOrders();
@@ -33,14 +35,22 @@ function HistoryPage() {
   });
   const [q, setQ] = useState("");
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [visible, setVisible] = useState(PAGE);
 
-  const items: ActivityItem[] = (data?.items ?? []).filter((i) => {
-    if (!q) return true;
+  // Filtering runs over the whole history; recompute only when it can change.
+  const items: ActivityItem[] = useMemo(() => {
+    const all = data?.items ?? [];
+    if (!q) return all;
     const s = q.toLowerCase();
-    return [i.title, i.description, i.entity, i.orderNumber, i.actor]
-      .filter(Boolean)
-      .some((v) => String(v).toLowerCase().includes(s));
-  });
+    return all.filter((i) =>
+      [i.title, i.description, i.entity, i.orderNumber, i.actor]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(s)),
+    );
+  }, [data, q]);
+
+  // Never mount hundreds of rows at once — reveal them a page at a time.
+  const shown = useMemo(() => items.slice(0, visible), [items, visible]);
 
   return (
     <div className="space-y-4">
@@ -52,7 +62,7 @@ function HistoryPage() {
         <Input
           placeholder="Search history…"
           value={q}
-          onChange={(e) => setQ(e.target.value)}
+          onChange={(e) => { setQ(e.target.value); setVisible(PAGE); }}
           className="w-full sm:w-64"
         />
       </div>
@@ -64,7 +74,7 @@ function HistoryPage() {
             <p className="p-8 text-center text-sm text-muted-foreground">No activity yet</p>
           )}
           <ul className="divide-y divide-border">
-            {items.map((i) => (
+            {shown.map((i) => (
               <li key={i.id} className="flex flex-col gap-2 p-3 sm:flex-row sm:items-center">
                 <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium">{i.title}</div>
@@ -93,6 +103,13 @@ function HistoryPage() {
               </li>
             ))}
           </ul>
+          {shown.length < items.length && (
+            <div className="border-t border-border p-3 text-center">
+              <Button variant="outline" size="sm" onClick={() => setVisible((v) => v + PAGE)}>
+                Show more ({items.length - shown.length} remaining)
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
