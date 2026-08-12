@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { Download, Plus, ShieldCheck, ShieldX, Users } from "lucide-react";
 import { AssignClientDialog } from "@/components/admin/assign-client-dialog";
 import { qk } from "@/lib/query-keys";
+import { useVisibleRows } from "@/hooks/use-visible-rows";
 import { invalidateFor } from "@/lib/query-mutations";
 
 
@@ -50,7 +51,11 @@ function Customers() {
     onSuccess: () => { invalidateFor(qc, "client"); toast.success("KYC updated"); },
   });
 
-  const filtered = data.filter((c: any) => !q || c.business_name.toLowerCase().includes(q.toLowerCase()));
+  const filtered = useMemo(
+    () => (!q ? data : data.filter((c: any) => c.business_name.toLowerCase().includes(q.toLowerCase()))),
+    [data, q],
+  );
+  const { shown, hasMore, remaining, showMore } = useVisibleRows(filtered, 100);
 
   function exportCsv() {
     downloadCsv(
@@ -140,6 +145,13 @@ function Customers() {
                 ))}
               </tbody>
             </table>
+            {hasMore && (
+              <div className="border-t border-border p-3 text-center">
+                <Button variant="outline" size="sm" onClick={showMore}>
+                  Show more ({remaining} remaining)
+                </Button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
