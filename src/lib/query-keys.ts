@@ -23,8 +23,8 @@ export const qk = {
   locationHistory: (employeeId: string) => ["location-history", employeeId] as const,
 
   orders: ["orders"] as const,
-  orderWorkflow: (orderId: string) => ["order-workflow", orderId] as const,
-  orderDelivery: (orderId: string) => ["order-delivery", orderId] as const,
+  orderWorkflow: (orderId: string | null) => ["order-workflow", orderId] as const,
+  orderDelivery: (orderId: string | null) => ["order-delivery", orderId] as const,
 
   invoices: ["invoices"] as const,
   payments: ["payments"] as const,
