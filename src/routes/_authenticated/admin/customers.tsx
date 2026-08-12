@@ -105,7 +105,7 @@ function Customers() {
 
       <Card>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[720px] text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-muted-foreground">
@@ -145,6 +145,44 @@ function Customers() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile: cards instead of a horizontally scrolling table */}
+          <ul className="divide-y divide-border md:hidden">
+            {filtered.length === 0 && (
+              <li className="px-4 py-8 text-center text-muted-foreground">No clients yet</li>
+            )}
+            {shown.map((c: any) => (
+              <li key={c.id} className="space-y-2 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">{c.business_name}</div>
+                    <div className="truncate text-xs text-muted-foreground">{c.contact_person ?? "—"}</div>
+                  </div>
+                  {c.kyc_verified ? <Badge className="bg-emerald-600">Verified</Badge> : <Badge variant="outline">Pending</Badge>}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  <PhoneDisplay phone={c.phone} canReveal />
+                </div>
+                <div className="text-xs">
+                  Credit limit <span className="font-medium text-foreground">{inr(c.credit_limit)}</span> · Terms {c.credit_terms}d
+                  {!c.active && <Badge variant="secondary" className="ml-2">inactive</Badge>}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" variant="outline" onClick={() => kyc.mutate({ id: c.id, verified: !c.kyc_verified })}>
+                    {c.kyc_verified ? <ShieldX className="mr-1 size-4" /> : <ShieldCheck className="mr-1 size-4" />}
+                    {c.kyc_verified ? "Unverify" : "Verify KYC"}
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => setAssigning(c)}>
+                    <Users className="mr-1 size-4" /> Assign
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => { setEditing(c); setOpen(true); }}>Edit</Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <div>
             {hasMore && (
               <div className="border-t border-border p-3 text-center">
                 <Button variant="outline" size="sm" onClick={showMore}>
