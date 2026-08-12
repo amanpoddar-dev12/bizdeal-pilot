@@ -18,7 +18,7 @@ export const listEmployees = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     const ids = (data ?? []).map((e: any) => e.id);
     const { data: profs } = ids.length
-      ? await context.supabase.from("profiles").select("*").in("id", ids)
+      ? await context.supabase.from("profiles").select("id, name, email, phone, avatar_url").in("id", ids)
       : { data: [] as any[] };
     const pMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
     return (data ?? []).map((e: any) => ({ ...e, profiles: pMap.get(e.id) ?? null }));
@@ -115,14 +115,14 @@ export const listEmployeeActivity = createServerFn({ method: "GET" })
     if (!(await isAdmin(context))) throw new Error("Forbidden");
     const [{ data: emps }, { data: sessions }, { data: locs }, { data: orders }, { data: tasks }] = await Promise.all([
       context.supabase.from("employee_profiles").select("*").order("created_at", { ascending: false }),
-      context.supabase.from("duty_sessions").select("*").order("clock_in_time", { ascending: false }).limit(500),
+      context.supabase.from("duty_sessions").select("id, employee_id, clock_in_time, clock_out_time, duration_minutes").order("clock_in_time", { ascending: false }).limit(500),
       context.supabase.from("employee_locations").select("*").order("captured_at", { ascending: false }).limit(500),
       context.supabase.from("orders").select("id, employee_id, total_amount, status, created_at").order("created_at", { ascending: false }).limit(1000),
       context.supabase.from("tasks").select("employee_id, status"),
     ]);
     const empIds = (emps ?? []).map((e: any) => e.id);
     const { data: profs } = empIds.length
-      ? await context.supabase.from("profiles").select("*").in("id", empIds)
+      ? await context.supabase.from("profiles").select("id, name, email, phone, avatar_url").in("id", empIds)
       : { data: [] as any[] };
     const profMap = new Map((profs ?? []).map((p: any) => [p.id, p]));
 

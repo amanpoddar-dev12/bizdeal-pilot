@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { z } from "zod";
 
 export const adminReports = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -10,9 +11,9 @@ export const adminReports = createServerFn({ method: "GET" })
 
     const [invoices, orders, payments, clients, purse] = await Promise.all([
       supabase.from("invoices").select("id, client_id, amount, payment_amount, due_date, status, invoice_date, clients(business_name)"),
-      supabase.from("orders").select("id, client_id, employee_id, total_amount, status, created_at, profiles:employee_id(name), clients(business_name)"),
-      supabase.from("payments").select("amount, payment_date"),
-      supabase.from("clients").select("id, business_name, credit_limit, active"),
+      supabase.from("orders").select("employee_id, total_amount, created_at, profiles:employee_id(name)"),
+      supabase.from("payments").select("amount"),
+      supabase.from("clients").select("id, active"),
       supabase.from("credit_purse").select("*"),
     ]);
 
@@ -84,14 +85,28 @@ export const adminReports = createServerFn({ method: "GET" })
 
 export const listAuditLogs = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        /** ISO date (yyyy-mm-dd) — filtered in the database, not the browser. */
+        from: z.string().optional().nullable(),
+        to: z.string().optional().nullable(),
+        limit: z.number().int().min(1).max(5000).default(2000),
+      })
+      .parse(d ?? {}),
+  )
+  .handler(async ({ data, context }) => {
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     if (!isAdmin) throw new Error("Forbidden");
-    const { data: logs } = await context.supabase
+    let query = context.supabase
       .from("audit_logs")
       .select("*, profiles:actor_id(name, email, phone)")
       .order("created_at", { ascending: false })
-      .limit(2000);
+      .limit(data.limit);
+    if (data.from) query = query.gte("created_at", new Date(data.from).toISOString());
+    if (data.to) query = query.lt("created_at", new Date(new Date(data.to).getTime() + 864e5).toISOString());
+    const { data: logs } = await query;
+
 
     const actorIds = Array.from(new Set((logs ?? []).map((l: any) => l.actor_id).filter(Boolean)));
     const roleMap = new Map<string, string>();
