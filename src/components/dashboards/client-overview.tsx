@@ -16,15 +16,16 @@ import { useEffect, useRef, useState } from "react";
 import { BellRing, ChevronRight } from "lucide-react";
 import { PendingActions } from "@/components/tasks/pending-actions";
 import { RecentActivity } from "@/components/tasks/recent-activity";
+import { qk } from "@/lib/query-keys";
 
 export function ClientOverview() {
   useRealtimeOrders();
   const ledgerFn = useServerFn(getClientLedger);
   const invoicesFn = useServerFn(listInvoices);
   const ordersFn = useServerFn(listOrders);
-  const ledger = useQuery({ queryKey: ["ledger"], queryFn: () => ledgerFn({ data: {} }) });
-  const invoices = useQuery({ queryKey: ["invoices"], queryFn: () => invoicesFn() });
-  const orders = useQuery({ queryKey: ["orders"], queryFn: () => ordersFn() });
+  const ledger = useQuery({ queryKey: qk.ledger, queryFn: () => ledgerFn({ data: {} }) });
+  const invoices = useQuery({ queryKey: qk.invoices, queryFn: () => invoicesFn() });
+  const orders = useQuery({ queryKey: qk.orders, queryFn: () => ordersFn() });
 
   const [reviewId, setReviewId] = useState<string | null>(null);
 

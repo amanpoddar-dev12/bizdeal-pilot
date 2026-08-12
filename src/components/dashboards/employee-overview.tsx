@@ -11,15 +11,16 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { PendingActions } from "@/components/tasks/pending-actions";
 import { RecentActivity } from "@/components/tasks/recent-activity";
+import { qk } from "@/lib/query-keys";
 
 export function EmployeeOverview() {
   useRealtimeOrders();
   const dutyFn = useServerFn(getMyDutyStatus);
   const tasksFn = useServerFn(listTasks);
   const ordersFn = useServerFn(listOrders);
-  const duty = useQuery({ queryKey: ["duty"], queryFn: () => dutyFn() });
-  const tasks = useQuery({ queryKey: ["tasks"], queryFn: () => tasksFn() });
-  const orders = useQuery({ queryKey: ["orders"], queryFn: () => ordersFn() });
+  const duty = useQuery({ queryKey: qk.duty, queryFn: () => dutyFn() });
+  const tasks = useQuery({ queryKey: qk.tasks, queryFn: () => tasksFn() });
+  const orders = useQuery({ queryKey: qk.orders, queryFn: () => ordersFn() });
 
   const openTasks = (tasks.data ?? []).filter((t: any) => t.status !== "completed").slice(0, 5);
   const myOrders = (orders.data ?? []).slice(0, 5);

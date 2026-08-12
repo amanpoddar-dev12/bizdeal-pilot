@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { inr, fmtDateTime } from "@/lib/format";
 import { formatAddress } from "@/lib/reverse-geocode";
 import { MapPin, Clock } from "lucide-react";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated/admin/activity")({
   head: () => ({
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/admin/activity")({
 function Activity() {
   const fn = useServerFn(listEmployeeActivity);
   const { data = [] } = useQuery({
-    queryKey: ["employee-activity"],
+    queryKey: qk.employeeActivity,
     queryFn: () => fn(),
     refetchInterval: 30_000,
   });

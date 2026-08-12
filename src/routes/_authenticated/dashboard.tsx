@@ -4,6 +4,7 @@ import { getMe } from "@/lib/me.functions";
 import { AdminOverview } from "@/components/dashboards/admin-overview";
 import { EmployeeOverview } from "@/components/dashboards/employee-overview";
 import { ClientOverview } from "@/components/dashboards/client-overview";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function Dashboard() {
-  const { data: me } = useSuspenseQuery({ queryKey: ["me"], queryFn: () => getMe() });
+  const { data: me } = useSuspenseQuery({ queryKey: qk.me, queryFn: () => getMe() });
   // Key by userId so switching accounts fully remounts the correct overview
   // rather than letting a stale role's component fire a forbidden server fn.
   if (me.role === "admin") return <AdminOverview key={me.userId} />;

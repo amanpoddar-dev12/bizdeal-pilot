@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { fmtDateTime, maskPhone } from "@/lib/format";
 import {
+import { qk } from "@/lib/query-keys";
   ArrowUpDown,
   ChevronDown,
   ChevronRight,
@@ -140,7 +141,7 @@ function Audit() {
   const [to, setTo] = useState("");
   // Date range is applied in the database so only the needed window is fetched.
   const { data = [], isLoading } = useQuery({
-    queryKey: ["audit", from, to],
+    queryKey: qk.audit(from, to),
     queryFn: () => fn({ data: { from: from || null, to: to || null } }),
   });
   const rows = data as Row[];

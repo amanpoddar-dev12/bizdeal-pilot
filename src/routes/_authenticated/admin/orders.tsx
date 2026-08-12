@@ -14,6 +14,7 @@ import { useRealtimeOrders } from "@/hooks/use-realtime-orders";
 import { inr, fmtDate } from "@/lib/format";
 import { toast } from "sonner";
 import { useState } from "react";
+import { qk } from "@/lib/query-keys";
 
 function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
   const listFn = useServerFn(listOrders);
@@ -24,20 +25,20 @@ function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
   const qc = useQueryClient();
   const [q, setQ] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
-  const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => meFn() });
-  const { data = [] } = useQuery({ queryKey: ["orders"], queryFn: () => listFn() });
+  const { data: me } = useQuery({ queryKey: qk.me, queryFn: () => meFn() });
+  const { data = [] } = useQuery({ queryKey: qk.orders, queryFn: () => listFn() });
 
   useRealtimeOrders();
 
   const setStatus = useMutation({
     mutationFn: (v: { id: string; status: any }) => statusFn({ data: v }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["orders"] }); toast.success("Status updated"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: qk.orders }); toast.success("Status updated"); },
     onError: (e: any) => toast.error(e.message),
   });
   const submit = useMutation({
     mutationFn: (id: string) => submitFn({ data: { id } }),
     onMutate: async (id) => {
-      await qc.cancelQueries({ queryKey: ["orders"] });
+      await qc.cancelQueries({ queryKey: qk.orders });
       const prev = qc.getQueryData<any[]>(["orders"]);
       qc.setQueryData<any[]>(["orders"], (rows) =>
         (rows ?? []).map((o) => (o.id === id ? { ...o, status: "pending_client" } : o)));
@@ -45,11 +46,11 @@ function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
     },
     onError: (e: any, _id, ctx) => { if (ctx?.prev) qc.setQueryData(["orders"], ctx.prev); toast.error(e.message); },
     onSuccess: () => toast.success("Sent to client for approval"),
-    onSettled: () => qc.invalidateQueries({ queryKey: ["orders"] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: qk.orders }),
   });
   const invoice = useMutation({
     mutationFn: (id: string) => invFn({ data: { order_id: id } }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["orders"] }); qc.invalidateQueries({ queryKey: ["invoices"] }); toast.success("Invoice generated"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: qk.orders }); qc.invalidateQueries({ queryKey: qk.invoices }); toast.success("Invoice generated"); },
     onError: (e: any) => toast.error(e.message),
   });
 

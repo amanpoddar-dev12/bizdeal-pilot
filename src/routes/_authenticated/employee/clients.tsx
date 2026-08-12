@@ -21,6 +21,7 @@ import { downloadCsv, num } from "@/lib/csv";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Download, Plus } from "lucide-react";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated/employee/clients")({
   head: () => ({
@@ -41,7 +42,7 @@ function EmpClients() {
   const fn = useServerFn(listClients);
   const save = useServerFn(upsertClient);
   const qc = useQueryClient();
-  const { data = [] } = useQuery({ queryKey: ["clients"], queryFn: () => fn() });
+  const { data = [] } = useQuery({ queryKey: qk.clients, queryFn: () => fn() });
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
@@ -79,7 +80,7 @@ function EmpClients() {
       toast.success("Client added. They can sign in with their phone number.");
       setOpen(false);
       setForm({ business_name: "", contact_person: "", phone: "", email: "", gst_number: "", address: "" });
-      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: qk.clients });
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed to add client"),
   });

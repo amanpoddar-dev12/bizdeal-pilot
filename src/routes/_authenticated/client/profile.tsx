@@ -6,6 +6,7 @@ import { listClients } from "@/lib/clients.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { inr } from "@/lib/format";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated/client/profile")({
   head: () => ({
@@ -23,9 +24,9 @@ export const Route = createFileRoute("/_authenticated/client/profile")({
 function Profile() {
   const meFn = useServerFn(getMe);
   const clientsFn = useServerFn(listClients);
-  const { data: meData } = useSuspenseQuery({ queryKey: ["me"], queryFn: () => meFn() });
+  const { data: meData } = useSuspenseQuery({ queryKey: qk.me, queryFn: () => meFn() });
   const me = meData as any;
-  const { data: clients = [] } = useQuery<any[]>({ queryKey: ["clients"], queryFn: async () => (await clientsFn()) as any });
+  const { data: clients = [] } = useQuery<any[]>({ queryKey: qk.clients, queryFn: async () => (await clientsFn()) as any });
   const c: any = clients.find((x: any) => x.id === me.clientRecord?.id) ?? clients[0];
 
   if (!c) return <p className="text-sm text-muted-foreground">Your client record isn't set up yet. Contact your account manager.</p>;

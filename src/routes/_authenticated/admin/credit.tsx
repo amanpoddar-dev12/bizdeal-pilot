@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { inr } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated/admin/credit")({
   head: () => ({
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/_authenticated/admin/credit")({
 
 function Credit() {
   const listFn = useServerFn(listClients);
-  const { data = [] } = useQuery({ queryKey: ["clients"], queryFn: () => listFn() });
+  const { data = [] } = useQuery({ queryKey: qk.clients, queryFn: () => listFn() });
   return (
     <div className="space-y-4">
       <div>

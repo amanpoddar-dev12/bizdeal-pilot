@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { fmtDateTime } from "@/lib/format";
 import { toast } from "sonner";
 import { Clock } from "lucide-react";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated/employee/duty")({
   head: () => ({
@@ -27,10 +28,10 @@ function Duty() {
   const inFn = useServerFn(clockIn);
   const outFn = useServerFn(clockOut);
   const qc = useQueryClient();
-  const { data } = useQuery({ queryKey: ["duty"], queryFn: () => statusFn() });
+  const { data } = useQuery({ queryKey: qk.duty, queryFn: () => statusFn() });
 
-  const inMut = useMutation({ mutationFn: () => inFn(), onSuccess: () => { qc.invalidateQueries({ queryKey: ["duty"] }); toast.success("Clocked in"); } });
-  const outMut = useMutation({ mutationFn: () => outFn(), onSuccess: () => { qc.invalidateQueries({ queryKey: ["duty"] }); toast.success("Clocked out"); } });
+  const inMut = useMutation({ mutationFn: () => inFn(), onSuccess: () => { qc.invalidateQueries({ queryKey: qk.duty }); toast.success("Clocked in"); } });
+  const outMut = useMutation({ mutationFn: () => outFn(), onSuccess: () => { qc.invalidateQueries({ queryKey: qk.duty }); toast.success("Clocked out"); } });
 
   const isOnDuty = !!data?.open;
 

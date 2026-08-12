@@ -13,6 +13,7 @@ import { Trash2, Plus } from "lucide-react";
 import { inr } from "@/lib/format";
 import { useState } from "react";
 import { toast } from "sonner";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated/employee/orders/new")({
   head: () => ({
@@ -36,8 +37,8 @@ function NewOrder() {
   const productsFn = useServerFn(listProducts);
   const createFn = useServerFn(createOrder);
   const nav = useNavigate();
-  const { data: clients = [] } = useQuery({ queryKey: ["clients"], queryFn: () => clientsFn() });
-  const { data: products = [] } = useQuery({ queryKey: ["products"], queryFn: () => productsFn() });
+  const { data: clients = [] } = useQuery({ queryKey: qk.clients, queryFn: () => clientsFn() });
+  const { data: products = [] } = useQuery({ queryKey: qk.products, queryFn: () => productsFn() });
   const activeProducts = (products as any[]).filter((p) => p.active);
   const [clientId, setClientId] = useState("");
   const [deliveryDate, setDeliveryDate] = useState("");

@@ -10,6 +10,7 @@ import { OrderReviewPanel } from "@/components/orders/order-review-panel";
 import { useRealtimeOrders } from "@/hooks/use-realtime-orders";
 import { inr, fmtDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { qk } from "@/lib/query-keys";
 
 const METHOD_LABELS: Record<string, string> = {
   upi: "UPI", bank_transfer: "Bank transfer", cash: "Cash", cheque: "Cheque", other: "Other",
@@ -17,7 +18,7 @@ const METHOD_LABELS: Record<string, string> = {
 
 function PaymentsPage() {
   const listFn = useServerFn(listPayments);
-  const { data = [] } = useQuery({ queryKey: ["payments"], queryFn: () => listFn() });
+  const { data = [] } = useQuery({ queryKey: qk.payments, queryFn: () => listFn() });
   const [q, setQ] = useState("");
   const [tab, setTab] = useState<"submitted" | "all">("submitted");
   const [openId, setOpenId] = useState<string | null>(null);

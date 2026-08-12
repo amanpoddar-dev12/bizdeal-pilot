@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { fmtDateTime } from "@/lib/format";
 import { toast } from "sonner";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated/employee/tasks")({
   head: () => ({
@@ -25,10 +26,10 @@ function Tasks() {
   const listFn = useServerFn(listTasks);
   const updFn = useServerFn(updateTaskStatus);
   const qc = useQueryClient();
-  const { data = [] } = useQuery({ queryKey: ["tasks"], queryFn: () => listFn() });
+  const { data = [] } = useQuery({ queryKey: qk.tasks, queryFn: () => listFn() });
   const upd = useMutation({
     mutationFn: (v: any) => updFn({ data: v }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["tasks"] }); toast.success("Updated"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: qk.tasks }); toast.success("Updated"); },
   });
 
   const groups = { todo: [] as any[], in_progress: [] as any[], completed: [] as any[] };
