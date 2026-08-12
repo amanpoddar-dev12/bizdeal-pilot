@@ -1,4 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
+import { qk, staleTimeFor } from "@/lib/query-keys";
 import { listClients } from "@/lib/clients.functions";
 import { listEmployees, listEmployeeActivity } from "@/lib/employees.functions";
 import { listOrders } from "@/lib/orders.functions";
@@ -10,44 +11,44 @@ import { listTasks } from "@/lib/tasks.functions";
 import { getClientLedger } from "@/lib/ledger.functions";
 import { getUserSettings } from "@/lib/user-settings.functions";
 
-type Entry = { queryKey: unknown[]; queryFn: () => Promise<unknown> };
+type Entry = { queryKey: readonly unknown[]; queryFn: () => Promise<unknown> };
 
-const clients: Entry = { queryKey: ["clients"], queryFn: () => listClients() as any };
-const orders: Entry = { queryKey: ["orders"], queryFn: () => listOrders() as any };
-const invoices: Entry = { queryKey: ["invoices"], queryFn: () => listInvoices() as any };
-const products: Entry = { queryKey: ["products"], queryFn: () => listProducts() as any };
+const clients: Entry = { queryKey: qk.clients, queryFn: () => listClients() as any };
+const orders: Entry = { queryKey: qk.orders, queryFn: () => listOrders() as any };
+const invoices: Entry = { queryKey: qk.invoices, queryFn: () => listInvoices() as any };
+const products: Entry = { queryKey: qk.products, queryFn: () => listProducts() as any };
 
 const map: Record<string, Entry[]> = {
   "/admin/customers": [clients],
   "/admin/credit": [clients],
-  "/admin/employees": [{ queryKey: ["employees"], queryFn: () => listEmployees() as any }],
-  "/admin/activity": [{ queryKey: ["employee-activity"], queryFn: () => listEmployeeActivity() as any }],
+  "/admin/employees": [{ queryKey: qk.employees, queryFn: () => listEmployees() as any }],
+  "/admin/activity": [{ queryKey: qk.employeeActivity, queryFn: () => listEmployeeActivity() as any }],
   "/admin/orders": [orders],
   "/admin/products": [products],
   "/admin/invoices": [invoices],
-  "/admin/locations": [{ queryKey: ["locations"], queryFn: () => listEmployeeLatestLocations() as any }],
-  "/admin/audit": [{ queryKey: ["audit", "", ""], queryFn: () => listAuditLogs({ data: { from: null, to: null } }) as any }],
+  "/admin/locations": [{ queryKey: qk.locations, queryFn: () => listEmployeeLatestLocations() as any }],
+  "/admin/audit": [{ queryKey: qk.audit(), queryFn: () => listAuditLogs({ data: { from: null, to: null } }) as any }],
   "/employee/clients": [clients],
   "/employee/orders/new": [clients, products],
   "/employee/orders": [orders],
-  "/employee/tasks": [{ queryKey: ["tasks"], queryFn: () => listTasks() as any }],
-  "/employee/duty": [{ queryKey: ["duty"], queryFn: () => getMyDutyStatus() as any }],
+  "/employee/tasks": [{ queryKey: qk.tasks, queryFn: () => listTasks() as any }],
+  "/employee/duty": [{ queryKey: qk.duty, queryFn: () => getMyDutyStatus() as any }],
   "/client/orders": [orders],
   "/client/invoices": [invoices],
-  "/client/ledger": [{ queryKey: ["ledger"], queryFn: () => getClientLedger({ data: {} }) as any }],
+  "/client/ledger": [{ queryKey: qk.ledger, queryFn: () => getClientLedger({ data: {} }) as any }],
   "/client/profile": [clients],
-  "/settings": [{ queryKey: ["user-settings"], queryFn: () => getUserSettings() as any }],
+  "/settings": [{ queryKey: qk.userSettings, queryFn: () => getUserSettings() as any }],
 };
 
 const dashboardByRole: Record<string, Entry[]> = {
-  admin: [{ queryKey: ["admin-reports"], queryFn: () => adminReports() as any }],
+  admin: [{ queryKey: qk.adminReports, queryFn: () => adminReports() as any }],
   employee: [
-    { queryKey: ["duty"], queryFn: () => getMyDutyStatus() as any },
-    { queryKey: ["tasks"], queryFn: () => listTasks() as any },
+    { queryKey: qk.duty, queryFn: () => getMyDutyStatus() as any },
+    { queryKey: qk.tasks, queryFn: () => listTasks() as any },
     orders,
   ],
   client: [
-    { queryKey: ["ledger"], queryFn: () => getClientLedger({ data: {} }) as any },
+    { queryKey: qk.ledger, queryFn: () => getClientLedger({ data: {} }) as any },
     invoices,
     orders,
   ],
@@ -57,6 +58,6 @@ const dashboardByRole: Record<string, Entry[]> = {
 export function prefetchRouteData(qc: QueryClient, url: string, role?: string) {
   const entries = url === "/dashboard" ? dashboardByRole[role ?? ""] ?? [] : map[url] ?? [];
   for (const e of entries) {
-    void qc.prefetchQuery({ ...e, staleTime: 30_000 });
+    void qc.prefetchQuery({ ...e, staleTime: staleTimeFor(e.queryKey) });
   }
 }
