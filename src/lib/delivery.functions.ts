@@ -91,16 +91,26 @@ export const getOrderDeliveryState = createServerFn({ method: "GET" })
     };
   });
 
-/** Signed URL for a stored payment proof (storage RLS decides visibility). */
+/**
+  * Signed URL for a stored payment proof (storage RLS decides visibility).
+  * `thumb: true` serves the small preview variant when one was uploaded, so
+  * lists never download full-resolution photos.
+  */
 export const getProofUrl = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: { path: string }) => z.object({ path: z.string().min(1).max(500) }).parse(d))
+  .inputValidator((d: { path: string; thumb?: boolean }) =>
+    z.object({ path: z.string().min(1).max(500), thumb: z.boolean().optional() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: signed, error } = await context.supabase.storage
-      .from("payment-proofs")
-      .createSignedUrl(data.path, 300);
+    const storage = context.supabase.storage.from("payment-proofs");
+    const isImage = /\.(jpe?g|png|webp|gif|avif)$/i.test(data.path);
+    if (data.thumb) {
+      const { data: t } = await storage.createSignedUrl(`${data.path}.thumb.jpg`, 300);
+      if (t?.signedUrl) return { url: t.signedUrl, isImage: true, thumb: true };
+      if (!isImage) return { url: null as string | null, isImage: false, thumb: false };
+    }
+    const { data: signed, error } = await storage.createSignedUrl(data.path, 300);
     if (error) throw new Error(error.message);
-    return { url: signed.signedUrl };
+    return { url: signed.signedUrl as string | null, isImage, thumb: false };
   });
 
 /** Employee marks a payment-verified order out for delivery (backend also issues the OTP). */
