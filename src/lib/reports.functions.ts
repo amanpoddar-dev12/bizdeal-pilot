@@ -10,9 +10,9 @@ export const adminReports = createServerFn({ method: "GET" })
 
     const [invoices, orders, payments, clients, purse] = await Promise.all([
       supabase.from("invoices").select("id, client_id, amount, payment_amount, due_date, status, invoice_date, clients(business_name)"),
-      supabase.from("orders").select("id, client_id, employee_id, total_amount, status, created_at, profiles:employee_id(name), clients(business_name)"),
-      supabase.from("payments").select("amount, payment_date"),
-      supabase.from("clients").select("id, business_name, credit_limit, active"),
+      supabase.from("orders").select("employee_id, total_amount, created_at, profiles:employee_id(name)"),
+      supabase.from("payments").select("amount"),
+      supabase.from("clients").select("id, active"),
       supabase.from("credit_purse").select("*"),
     ]);
 
