@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  submitPayment, reviewPayment, getOrderDeliveryState, getProofUrl,
+  submitPayment, reviewPayment, getOrderDeliveryState,
   markOutForDelivery, regenerateDeliveryOtp, verifyDeliveryOtp, PAYMENT_METHODS,
 } from "@/lib/delivery.functions";
 import { Button } from "@/components/ui/button";

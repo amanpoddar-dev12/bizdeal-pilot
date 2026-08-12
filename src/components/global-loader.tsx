@@ -19,9 +19,11 @@ export function Spinner({ className }: { className?: string }) {
 
 /**
  * Global activity indicator:
- *  - always shows a slim top progress bar while anything is in flight
- *  - escalates to a blocking overlay when work takes longer than ~800ms
- *    (or immediately for mutations, which are user-initiated actions)
+ *  - slim top progress bar whenever anything is in flight (queries, route
+ *    transitions, mutations) — cheap, non-blocking, no layout shift
+ *  - blocking overlay ONLY for long-running user-initiated mutations. A
+ *    background refetch or a slow route load never covers a page the user
+ *    can already read and use.
  */
 export function GlobalLoader() {
   const routerPending = useRouterState({
@@ -35,6 +37,8 @@ export function GlobalLoader() {
   const mutating = useIsMutating();
 
   const active = routerPending || coldFetching > 0 || mutating > 0;
+  // Overlay is reserved for writes; reads degrade to the progress bar.
+  const blocking = mutating > 0;
   const [showBar, setShowBar] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
 
@@ -45,12 +49,12 @@ export function GlobalLoader() {
       return;
     }
     const barId = setTimeout(() => setShowBar(true), 150);
-    const overlayId = setTimeout(() => setShowOverlay(true), 1200);
+    const overlayId = blocking ? setTimeout(() => setShowOverlay(true), 1200) : undefined;
     return () => {
       clearTimeout(barId);
-      clearTimeout(overlayId);
+      if (overlayId) clearTimeout(overlayId);
     };
-  }, [active]);
+  }, [active, blocking]);
 
   return (
     <>

@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GlobalLoader } from "@/components/global-loader";
+import { OfflineBanner } from "@/components/offline-banner";
 import "@/i18n";
 
 function NotFoundComponent() {
@@ -144,6 +145,7 @@ function RootComponent() {
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <GlobalLoader />
+        <OfflineBanner />
         <Outlet />
         <Toaster richColors position="top-right" />
       </QueryClientProvider>

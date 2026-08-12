@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { isConstrainedClient } from "./use-network-status";
 
 /**
  * Incremental rendering for long tables/lists.
@@ -9,12 +10,15 @@ import { useEffect, useMemo, useState } from "react";
  * ordering behaviour changes.
  */
 export function useVisibleRows<T>(rows: T[], pageSize = 100) {
-  const [visible, setVisible] = useState(pageSize);
+  // Phones and Save-Data links paint far fewer rows up front; "Show more"
+  // reveals the rest without changing any data or ordering.
+  const [step] = useState(() => (isConstrainedClient() ? Math.max(15, Math.round(pageSize / 4)) : pageSize));
+  const [visible, setVisible] = useState(step);
 
   // Filters/search shrink the list — start again from the first page.
   useEffect(() => {
-    setVisible(pageSize);
-  }, [rows.length, pageSize]);
+    setVisible(step);
+  }, [rows.length, step]);
 
   const shown = useMemo(() => rows.slice(0, visible), [rows, visible]);
 
@@ -22,6 +26,6 @@ export function useVisibleRows<T>(rows: T[], pageSize = 100) {
     shown,
     hasMore: shown.length < rows.length,
     remaining: rows.length - shown.length,
-    showMore: () => setVisible((v) => v + pageSize),
+    showMore: () => setVisible((v) => v + step),
   };
 }
