@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { inr } from "@/lib/format";
 import { PhoneDisplay } from "@/components/phone-display";
 import { downloadCsv, num, csvDate } from "@/lib/csv";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Download, Plus, ShieldCheck, ShieldX, Users } from "lucide-react";
 import { AssignClientDialog } from "@/components/admin/assign-client-dialog";
