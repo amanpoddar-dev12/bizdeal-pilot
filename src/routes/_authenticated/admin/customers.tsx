@@ -116,7 +116,7 @@ function Customers() {
                 {filtered.length === 0 && (
                   <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">No clients yet</td></tr>
                 )}
-                {filtered.map((c: any) => (
+                {shown.map((c: any) => (
                   <tr key={c.id} className="border-b border-border/60 hover:bg-muted/40">
                     <td className="px-4 py-3 font-medium">{c.business_name}
                       {!c.active && <Badge variant="secondary" className="ml-2">inactive</Badge>}
