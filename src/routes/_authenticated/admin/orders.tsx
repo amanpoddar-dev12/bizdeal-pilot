@@ -77,6 +77,37 @@ function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
     (me?.role === "admin" || (me?.role === "employee" && o.employee_id === me?.userId)) &&
     ["pending", "confirmed", "change_requested", "client_rejected"].includes(o.status);
 
+  // Shared between the desktop table and the mobile card list so both
+  // surfaces stay behaviourally identical.
+  const rowActions = (o: any) => (
+    <>
+      {me?.role === "client" && ["pending_client", "payment_pending", "out_for_delivery"].includes(o.status) && (
+        <Button size="sm" onClick={() => setOpenId(o.id)}>
+          {o.status === "payment_pending" ? "Pay" : o.status === "out_for_delivery" ? "View code" : "Review"}
+        </Button>
+      )}
+      {scope !== "client" && ["payment_verified", "out_for_delivery"].includes(o.status) && (
+        <Button size="sm" onClick={() => setOpenId(o.id)}>
+          {o.status === "payment_verified" ? "Dispatch" : "Enter OTP"}
+        </Button>
+      )}
+      {scope !== "client" && canSubmit(o) && (
+        <Button size="sm" variant="outline" disabled={submit.isPending}
+          onClick={() => submit.mutate(o.id)}>Send for approval</Button>
+      )}
+      {scope === "admin" && me?.role === "admin" && (
+        <>
+          {o.status === "pending" && (
+            <Button size="sm" onClick={() => setStatus.mutate({ id: o.id, status: "confirmed" })}>Confirm</Button>
+          )}
+          {(o.status === "confirmed" || o.status === "client_approved" || o.status === "completed") && (
+            <Button size="sm" onClick={() => invoice.mutate(o.id)}>Generate invoice</Button>
+          )}
+        </>
+      )}
+    </>
+  );
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -90,7 +121,7 @@ function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
       </div>
       <Card>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[680px] text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-muted-foreground">
@@ -118,43 +149,46 @@ function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
                     <td className="py-3 font-medium">{inr(o.total_amount)}</td>
                     <td className="py-3"><OrderStatusBadge status={o.status} /></td>
                     <td className="py-3 pr-4 text-right space-x-1" onClick={(e) => e.stopPropagation()}>
-                      {me?.role === "client" && ["pending_client", "payment_pending", "out_for_delivery"].includes(o.status) && (
-                        <Button size="sm" onClick={() => setOpenId(o.id)}>
-                          {o.status === "payment_pending" ? "Pay" : o.status === "out_for_delivery" ? "View code" : "Review"}
-                        </Button>
-                      )}
-                      {scope !== "client" && ["payment_verified", "out_for_delivery"].includes(o.status) && (
-                        <Button size="sm" onClick={() => setOpenId(o.id)}>
-                          {o.status === "payment_verified" ? "Dispatch" : "Enter OTP"}
-                        </Button>
-                      )}
-                      {scope !== "client" && canSubmit(o) && (
-                        <Button size="sm" variant="outline" disabled={submit.isPending}
-                          onClick={() => submit.mutate(o.id)}>Send for approval</Button>
-                      )}
-                      {scope === "admin" && me?.role === "admin" && (
-                        <>
-                          {o.status === "pending" && (
-                            <Button size="sm" onClick={() => setStatus.mutate({ id: o.id, status: "confirmed" })}>Confirm</Button>
-                          )}
-                          {(o.status === "confirmed" || o.status === "client_approved" || o.status === "completed") && (
-                            <Button size="sm" onClick={() => invoice.mutate(o.id)}>Generate invoice</Button>
-                          )}
-                        </>
-                      )}
+                      {rowActions(o)}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {hasMore && (
-              <div className="border-t border-border p-3 text-center">
-                <Button variant="outline" size="sm" onClick={showMore}>
-                  Show more ({remaining} remaining)
-                </Button>
-              </div>
-            )}
           </div>
+
+          {/* Mobile: cards instead of a horizontally scrolling table */}
+          <ul className="divide-y divide-border md:hidden">
+            {filtered.length === 0 && (
+              <li className="px-4 py-8 text-center text-muted-foreground">No orders</li>
+            )}
+            {shown.map((o: any) => (
+              <li key={o.id} className="p-4" onClick={() => setOpenId(o.id)}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">{o.order_number}</div>
+                    <div className="truncate text-xs text-muted-foreground">{o.clients?.business_name}</div>
+                  </div>
+                  <OrderStatusBadge status={o.status} />
+                </div>
+                <div className="mt-1 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                  <span className="truncate">{o.profiles?.name ?? "—"} · {fmtDate(o.created_at)}</span>
+                  <span className="shrink-0 font-medium text-foreground">{inr(o.total_amount)}</span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2" onClick={(e) => e.stopPropagation()}>
+                  {rowActions(o)}
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          {hasMore && (
+            <div className="border-t border-border p-3 text-center">
+              <Button variant="outline" size="sm" onClick={showMore}>
+                Show more ({remaining} remaining)
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
