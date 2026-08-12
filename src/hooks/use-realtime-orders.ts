@@ -1,41 +1,27 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { acquireWorkflowRealtime } from "@/lib/realtime-hub";
 import { qk } from "@/lib/query-keys";
 
 /**
  * Keeps order lists, timelines and dashboards live without a page refresh.
- * One channel per mounted consumer, torn down on unmount.
+ *
+ * All consumers share ONE realtime channel (see realtime-hub): mounting this
+ * hook in several widgets no longer opens duplicate sockets, and navigation
+ * between pages reuses the same subscription instead of recreating it.
  */
 export function useRealtimeOrders(orderId?: string) {
   const qc = useQueryClient();
 
   useEffect(() => {
-    const refresh = () => {
-      qc.invalidateQueries({ queryKey: qk.orders });
-      qc.invalidateQueries({ queryKey: qk.adminReports });
-      qc.invalidateQueries({ queryKey: qk.payments });
-      qc.invalidateQueries({ queryKey: qk.notifications });
-      qc.invalidateQueries({ queryKey: qk.pendingTasks });
-      qc.invalidateQueries({ queryKey: qk.activityHistory() });
-      if (orderId) {
-        qc.invalidateQueries({ queryKey: qk.orderWorkflow(orderId) });
-        qc.invalidateQueries({ queryKey: qk.orderDelivery(orderId) });
-      }
-    };
+    const release = acquireWorkflowRealtime(qc);
+    return release;
+  }, [qc]);
 
-    const channel = supabase
-      .channel(`orders-live-${orderId ?? "all"}-${Math.random().toString(36).slice(2)}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, refresh)
-      .on("postgres_changes", { event: "*", schema: "public", table: "order_events" }, refresh)
-      .on("postgres_changes", { event: "*", schema: "public", table: "order_approvals" }, refresh)
-      .on("postgres_changes", { event: "*", schema: "public", table: "order_payments" }, refresh)
-      .on("postgres_changes", { event: "*", schema: "public", table: "delivery_otps" }, refresh)
-      .subscribe();
-
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
+  // A focused panel also wants its own order slices fresh on mount.
+  useEffect(() => {
+    if (!orderId) return;
+    qc.invalidateQueries({ queryKey: qk.orderWorkflow(orderId) as unknown as unknown[] });
+    qc.invalidateQueries({ queryKey: qk.orderDelivery(orderId) as unknown as unknown[] });
   }, [qc, orderId]);
 }
