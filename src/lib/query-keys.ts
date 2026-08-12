@@ -12,7 +12,7 @@ export const qk = {
 
   clients: ["clients"] as const,
   clientAssignments: (clientId?: string) =>
-    (clientId ? ["client-assignments", clientId] : ["client-assignments"]) as const,
+    clientId ? (["client-assignments", clientId] as const) : (["client-assignments"] as const),
 
   employees: ["employees"] as const,
   employeeActivity: ["employee-activity"] as const,
@@ -35,7 +35,7 @@ export const qk = {
   tasks: ["tasks"] as const,
   pendingTasks: ["pending-tasks"] as const,
   activityHistory: (limit?: number) =>
-    (limit == null ? ["activity-history"] : ["activity-history", limit]) as const,
+    limit == null ? (["activity-history"] as const) : (["activity-history", limit] as const),
 
   adminReports: ["admin-reports"] as const,
   audit: (from = "", to = "") => ["audit", from, to] as const,
