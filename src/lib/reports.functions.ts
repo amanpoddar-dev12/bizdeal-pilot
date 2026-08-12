@@ -84,14 +84,28 @@ export const adminReports = createServerFn({ method: "GET" })
 
 export const listAuditLogs = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        /** ISO date (yyyy-mm-dd) — filtered in the database, not the browser. */
+        from: z.string().optional().nullable(),
+        to: z.string().optional().nullable(),
+        limit: z.number().int().min(1).max(5000).default(2000),
+      })
+      .parse(d ?? {}),
+  )
+  .handler(async ({ data, context }) => {
     const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     if (!isAdmin) throw new Error("Forbidden");
-    const { data: logs } = await context.supabase
+    let query = context.supabase
       .from("audit_logs")
       .select("*, profiles:actor_id(name, email, phone)")
       .order("created_at", { ascending: false })
-      .limit(2000);
+      .limit(data.limit);
+    if (data.from) query = query.gte("created_at", new Date(data.from).toISOString());
+    if (data.to) query = query.lt("created_at", new Date(new Date(data.to).getTime() + 864e5).toISOString());
+    const { data: logs } = await query;
+
 
     const actorIds = Array.from(new Set((logs ?? []).map((l: any) => l.actor_id).filter(Boolean)));
     const roleMap = new Map<string, string>();
