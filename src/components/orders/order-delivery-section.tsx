@@ -16,6 +16,7 @@ import { inr, fmtDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Lock, Truck, ShieldCheck, Clock, AlertTriangle, Loader2, FileImage, RefreshCw } from "lucide-react";
+import { qk } from "@/lib/query-keys";
 
 const METHOD_LABELS: Record<string, string> = {
   upi: "UPI",
@@ -77,7 +78,7 @@ export function OrderDeliverySection({ order, role }: { order: any; role: "admin
   const verifyFn = useServerFn(verifyDeliveryOtp);
 
   const { data } = useQuery({
-    queryKey: ["order-delivery", orderId],
+    queryKey: qk.orderDelivery(orderId),
     queryFn: () => stateFn({ data: { id: orderId } }),
   });
 
@@ -96,10 +97,10 @@ export function OrderDeliverySection({ order, role }: { order: any; role: "admin
   const [rejectReason, setRejectReason] = useState("");
 
   const invalidate = () => {
-    qc.invalidateQueries({ queryKey: ["orders"] });
-    qc.invalidateQueries({ queryKey: ["payments"] });
-    qc.invalidateQueries({ queryKey: ["order-delivery", orderId] });
-    qc.invalidateQueries({ queryKey: ["order-workflow", orderId] });
+    qc.invalidateQueries({ queryKey: qk.orders });
+    qc.invalidateQueries({ queryKey: qk.payments });
+    qc.invalidateQueries({ queryKey: qk.orderDelivery(orderId) });
+    qc.invalidateQueries({ queryKey: qk.orderWorkflow(orderId) });
   };
 
   const pay = useMutation({

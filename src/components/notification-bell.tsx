@@ -9,6 +9,7 @@ import { getMe } from "@/lib/me.functions";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { fmtDateTime } from "@/lib/format";
+import { qk } from "@/lib/query-keys";
 
 export function NotificationBell() {
   const listFn = useServerFn(listMyNotifications);
@@ -16,8 +17,8 @@ export function NotificationBell() {
   const meFn = useServerFn(getMe);
   const qc = useQueryClient();
 
-  const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => meFn() });
-  const { data: items = [] } = useQuery({ queryKey: ["notifications"], queryFn: () => listFn() });
+  const { data: me } = useQuery({ queryKey: qk.me, queryFn: () => meFn() });
+  const { data: items = [] } = useQuery({ queryKey: qk.notifications, queryFn: () => listFn() });
   const unread = items.filter((n: any) => !n.is_read).length;
 
   useEffect(() => {
@@ -26,7 +27,7 @@ export function NotificationBell() {
       .channel(`notif-${me.userId}-${Math.random().toString(36).slice(2)}`)
       .on("postgres_changes",
         { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${me.userId}` },
-        () => { qc.invalidateQueries({ queryKey: ["notifications"] }); },
+        () => { qc.invalidateQueries({ queryKey: qk.notifications }); },
       )
       .subscribe();
     return () => { supabase.removeChannel(ch); };
@@ -34,7 +35,7 @@ export function NotificationBell() {
 
   return (
     <Popover onOpenChange={async (o) => {
-      if (o && unread > 0) { await markFn(); qc.invalidateQueries({ queryKey: ["notifications"] }); }
+      if (o && unread > 0) { await markFn(); qc.invalidateQueries({ queryKey: qk.notifications }); }
     }}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">

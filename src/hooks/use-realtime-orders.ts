@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { qk } from "@/lib/query-keys";
 
 /**
  * Keeps order lists, timelines and dashboards live without a page refresh.
@@ -11,15 +12,15 @@ export function useRealtimeOrders(orderId?: string) {
 
   useEffect(() => {
     const refresh = () => {
-      qc.invalidateQueries({ queryKey: ["orders"] });
-      qc.invalidateQueries({ queryKey: ["admin-reports"] });
-      qc.invalidateQueries({ queryKey: ["payments"] });
-      qc.invalidateQueries({ queryKey: ["notifications"] });
-      qc.invalidateQueries({ queryKey: ["pending-tasks"] });
-      qc.invalidateQueries({ queryKey: ["activity-history"] });
+      qc.invalidateQueries({ queryKey: qk.orders });
+      qc.invalidateQueries({ queryKey: qk.adminReports });
+      qc.invalidateQueries({ queryKey: qk.payments });
+      qc.invalidateQueries({ queryKey: qk.notifications });
+      qc.invalidateQueries({ queryKey: qk.pendingTasks });
+      qc.invalidateQueries({ queryKey: qk.activityHistory() });
       if (orderId) {
-        qc.invalidateQueries({ queryKey: ["order-workflow", orderId] });
-        qc.invalidateQueries({ queryKey: ["order-delivery", orderId] });
+        qc.invalidateQueries({ queryKey: qk.orderWorkflow(orderId) });
+        qc.invalidateQueries({ queryKey: qk.orderDelivery(orderId) });
       }
     };
 

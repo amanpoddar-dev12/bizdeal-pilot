@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { fmtDate } from "@/lib/format";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -39,7 +40,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
 
 function SettingsPage() {
   const { t } = useTranslation();
-  const { data: me } = useSuspenseQuery({ queryKey: ["me"], queryFn: () => getMe() });
+  const { data: me } = useSuspenseQuery({ queryKey: qk.me, queryFn: () => getMe() });
   const isAdmin = me.role === "admin";
 
   return (
@@ -71,7 +72,7 @@ function AppearanceTab() {
   const { theme, setTheme } = useTheme();
   const save = useServerFn(upsertUserSettings);
   const getSettings = useServerFn(getUserSettings);
-  const { data: remote } = useQuery({ queryKey: ["user-settings"], queryFn: () => getSettings() });
+  const { data: remote } = useQuery({ queryKey: qk.userSettings, queryFn: () => getSettings() });
 
   // Hydrate from remote once on load (fall back to local values already applied)
   useEffect(() => {
@@ -150,7 +151,7 @@ function AdminsTab() {
   const qc = useQueryClient();
   const list = useServerFn(listAdmins);
   const create = useServerFn(createAdminUser);
-  const { data: admins, isLoading } = useQuery({ queryKey: ["admins"], queryFn: () => list() });
+  const { data: admins, isLoading } = useQuery({ queryKey: qk.admins, queryFn: () => list() });
 
   const [form, setForm] = useState({ name: "", phone: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -176,7 +177,7 @@ function AdminsTab() {
       });
       toast.success(t("settings.admins.success"));
       setForm({ name: "", phone: "" });
-      qc.invalidateQueries({ queryKey: ["admins"] });
+      qc.invalidateQueries({ queryKey: qk.admins });
     } catch (e: any) {
       toast.error(e.message ?? "Failed");
     } finally {

@@ -7,6 +7,7 @@ import { inr, fmtDate } from "@/lib/format";
 import { downloadCsv, num, csvDate } from "@/lib/csv";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated/client/ledger")({
   head: () => ({
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/client/ledger")({
 
 function Ledger() {
   const fn = useServerFn(getClientLedger);
-  const { data } = useQuery({ queryKey: ["ledger"], queryFn: () => fn({ data: {} }) });
+  const { data } = useQuery({ queryKey: qk.ledger, queryFn: () => fn({ data: {} }) });
   const invs = (data?.invoices ?? []).map((i: any) => ({
     date: i.invoice_date,
     type: "Invoice",

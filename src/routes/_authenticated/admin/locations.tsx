@@ -8,6 +8,7 @@ import { fmtDateTime } from "@/lib/format";
 import { formatAddress } from "@/lib/reverse-geocode";
 import { MapPin, History } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated/admin/locations")({
   head: () => ({
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/_authenticated/admin/locations")({
 function Locations() {
   const fn = useServerFn(listEmployeeLatestLocations);
   const { data = [] } = useQuery({
-    queryKey: ["locations"],
+    queryKey: qk.locations,
     queryFn: () => fn(),
     refetchInterval: 60_000,
   });

@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated/complete-profile")({
   head: () => ({
@@ -19,7 +20,7 @@ export const Route = createFileRoute("/_authenticated/complete-profile")({
   }),
   loader: ({ context }) =>
     context.queryClient.ensureQueryData({
-      queryKey: ["profile-completion"],
+      queryKey: qk.profileCompletion,
       queryFn: () => getProfileCompletion(),
     }),
   component: CompleteProfilePage,
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/_authenticated/complete-profile")({
 
 function CompleteProfilePage() {
   const { data } = useSuspenseQuery({
-    queryKey: ["profile-completion"],
+    queryKey: qk.profileCompletion,
     queryFn: () => getProfileCompletion(),
   });
   const save = useServerFn(saveProfileCompletion);

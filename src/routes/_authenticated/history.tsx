@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { OrderReviewPanel } from "@/components/orders/order-review-panel";
 import { useRealtimeOrders } from "@/hooks/use-realtime-orders";
 import { inr, fmtDateTime } from "@/lib/format";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated/history")({
   head: () => ({
@@ -27,7 +28,7 @@ function HistoryPage() {
   const fn = useServerFn(getActivityHistory);
   useRealtimeOrders();
   const { data, isLoading } = useQuery({
-    queryKey: ["activity-history", 200],
+    queryKey: qk.activityHistory(200),
     queryFn: () => fn({ data: { limit: 200 } }),
   });
   const [q, setQ] = useState("");

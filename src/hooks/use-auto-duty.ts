@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
 import { clockIn, clockOut, getMyDutyStatus } from "@/lib/duty.functions";
+import { qk } from "@/lib/query-keys";
 
 /**
  * Automatically clocks the employee in when the app is active and clocks
@@ -26,7 +27,7 @@ export function useAutoDuty(role: string | undefined) {
         if (!s?.open) {
           await inFn();
           openRef.current = true;
-          qc.invalidateQueries({ queryKey: ["duty"] });
+          qc.invalidateQueries({ queryKey: qk.duty });
         } else {
           openRef.current = true;
         }
@@ -38,7 +39,7 @@ export function useAutoDuty(role: string | undefined) {
       openRef.current = false;
       try {
         await outFn();
-        qc.invalidateQueries({ queryKey: ["duty"] });
+        qc.invalidateQueries({ queryKey: qk.duty });
       } catch { /* ignore */ }
     }
 

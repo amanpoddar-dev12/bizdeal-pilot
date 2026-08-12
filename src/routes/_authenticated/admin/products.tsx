@@ -12,6 +12,7 @@ import { inr } from "@/lib/format";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated/admin/products")({
   head: () => ({
@@ -43,7 +44,7 @@ function ProductsPage() {
   const updateFn = useServerFn(updateProduct);
   const deleteFn = useServerFn(deleteProduct);
   const qc = useQueryClient();
-  const { data: products = [] } = useQuery({ queryKey: ["products"], queryFn: () => listFn() });
+  const { data: products = [] } = useQuery({ queryKey: qk.products, queryFn: () => listFn() });
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<ProductForm>(empty);
 
@@ -60,7 +61,7 @@ function ProductsPage() {
       return createFn({ data: payload });
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["products"] });
+      qc.invalidateQueries({ queryKey: qk.products });
       toast.success(form.id ? "Product updated" : "Product added");
       setOpen(false); setForm(empty);
     },
@@ -69,7 +70,7 @@ function ProductsPage() {
 
   const delMut = useMutation({
     mutationFn: (id: string) => deleteFn({ data: { id } }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["products"] }); toast.success("Product removed"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: qk.products }); toast.success("Product removed"); },
     onError: (e: any) => toast.error(e.message),
   });
 

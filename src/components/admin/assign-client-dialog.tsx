@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { PhoneDisplay } from "@/components/phone-display";
+import { qk } from "@/lib/query-keys";
 
 export function AssignClientDialog({
   client,
@@ -34,12 +35,12 @@ export function AssignClientDialog({
   const qc = useQueryClient();
 
   const { data: employees = [] } = useQuery({
-    queryKey: ["employees"],
+    queryKey: qk.employees,
     queryFn: () => empFn(),
     enabled: open,
   });
   const { data: assignments = [] } = useQuery({
-    queryKey: ["client-assignments"],
+    queryKey: qk.clientAssignments(),
     queryFn: () => assignmentsFn(),
     enabled: open,
   });
@@ -55,8 +56,8 @@ export function AssignClientDialog({
       return v.next ? assign(payload) : unassign(payload);
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["client-assignments"] });
-      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: qk.clientAssignments() });
+      qc.invalidateQueries({ queryKey: qk.clients });
       toast.success("Assignment updated");
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed to update assignment"),

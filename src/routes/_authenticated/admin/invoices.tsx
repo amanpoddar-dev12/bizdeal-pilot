@@ -16,6 +16,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { downloadCsv, num, csvDate } from "@/lib/csv";
 import { Download, FileText } from "lucide-react";
+import { qk } from "@/lib/query-keys";
 
 const stColor: Record<string, string> = {
   draft: "bg-gray-500", sent: "bg-sky-500", approved: "bg-indigo-500",
@@ -28,13 +29,13 @@ function InvoicesTable({ scope }: { scope: "admin" | "client" }) {
   const payFn = useServerFn(recordPayment);
   const respFn = useServerFn(respondToInvoice);
   const qc = useQueryClient();
-  const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => meFn() });
-  const { data = [] } = useQuery({ queryKey: ["invoices"], queryFn: () => listFn() });
+  const { data: me } = useQuery({ queryKey: qk.me, queryFn: () => meFn() });
+  const { data = [] } = useQuery({ queryKey: qk.invoices, queryFn: () => listFn() });
   const [payFor, setPayFor] = useState<any>(null);
 
   const respond = useMutation({
     mutationFn: (v: any) => respFn({ data: v }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["invoices"] }); toast.success("Response sent"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: qk.invoices }); toast.success("Response sent"); },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -151,7 +152,7 @@ function InvoicesTable({ scope }: { scope: "admin" | "client" }) {
       </Card>
 
       <Dialog open={!!payFor} onOpenChange={(o) => { if (!o) setPayFor(null); }}>
-        {payFor && <PayForm inv={payFor} payFn={payFn} onDone={() => { setPayFor(null); qc.invalidateQueries({ queryKey: ["invoices"] }); }} />}
+        {payFor && <PayForm inv={payFor} payFn={payFn} onDone={() => { setPayFor(null); qc.invalidateQueries({ queryKey: qk.invoices }); }} />}
       </Dialog>
     </div>
   );

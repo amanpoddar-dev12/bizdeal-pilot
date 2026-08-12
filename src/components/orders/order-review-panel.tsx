@@ -14,6 +14,7 @@ import { useRealtimeOrders } from "@/hooks/use-realtime-orders";
 import { inr, fmtDate, fmtDateTime } from "@/lib/format";
 import { toast } from "sonner";
 import { Check, X, Loader2 } from "lucide-react";
+import { qk } from "@/lib/query-keys";
 
 const CHECKS = [
   { key: "items", label: "I have verified the items, quantities and rates" },
@@ -42,12 +43,12 @@ export function OrderReviewPanel({
   useRealtimeOrders(orderId ?? undefined);
 
   const { data, isLoading } = useQuery({
-    queryKey: ["order-workflow", orderId],
+    queryKey: qk.orderWorkflow(orderId),
     queryFn: () => detailFn({ data: { id: orderId! } }),
     enabled: !!orderId && open,
   });
 
-  const { data: me } = useQuery({ queryKey: ["me"], queryFn: () => meFn() });
+  const { data: me } = useQuery({ queryKey: qk.me, queryFn: () => meFn() });
   const order: any = data?.order;
   const allChecked = useMemo(() => CHECKS.every((c) => checked[c.key]), [checked]);
 
@@ -56,7 +57,7 @@ export function OrderReviewPanel({
       reviewFn({ data: { id: orderId!, action, checklist: checked, remarks: remarks || null } }),
     // Optimistic status flip so the UI reacts instantly.
     onMutate: async (action) => {
-      await qc.cancelQueries({ queryKey: ["orders"] });
+      await qc.cancelQueries({ queryKey: qk.orders });
       const prev = qc.getQueryData<any[]>(["orders"]);
       const next = action === "approve" ? "payment_pending" : "client_rejected";
       qc.setQueryData<any[]>(["orders"], (rows) =>
@@ -75,10 +76,10 @@ export function OrderReviewPanel({
       setRemarks("");
     },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: ["orders"] });
-      qc.invalidateQueries({ queryKey: ["order-delivery", orderId] });
-      qc.invalidateQueries({ queryKey: ["order-workflow", orderId] });
-      qc.invalidateQueries({ queryKey: ["notifications"] });
+      qc.invalidateQueries({ queryKey: qk.orders });
+      qc.invalidateQueries({ queryKey: qk.orderDelivery(orderId) });
+      qc.invalidateQueries({ queryKey: qk.orderWorkflow(orderId) });
+      qc.invalidateQueries({ queryKey: qk.notifications });
     },
   });
 

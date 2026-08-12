@@ -13,6 +13,7 @@ import {
 import { PendingActions } from "@/components/tasks/pending-actions";
 import { RecentActivity } from "@/components/tasks/recent-activity";
 import { AlertCircle, Wallet, Users, Receipt, TrendingUp } from "lucide-react";
+import { qk } from "@/lib/query-keys";
 
 const COLORS = ["#0ea5e9", "#f59e0b", "#ef4444"];
 
@@ -20,7 +21,7 @@ export function AdminOverview() {
   const { t } = useTranslation();
   useRealtimeOrders();
   const fn = useServerFn(adminReports);
-  const { data, isLoading } = useQuery({ queryKey: ["admin-reports"], queryFn: () => fn() });
+  const { data, isLoading } = useQuery({ queryKey: qk.adminReports, queryFn: () => fn() });
   if (isLoading || !data) return <div className="text-sm text-muted-foreground">{t("dashboard.admin.loading")}</div>;
   const k = data.kpis;
 

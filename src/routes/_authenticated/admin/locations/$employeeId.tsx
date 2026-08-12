@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { fmtDateTime } from "@/lib/format";
 import { formatAddress } from "@/lib/reverse-geocode";
 import { ArrowLeft, MapPin } from "lucide-react";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated/admin/locations/$employeeId")({
   head: () => ({
@@ -22,7 +23,7 @@ function History() {
   const { employeeId } = Route.useParams();
   const fn = useServerFn(listEmployeeLocationHistory);
   const { data = [] } = useQuery({
-    queryKey: ["location-history", employeeId],
+    queryKey: qk.locationHistory(employeeId),
     queryFn: () => fn({ data: { employee_id: employeeId, limit: 200 } }),
   });
 

@@ -11,6 +11,7 @@ import { useRealtimeOrders } from "@/hooks/use-realtime-orders";
 import { inr, fmtDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { CheckCircle2 } from "lucide-react";
+import { qk } from "@/lib/query-keys";
 
 const PRIORITY_STYLE: Record<string, { dot: string; ring: string; label: string }> = {
   action_required: { dot: "bg-red-500", ring: "border-red-500/40 bg-red-500/5", label: "Action required" },
@@ -22,7 +23,7 @@ const PRIORITY_STYLE: Record<string, { dot: string; ring: string; label: string 
 export function PendingActions({ initial = 4 }: { initial?: number }) {
   const fn = useServerFn(getPendingTasks);
   useRealtimeOrders();
-  const { data, isLoading } = useQuery({ queryKey: ["pending-tasks"], queryFn: () => fn() });
+  const { data, isLoading } = useQuery({ queryKey: qk.pendingTasks, queryFn: () => fn() });
   const [showAll, setShowAll] = useState(false);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [assigning, setAssigning] = useState<{ id: string; business_name: string } | null>(null);

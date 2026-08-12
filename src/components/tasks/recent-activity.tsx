@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { OrderReviewPanel } from "@/components/orders/order-review-panel";
 import { inr, fmtDateTime } from "@/lib/format";
 import { ChevronRight } from "lucide-react";
+import { qk } from "@/lib/query-keys";
 
 export function RecentActivity({ limit = 5 }: { limit?: number }) {
   const fn = useServerFn(getActivityHistory);
   const { data, isLoading } = useQuery({
-    queryKey: ["activity-history", limit],
+    queryKey: qk.activityHistory(limit),
     queryFn: () => fn({ data: { limit } }),
   });
   const [orderId, setOrderId] = useState<string | null>(null);

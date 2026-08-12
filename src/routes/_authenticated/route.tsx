@@ -17,6 +17,7 @@ import { LANG_STORAGE_KEY } from "@/i18n";
 import { useAutoDuty } from "@/hooks/use-auto-duty";
 import { LocationPermissionBanner } from "@/components/location-permission-banner";
 import { LogOut } from "lucide-react";
+import { qk } from "@/lib/query-keys";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/_authenticated")({
     // re-runs the route). Without a token getMe() 401s and blanks the app.
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/auth" });
-    return context.queryClient.ensureQueryData({ queryKey: ["me"], queryFn: () => getMe() });
+    return context.queryClient.ensureQueryData({ queryKey: qk.me, queryFn: () => getMe() });
   },
   component: AuthedLayout,
   errorComponent: ({ error }) =>
@@ -47,10 +48,10 @@ export const Route = createFileRoute("/_authenticated")({
 });
 
 function AuthedLayout() {
-  const { data: me } = useSuspenseQuery({ queryKey: ["me"], queryFn: () => getMe() });
+  const { data: me } = useSuspenseQuery({ queryKey: qk.me, queryFn: () => getMe() });
   const getCompletion = useServerFn(getProfileCompletion);
   const { data: completion } = useQuery({
-    queryKey: ["profile-completion"],
+    queryKey: qk.profileCompletion,
     queryFn: () => getCompletion(),
   });
   const router = useRouter();
@@ -58,7 +59,7 @@ function AuthedLayout() {
   const { i18n } = useTranslation();
   const { theme, setTheme } = useTheme();
   const getSettings = useServerFn(getUserSettings);
-  const { data: settings } = useQuery({ queryKey: ["user-settings"], queryFn: () => getSettings() });
+  const { data: settings } = useQuery({ queryKey: qk.userSettings, queryFn: () => getSettings() });
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   useAutoDuty(me?.role);
 
