@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  submitPayment, reviewPayment, getOrderDeliveryState, getProofUrl,
+  submitPayment, reviewPayment, getOrderDeliveryState,
   markOutForDelivery, regenerateDeliveryOtp, verifyDeliveryOtp, PAYMENT_METHODS,
 } from "@/lib/delivery.functions";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { inr, fmtDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { Lock, Truck, ShieldCheck, Clock, AlertTriangle, Loader2, FileImage, RefreshCw } from "lucide-react";
+import { Lock, Truck, ShieldCheck, Clock, AlertTriangle, Loader2, RefreshCw } from "lucide-react";
+import { ProofPreview } from "@/components/proof-preview";
+import { prepareUpload, thumbPathFor } from "@/lib/image-compress";
 import { qk } from "@/lib/query-keys";
 import { invalidateFor } from "@/lib/query-mutations";
 
@@ -50,21 +52,6 @@ function Progress({ status }: { status: string }) {
         </div>
       ))}
     </div>
-  );
-}
-
-function ProofLink({ path }: { path: string }) {
-  const urlFn = useServerFn(getProofUrl);
-  const open = useMutation({
-    mutationFn: () => urlFn({ data: { path } }),
-    onSuccess: (r) => window.open(r.url, "_blank", "noopener"),
-    onError: (e: any) => toast.error(e.message),
-  });
-  return (
-    <Button size="sm" variant="outline" onClick={() => open.mutate()} disabled={open.isPending}>
-      {open.isPending ? <Loader2 className="mr-1 size-4 animate-spin" /> : <FileImage className="mr-1 size-4" />}
-      View proof
-    </Button>
   );
 }
 
@@ -109,9 +96,16 @@ export function OrderDeliverySection({ order, role }: { order: any; role: "admin
         const { data: auth } = await supabase.auth.getUser();
         const uid = auth.user?.id;
         if (!uid) throw new Error("Session expired");
-        const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+        // Compress on-device before upload: phone photos are several MB and
+        // dominate submit time on mobile data. A thumbnail is stored alongside
+        // so reviewers never download the full file just to glance at it.
+        const prepared = await prepareUpload(file);
+        const ext = prepared.file.name.split(".").pop()?.toLowerCase() ?? "jpg";
         const path = `${uid}/${orderId}-${Date.now()}.${ext}`;
-        const { error } = await supabase.storage.from("payment-proofs").upload(path, file);
+        const { error } = await supabase.storage.from("payment-proofs").upload(path, prepared.file);
+        if (!error && prepared.thumb) {
+          await supabase.storage.from("payment-proofs").upload(thumbPathFor(path), prepared.thumb);
+        }
         setUploading(false);
         if (error) throw new Error(error.message);
         proof_path = path;
@@ -205,7 +199,7 @@ export function OrderDeliverySection({ order, role }: { order: any; role: "admin
                   </p>
                 )}
                 <div className="mt-2 flex flex-wrap gap-2">
-                  {p.proof_path && <ProofLink path={p.proof_path} />}
+                  {p.proof_path && <ProofPreview path={p.proof_path} />}
                   {role === "admin" && p.status === "submitted" && (
                     <>
                       <Button size="sm" disabled={review.isPending} onClick={() => review.mutate("approve")}>

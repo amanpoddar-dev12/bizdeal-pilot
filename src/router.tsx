@@ -18,6 +18,14 @@ export const getRouter = () => {
         retry: shouldRetry,
         retryDelay: (attempt) => retryDelay(attempt),
         placeholderData: (prev: unknown) => prev,
+        // Flaky mobile links: try anyway rather than parking queries as
+        // "paused", and keep serving cache while the retry runs.
+        networkMode: "offlineFirst",
+      },
+      mutations: {
+        networkMode: "offlineFirst",
+        retry: (count, error) => (shouldRetry(count, error) ? count < 2 : false),
+        retryDelay: (attempt) => retryDelay(attempt),
       },
     },
   });

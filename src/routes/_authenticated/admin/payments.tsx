@@ -55,7 +55,7 @@ function PaymentsPage() {
 
       <Card>
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[840px] text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-muted-foreground">
@@ -103,6 +103,38 @@ function PaymentsPage() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile: cards instead of a horizontally scrolling table */}
+          <ul className="divide-y divide-border md:hidden">
+            {rows.length === 0 && (
+              <li className="px-4 py-8 text-center text-muted-foreground">No payments</li>
+            )}
+            {rows.map((p: any) => (
+              <li key={p.id} className="p-4" onClick={() => setOpenId(p.order_id)}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="truncate font-medium">{p.orders?.order_number ?? "—"}</div>
+                    <div className="truncate text-xs text-muted-foreground">{p.clients?.business_name ?? "—"}</div>
+                  </div>
+                  <span className={cn(
+                    "shrink-0 rounded-full px-2 py-0.5 text-xs font-medium",
+                    p.status === "verified" && "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+                    p.status === "rejected" && "bg-red-500/15 text-red-600 dark:text-red-400",
+                    p.status === "submitted" && "bg-sky-500/15 text-sky-600 dark:text-sky-400",
+                  )}>
+                    {p.status === "submitted" ? "Under verification" : p.status === "verified" ? "Verified" : "Rejected"}
+                  </span>
+                </div>
+                <div className="mt-1 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                  <span className="truncate">
+                    {METHOD_LABELS[p.method] ?? p.method}
+                    {p.reference_id ? ` · ${p.reference_id}` : ""} · {fmtDateTime(p.submitted_at)}
+                  </span>
+                  <span className="shrink-0 font-medium text-foreground">{inr(p.amount)}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
         </CardContent>
       </Card>
 
