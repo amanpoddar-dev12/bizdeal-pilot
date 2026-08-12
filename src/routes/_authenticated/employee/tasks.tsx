@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { fmtDateTime } from "@/lib/format";
 import { toast } from "sonner";
 import { qk } from "@/lib/query-keys";
-import { invalidateFor } from "@/lib/query-mutations";
+import { invalidateFor, patchListRow } from "@/lib/query-mutations";
 
 export const Route = createFileRoute("/_authenticated/employee/tasks")({
   head: () => ({

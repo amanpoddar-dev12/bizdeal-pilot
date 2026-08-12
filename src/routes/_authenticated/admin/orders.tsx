@@ -15,7 +15,7 @@ import { inr, fmtDate } from "@/lib/format";
 import { toast } from "sonner";
 import { useState } from "react";
 import { qk } from "@/lib/query-keys";
-import { invalidateFor } from "@/lib/query-mutations";
+import { invalidateFor, patchListRow } from "@/lib/query-mutations";
 
 function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
   const listFn = useServerFn(listOrders);
