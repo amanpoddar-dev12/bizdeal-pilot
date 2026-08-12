@@ -145,3 +145,25 @@
   50% { transform: translateX(150%); }
   100% { transform: translateX(320%); }
 }
+
+/* --- Mobile & slow-network hardening ------------------------------------ */
+
+/* Media never overflows its container or pushes layout around. */
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Respect the OS "reduce motion" setting: transitions/animations become
+   instant instead of costing frames on low-end phones. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
