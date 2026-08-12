@@ -135,12 +135,17 @@ const PAGE_SIZES = [25, 50, 100, 200];
 
 function Audit() {
   const fn = useServerFn(listAuditLogs);
-  const { data = [], isLoading } = useQuery({ queryKey: ["audit"], queryFn: () => fn() });
-  const rows = data as Row[];
-
   const [q, setQ] = useState("");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  // Date range is applied in the database so only the needed window is fetched.
+  const { data = [], isLoading } = useQuery({
+    queryKey: ["audit", from, to],
+    queryFn: () => fn({ data: { from: from || null, to: to || null } }),
+  });
+  const rows = data as Row[];
+
+
   const [role, setRole] = useState<string>("all");
   const [mod, setMod] = useState<string>("all");
   const [status, setStatus] = useState<string>("all");
