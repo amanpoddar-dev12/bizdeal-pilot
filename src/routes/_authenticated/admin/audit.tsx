@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { listAuditLogs } from "@/lib/reports.functions";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -195,6 +195,16 @@ function Audit() {
   const currentPage = Math.min(page, totalPages);
   const paged = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
+  const stats = useMemo(() => {
+    let critical = 0;
+    const actors = new Set<string>();
+    for (const r of filtered) {
+      if (CRITICAL.test(r.action) || (r.status && r.status !== "success")) critical += 1;
+      if (r.actor_id) actors.add(r.actor_id);
+    }
+    return { critical, actors: actors.size };
+  }, [filtered]);
+
   const resetFilters = () => {
     setQ(""); setFrom(""); setTo(""); setRole("all"); setMod("all");
     setStatus("all"); setKind("all"); setPage(1);
@@ -237,12 +247,12 @@ function Audit() {
         <StatCard label="In view" value={filtered.length} />
         <StatCard
           label="Critical actions"
-          value={filtered.filter((r) => CRITICAL.test(r.action) || (r.status && r.status !== "success")).length}
+          value={stats.critical}
           tone="danger"
         />
         <StatCard
           label="Unique actors"
-          value={new Set(filtered.map((r) => r.actor_id).filter(Boolean)).size}
+          value={stats.actors}
         />
       </div>
 
@@ -377,9 +387,8 @@ function Audit() {
                   const isOpen = !!expanded[r.id];
                   const critical = CRITICAL.test(r.action);
                   return (
-                    <>
+                    <Fragment key={r.id}>
                       <tr
-                        key={r.id}
                         className={`border-b border-border/60 transition-colors hover:bg-muted/30 ${critical ? "bg-red-500/[0.03]" : ""}`}
                       >
                         <td className="px-2 py-3">
@@ -424,7 +433,7 @@ function Audit() {
                           </td>
                         </tr>
                       )}
-                    </>
+                    </Fragment>
                   );
                 })}
               </tbody>
