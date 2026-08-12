@@ -7,7 +7,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { listMyNotifications, markAllRead } from "@/lib/notifications.functions";
 import { getMe } from "@/lib/me.functions";
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { acquireNotificationRealtime } from "@/lib/realtime-hub";
 import { fmtDateTime } from "@/lib/format";
 import { qk } from "@/lib/query-keys";
 
@@ -23,14 +23,7 @@ export function NotificationBell() {
 
   useEffect(() => {
     if (!me?.userId) return;
-    const ch = supabase
-      .channel(`notif-${me.userId}-${Math.random().toString(36).slice(2)}`)
-      .on("postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${me.userId}` },
-        () => { qc.invalidateQueries({ queryKey: qk.notifications }); },
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return acquireNotificationRealtime(qc, me.userId);
   }, [me?.userId, qc]);
 
   return (

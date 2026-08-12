@@ -18,6 +18,7 @@ import { useAutoDuty } from "@/hooks/use-auto-duty";
 import { LocationPermissionBanner } from "@/components/location-permission-banner";
 import { LogOut } from "lucide-react";
 import { qk } from "@/lib/query-keys";
+import { teardownAllRealtime } from "@/lib/realtime-hub";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -99,6 +100,7 @@ function AuthedLayout() {
 
 
   async function signOut() {
+    teardownAllRealtime();
     await qc.cancelQueries();
     router.navigate({ to: "/auth", replace: true });
     qc.removeQueries();
