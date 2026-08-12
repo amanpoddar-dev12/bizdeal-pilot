@@ -22,6 +22,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Download, Plus } from "lucide-react";
 import { qk } from "@/lib/query-keys";
+import { invalidateFor } from "@/lib/query-mutations";
 
 export const Route = createFileRoute("/_authenticated/employee/clients")({
   head: () => ({
@@ -80,7 +81,7 @@ function EmpClients() {
       toast.success("Client added. They can sign in with their phone number.");
       setOpen(false);
       setForm({ business_name: "", contact_person: "", phone: "", email: "", gst_number: "", address: "" });
-      qc.invalidateQueries({ queryKey: qk.clients });
+      invalidateFor(qc, "client");
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed to add client"),
   });

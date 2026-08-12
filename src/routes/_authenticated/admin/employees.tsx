@@ -16,6 +16,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Download, Plus } from "lucide-react";
 import { qk } from "@/lib/query-keys";
+import { invalidateFor } from "@/lib/query-mutations";
 
 export const Route = createFileRoute("/_authenticated/admin/employees")({
   head: () => ({
@@ -67,7 +68,7 @@ function Employees() {
           <DialogTrigger asChild>
             <Button><Plus className="mr-1 size-4" />Add employee</Button>
           </DialogTrigger>
-          <CreateForm createFn={createFn} onDone={() => { setOpen(false); qc.invalidateQueries({ queryKey: qk.employees }); }} />
+          <CreateForm createFn={createFn} onDone={() => { setOpen(false); invalidateFor(qc, "employee"); }} />
         </Dialog>
       </div>
 
@@ -89,7 +90,7 @@ function Employees() {
               <tbody>
                 {data.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">No employees yet</td></tr>}
                 {data.map((e: any) => (
-                  <EmployeeRow key={e.id} e={e} updateFn={updateFn} onSaved={() => qc.invalidateQueries({ queryKey: qk.employees })} />
+                  <EmployeeRow key={e.id} e={e} updateFn={updateFn} onSaved={() => invalidateFor(qc, "employee")} />
                 ))}
               </tbody>
             </table>

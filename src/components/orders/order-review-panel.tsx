@@ -15,6 +15,7 @@ import { inr, fmtDate, fmtDateTime } from "@/lib/format";
 import { toast } from "sonner";
 import { Check, X, Loader2 } from "lucide-react";
 import { qk } from "@/lib/query-keys";
+import { invalidateFor } from "@/lib/query-mutations";
 
 const CHECKS = [
   { key: "items", label: "I have verified the items, quantities and rates" },
@@ -58,15 +59,15 @@ export function OrderReviewPanel({
     // Optimistic status flip so the UI reacts instantly.
     onMutate: async (action) => {
       await qc.cancelQueries({ queryKey: qk.orders });
-      const prev = qc.getQueryData<any[]>(["orders"]);
+      const prev = qc.getQueryData<any[]>(qk.orders as unknown as unknown[]);
       const next = action === "approve" ? "payment_pending" : "client_rejected";
-      qc.setQueryData<any[]>(["orders"], (rows) =>
+      qc.setQueryData<any[]>(qk.orders as unknown as unknown[], (rows) =>
         (rows ?? []).map((o) => (o.id === orderId ? { ...o, status: next } : o)),
       );
       return { prev };
     },
     onError: (e: any, _a, ctx) => {
-      if (ctx?.prev) qc.setQueryData(["orders"], ctx.prev);
+      if (ctx?.prev) qc.setQueryData(qk.orders as unknown as unknown[], ctx.prev);
       toast.error(e.message);
     },
     onSuccess: (_r, action) => {
@@ -76,10 +77,8 @@ export function OrderReviewPanel({
       setRemarks("");
     },
     onSettled: () => {
-      qc.invalidateQueries({ queryKey: qk.orders });
-      qc.invalidateQueries({ queryKey: qk.orderDelivery(orderId) });
-      qc.invalidateQueries({ queryKey: qk.orderWorkflow(orderId) });
-      qc.invalidateQueries({ queryKey: qk.notifications });
+      // Only the queries this review can affect — no app-wide refetch.
+      invalidateFor(qc, "orderReview", { orderId });
     },
   });
 

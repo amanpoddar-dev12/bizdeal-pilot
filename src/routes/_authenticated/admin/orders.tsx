@@ -15,6 +15,7 @@ import { inr, fmtDate } from "@/lib/format";
 import { toast } from "sonner";
 import { useState } from "react";
 import { qk } from "@/lib/query-keys";
+import { invalidateFor, patchListRow } from "@/lib/query-mutations";
 
 function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
   const listFn = useServerFn(listOrders);
@@ -32,25 +33,32 @@ function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
 
   const setStatus = useMutation({
     mutationFn: (v: { id: string; status: any }) => statusFn({ data: v }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: qk.orders }); toast.success("Status updated"); },
-    onError: (e: any) => toast.error(e.message),
+    onMutate: async (v) => {
+      await qc.cancelQueries({ queryKey: qk.orders });
+      const prev = patchListRow<any>(qc, qk.orders, v.id, { status: v.status });
+      return { prev };
+    },
+    onError: (e: any, _v, ctx) => {
+      if (ctx?.prev) qc.setQueryData(qk.orders as unknown as unknown[], ctx.prev);
+      toast.error(e.message);
+    },
+    onSuccess: () => toast.success("Status updated"),
+    onSettled: () => invalidateFor(qc, "order"),
   });
   const submit = useMutation({
     mutationFn: (id: string) => submitFn({ data: { id } }),
     onMutate: async (id) => {
       await qc.cancelQueries({ queryKey: qk.orders });
-      const prev = qc.getQueryData<any[]>(["orders"]);
-      qc.setQueryData<any[]>(["orders"], (rows) =>
-        (rows ?? []).map((o) => (o.id === id ? { ...o, status: "pending_client" } : o)));
+      const prev = patchListRow<any>(qc, qk.orders, id, { status: "pending_client" });
       return { prev };
     },
-    onError: (e: any, _id, ctx) => { if (ctx?.prev) qc.setQueryData(["orders"], ctx.prev); toast.error(e.message); },
+    onError: (e: any, _id, ctx) => { if (ctx?.prev) qc.setQueryData(qk.orders as unknown as unknown[], ctx.prev); toast.error(e.message); },
     onSuccess: () => toast.success("Sent to client for approval"),
-    onSettled: () => qc.invalidateQueries({ queryKey: qk.orders }),
+    onSettled: () => invalidateFor(qc, "order"),
   });
   const invoice = useMutation({
     mutationFn: (id: string) => invFn({ data: { order_id: id } }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: qk.orders }); qc.invalidateQueries({ queryKey: qk.invoices }); toast.success("Invoice generated"); },
+    onSuccess: () => { invalidateFor(qc, "order"); invalidateFor(qc, "invoice"); toast.success("Invoice generated"); },
     onError: (e: any) => toast.error(e.message),
   });
 

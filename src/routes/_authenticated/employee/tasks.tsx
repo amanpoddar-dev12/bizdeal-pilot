@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { fmtDateTime } from "@/lib/format";
 import { toast } from "sonner";
 import { qk } from "@/lib/query-keys";
+import { invalidateFor, patchListRow } from "@/lib/query-mutations";
 
 export const Route = createFileRoute("/_authenticated/employee/tasks")({
   head: () => ({
@@ -29,7 +30,18 @@ function Tasks() {
   const { data = [] } = useQuery({ queryKey: qk.tasks, queryFn: () => listFn() });
   const upd = useMutation({
     mutationFn: (v: any) => updFn({ data: v }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: qk.tasks }); toast.success("Updated"); },
+    // Optimistic: task status is a simple, safe field to flip locally.
+    onMutate: async (v: any) => {
+      await qc.cancelQueries({ queryKey: qk.tasks });
+      const prev = patchListRow<any>(qc, qk.tasks, v.id, { status: v.status });
+      return { prev };
+    },
+    onError: (e: any, _v, ctx: any) => {
+      if (ctx?.prev) qc.setQueryData(qk.tasks as unknown as unknown[], ctx.prev);
+      toast.error(e?.message ?? "Failed to update task");
+    },
+    onSuccess: () => toast.success("Updated"),
+    onSettled: () => invalidateFor(qc, "task"),
   });
 
   const groups = { todo: [] as any[], in_progress: [] as any[], completed: [] as any[] };

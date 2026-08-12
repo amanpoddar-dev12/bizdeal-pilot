@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listClients } from "@/lib/clients.functions";
 import { createOrder } from "@/lib/orders.functions";
@@ -14,6 +14,7 @@ import { inr } from "@/lib/format";
 import { useState } from "react";
 import { toast } from "sonner";
 import { qk } from "@/lib/query-keys";
+import { invalidateFor } from "@/lib/query-mutations";
 
 export const Route = createFileRoute("/_authenticated/employee/orders/new")({
   head: () => ({
@@ -40,6 +41,7 @@ function NewOrder() {
   const { data: clients = [] } = useQuery({ queryKey: qk.clients, queryFn: () => clientsFn() });
   const { data: products = [] } = useQuery({ queryKey: qk.products, queryFn: () => productsFn() });
   const activeProducts = (products as any[]).filter((p) => p.active);
+  const qc = useQueryClient();
   const [clientId, setClientId] = useState("");
   const [deliveryDate, setDeliveryDate] = useState("");
   const [notes, setNotes] = useState("");
@@ -61,7 +63,11 @@ function NewOrder() {
         })),
       },
     }),
-    onSuccess: (o: any) => { toast.success(`Order ${o.order_number} created`); nav({ to: "/dashboard" }); },
+    onSuccess: (o: any) => {
+      invalidateFor(qc, "order");
+      toast.success(`Order ${o.order_number} created`);
+      nav({ to: "/dashboard" });
+    },
     onError: (e: any) => toast.error(e.message),
   });
 

@@ -35,7 +35,18 @@ export function NotificationBell() {
 
   return (
     <Popover onOpenChange={async (o) => {
-      if (o && unread > 0) { await markFn(); qc.invalidateQueries({ queryKey: qk.notifications }); }
+      if (o && unread > 0) {
+        // Optimistic: badge clears instantly, server confirms in the background.
+        const prev = qc.getQueryData<any[]>(qk.notifications as unknown as unknown[]);
+        qc.setQueryData<any[]>(qk.notifications as unknown as unknown[], (rows) =>
+          (rows ?? []).map((n) => (n.is_read ? n : { ...n, is_read: true })));
+        try {
+          await markFn();
+        } catch {
+          if (prev) qc.setQueryData(qk.notifications as unknown as unknown[], prev);
+        }
+        qc.invalidateQueries({ queryKey: qk.notifications });
+      }
     }}>
       <PopoverTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">

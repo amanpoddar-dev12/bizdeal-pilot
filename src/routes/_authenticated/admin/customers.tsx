@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { Download, Plus, ShieldCheck, ShieldX, Users } from "lucide-react";
 import { AssignClientDialog } from "@/components/admin/assign-client-dialog";
 import { qk } from "@/lib/query-keys";
+import { invalidateFor } from "@/lib/query-mutations";
 
 
 export const Route = createFileRoute("/_authenticated/admin/customers")({
@@ -46,7 +47,7 @@ function Customers() {
 
   const kyc = useMutation({
     mutationFn: (v: { id: string; verified: boolean }) => kycFn({ data: v }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: qk.clients }); toast.success("KYC updated"); },
+    onSuccess: () => { invalidateFor(qc, "client"); toast.success("KYC updated"); },
   });
 
   const filtered = data.filter((c: any) => !q || c.business_name.toLowerCase().includes(q.toLowerCase()));
@@ -92,7 +93,7 @@ function Customers() {
             <DialogTrigger asChild>
               <Button onClick={() => setEditing(null)}><Plus className="mr-1 size-4" />New client</Button>
             </DialogTrigger>
-            <ClientForm editing={editing} onDone={() => { setOpen(false); setEditing(null); qc.invalidateQueries({ queryKey: qk.clients }); }} upsert={upFn} />
+            <ClientForm editing={editing} onDone={() => { setOpen(false); setEditing(null); invalidateFor(qc, "client"); }} upsert={upFn} />
           </Dialog>
         </div>
       </div>
