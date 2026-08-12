@@ -77,14 +77,17 @@ export function GlobalLoader() {
           showOverlay ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       >
-        <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-5 py-4 shadow-lg">
-          <Spinner className="size-5 text-primary" />
-          <div className="text-sm">
-            <div className="font-medium text-foreground">Working on it…</div>
-            <div className="text-xs text-muted-foreground">This is taking a moment, please wait.</div>
+        {showOverlay && (
+          <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-5 py-4 shadow-lg">
+            <Spinner className="size-5 text-primary" />
+            <div className="text-sm">
+              <div className="font-medium text-foreground">Working on it…</div>
+              <div className="text-xs text-muted-foreground">This is taking a moment, please wait.</div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
+
     </>
   );
 }
