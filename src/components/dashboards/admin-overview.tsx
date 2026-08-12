@@ -6,30 +6,44 @@ import { adminReports } from "@/lib/reports.functions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { inr, fmtDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
-import {
-  ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
-  BarChart, Bar, PieChart, Pie, Cell,
-} from "recharts";
+import { lazy, Suspense, useMemo } from "react";
 import { PendingActions } from "@/components/tasks/pending-actions";
 import { RecentActivity } from "@/components/tasks/recent-activity";
 import { AlertCircle, Wallet, Users, Receipt, TrendingUp } from "lucide-react";
 import { qk } from "@/lib/query-keys";
 
-const COLORS = ["#0ea5e9", "#f59e0b", "#ef4444"];
+// Charts are ~the largest dependency on this page; load them after the
+// KPIs and tables so first paint isn't blocked by the charting library.
+const OrderTrendChart = lazy(() =>
+  import("@/components/dashboards/admin-charts").then((m) => ({ default: m.OrderTrendChart })));
+const AgingPieChart = lazy(() =>
+  import("@/components/dashboards/admin-charts").then((m) => ({ default: m.AgingPieChart })));
+const EmployeeSalesChart = lazy(() =>
+  import("@/components/dashboards/admin-charts").then((m) => ({ default: m.EmployeeSalesChart })));
+
+const ChartFallback = () => (
+  <div className="h-full w-full animate-pulse rounded-md bg-muted/40" />
+);
 
 export function AdminOverview() {
   const { t } = useTranslation();
   useRealtimeOrders();
   const fn = useServerFn(adminReports);
   const { data, isLoading } = useQuery({ queryKey: qk.adminReports, queryFn: () => fn() });
+
+  // Derived once per data change instead of on every render.
+  const agingData = useMemo(
+    () =>
+      [
+        { name: "0-30", value: data?.aging.d0_30 ?? 0 },
+        { name: "30-60", value: data?.aging.d30_60 ?? 0 },
+        { name: "60+", value: data?.aging.d60_plus ?? 0 },
+      ].filter((x) => x.value > 0),
+    [data],
+  );
+
   if (isLoading || !data) return <div className="text-sm text-muted-foreground">{t("dashboard.admin.loading")}</div>;
   const k = data.kpis;
-
-  const agingData = [
-    { name: "0-30", value: data.aging.d0_30 },
-    { name: "30-60", value: data.aging.d30_60 },
-    { name: "60+", value: data.aging.d60_plus },
-  ].filter((x) => x.value > 0);
 
   return (
     <div className="space-y-6">
@@ -52,15 +66,9 @@ export function AdminOverview() {
         <Card className="lg:col-span-2">
           <CardHeader><CardTitle>{t("dashboard.admin.orders30")}</CardTitle></CardHeader>
           <CardContent className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data.orderTrend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Line type="monotone" dataKey="count" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
+            <Suspense fallback={<ChartFallback />}>
+              <OrderTrendChart data={data.orderTrend} />
+            </Suspense>
           </CardContent>
         </Card>
         <Card>
@@ -69,14 +77,9 @@ export function AdminOverview() {
             {agingData.length === 0 ? (
               <div className="grid h-full place-items-center text-sm text-muted-foreground">{t("dashboard.admin.nothingOverdue")}</div>
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={agingData} dataKey="value" nameKey="name" innerRadius={40} outerRadius={80}>
-                    {agingData.map((_, i) => <Cell key={i} fill={COLORS[i]} />)}
-                  </Pie>
-                  <Tooltip formatter={(v: any) => inr(v)} />
-                </PieChart>
-              </ResponsiveContainer>
+              <Suspense fallback={<ChartFallback />}>
+                <AgingPieChart data={agingData} />
+              </Suspense>
             )}
           </CardContent>
         </Card>
@@ -103,15 +106,9 @@ export function AdminOverview() {
             {data.empSales.length === 0 ? (
               <div className="grid h-full place-items-center text-sm text-muted-foreground">{t("dashboard.admin.noOrders")}</div>
             ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data.empSales}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} />
-                  <Tooltip formatter={(v: any) => inr(v)} />
-                  <Bar dataKey="value" fill="hsl(var(--primary))" />
-                </BarChart>
-              </ResponsiveContainer>
+              <Suspense fallback={<ChartFallback />}>
+                <EmployeeSalesChart data={data.empSales} />
+              </Suspense>
             )}
           </CardContent>
         </Card>

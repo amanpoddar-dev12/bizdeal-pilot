@@ -15,6 +15,8 @@ import { inr, fmtDate } from "@/lib/format";
 import { toast } from "sonner";
 import { useState } from "react";
 import { qk } from "@/lib/query-keys";
+import { useVisibleRows } from "@/hooks/use-visible-rows";
+import { useMemo } from "react";
 import { invalidateFor, patchListRow } from "@/lib/query-mutations";
 
 function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
@@ -62,9 +64,14 @@ function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const filtered = data.filter((o: any) => !q ||
-    o.order_number.toLowerCase().includes(q.toLowerCase()) ||
-    o.clients?.business_name?.toLowerCase().includes(q.toLowerCase()));
+  const filtered = useMemo(() => {
+    if (!q) return data;
+    const s = q.toLowerCase();
+    return data.filter((o: any) =>
+      o.order_number.toLowerCase().includes(s) ||
+      o.clients?.business_name?.toLowerCase().includes(s));
+  }, [data, q]);
+  const { shown, hasMore, remaining, showMore } = useVisibleRows(filtered, 100);
 
   const canSubmit = (o: any) =>
     (me?.role === "admin" || (me?.role === "employee" && o.employee_id === me?.userId)) &&
@@ -98,7 +105,7 @@ function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
               </thead>
               <tbody>
                 {filtered.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">No orders</td></tr>}
-                {filtered.map((o: any) => (
+                {shown.map((o: any) => (
                   <tr
                     key={o.id}
                     className="cursor-pointer border-b border-border/60 transition-colors hover:bg-muted/40"
@@ -140,6 +147,13 @@ function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
                 ))}
               </tbody>
             </table>
+            {hasMore && (
+              <div className="border-t border-border p-3 text-center">
+                <Button variant="outline" size="sm" onClick={showMore}>
+                  Show more ({remaining} remaining)
+                </Button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

@@ -18,7 +18,8 @@ import {
 import { inr } from "@/lib/format";
 import { PhoneDisplay } from "@/components/phone-display";
 import { downloadCsv, num } from "@/lib/csv";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { useVisibleRows } from "@/hooks/use-visible-rows";
 import { toast } from "sonner";
 import { Download, Plus } from "lucide-react";
 import { qk } from "@/lib/query-keys";
@@ -86,12 +87,14 @@ function EmpClients() {
     onError: (e: any) => toast.error(e?.message ?? "Failed to add client"),
   });
 
-  const filtered = data.filter(
-    (c: any) =>
-      !q ||
-      c.business_name.toLowerCase().includes(q.toLowerCase()) ||
-      (c.phone ?? "").includes(q),
-  );
+  const filtered = useMemo(() => {
+    if (!q) return data;
+    const s = q.toLowerCase();
+    return data.filter(
+      (c: any) => c.business_name.toLowerCase().includes(s) || (c.phone ?? "").includes(q),
+    );
+  }, [data, q]);
+  const { shown, hasMore, remaining, showMore } = useVisibleRows(filtered, 60);
 
   function exportCsv() {
     downloadCsv(
@@ -201,7 +204,7 @@ function EmpClients() {
         </Button>
       </div>
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {filtered.map((c: any) => (
+        {shown.map((c: any) => (
           <Card key={c.id}>
             <CardContent className="p-4 space-y-2">
               <div className="flex items-center justify-between">
@@ -228,6 +231,13 @@ function EmpClients() {
           <p className="text-sm text-muted-foreground">No clients yet.</p>
         )}
       </div>
+      {hasMore && (
+        <div className="text-center">
+          <Button variant="outline" size="sm" onClick={showMore}>
+            Show more ({remaining} remaining)
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

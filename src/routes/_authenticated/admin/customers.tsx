@@ -12,11 +12,12 @@ import { Switch } from "@/components/ui/switch";
 import { inr } from "@/lib/format";
 import { PhoneDisplay } from "@/components/phone-display";
 import { downloadCsv, num, csvDate } from "@/lib/csv";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Download, Plus, ShieldCheck, ShieldX, Users } from "lucide-react";
 import { AssignClientDialog } from "@/components/admin/assign-client-dialog";
 import { qk } from "@/lib/query-keys";
+import { useVisibleRows } from "@/hooks/use-visible-rows";
 import { invalidateFor } from "@/lib/query-mutations";
 
 
@@ -50,7 +51,11 @@ function Customers() {
     onSuccess: () => { invalidateFor(qc, "client"); toast.success("KYC updated"); },
   });
 
-  const filtered = data.filter((c: any) => !q || c.business_name.toLowerCase().includes(q.toLowerCase()));
+  const filtered = useMemo(
+    () => (!q ? data : data.filter((c: any) => c.business_name.toLowerCase().includes(q.toLowerCase()))),
+    [data, q],
+  );
+  const { shown, hasMore, remaining, showMore } = useVisibleRows(filtered, 100);
 
   function exportCsv() {
     downloadCsv(
@@ -116,7 +121,7 @@ function Customers() {
                 {filtered.length === 0 && (
                   <tr><td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">No clients yet</td></tr>
                 )}
-                {filtered.map((c: any) => (
+                {shown.map((c: any) => (
                   <tr key={c.id} className="border-b border-border/60 hover:bg-muted/40">
                     <td className="px-4 py-3 font-medium">{c.business_name}
                       {!c.active && <Badge variant="secondary" className="ml-2">inactive</Badge>}
@@ -140,6 +145,13 @@ function Customers() {
                 ))}
               </tbody>
             </table>
+            {hasMore && (
+              <div className="border-t border-border p-3 text-center">
+                <Button variant="outline" size="sm" onClick={showMore}>
+                  Show more ({remaining} remaining)
+                </Button>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

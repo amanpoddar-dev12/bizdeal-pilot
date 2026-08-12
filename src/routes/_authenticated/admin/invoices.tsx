@@ -12,8 +12,6 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { inr, fmtDate, calcPenalty } from "@/lib/format";
 import { toast } from "sonner";
 import { useState } from "react";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { downloadCsv, num, csvDate } from "@/lib/csv";
 import { Download, FileText } from "lucide-react";
 import { qk } from "@/lib/query-keys";
@@ -68,7 +66,12 @@ function InvoicesTable({ scope }: { scope: "admin" | "client" }) {
     );
   }
 
-  function exportPdf(inv: any) {
+  // PDF generation is heavy and rarely used — pull it in on click only.
+  async function exportPdf(inv: any) {
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+      import("jspdf"),
+      import("jspdf-autotable"),
+    ]);
     const doc = new jsPDF();
     doc.setFontSize(18); doc.text("Invoice", 14, 20);
     doc.setFontSize(11);
