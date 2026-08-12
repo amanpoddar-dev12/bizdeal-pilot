@@ -18,6 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { PhoneDisplay } from "@/components/phone-display";
 import { qk } from "@/lib/query-keys";
+import { invalidateFor } from "@/lib/query-mutations";
 
 export function AssignClientDialog({
   client,
@@ -56,8 +57,7 @@ export function AssignClientDialog({
       return v.next ? assign(payload) : unassign(payload);
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: qk.clientAssignments() });
-      qc.invalidateQueries({ queryKey: qk.clients });
+      invalidateFor(qc, "clientAssignment", { clientId: client?.id ?? null });
       toast.success("Assignment updated");
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed to update assignment"),

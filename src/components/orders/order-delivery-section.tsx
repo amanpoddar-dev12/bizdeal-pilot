@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Lock, Truck, ShieldCheck, Clock, AlertTriangle, Loader2, FileImage, RefreshCw } from "lucide-react";
 import { qk } from "@/lib/query-keys";
+import { invalidateFor } from "@/lib/query-mutations";
 
 const METHOD_LABELS: Record<string, string> = {
   upi: "UPI",
@@ -96,12 +97,9 @@ export function OrderDeliverySection({ order, role }: { order: any; role: "admin
   const [code, setCode] = useState("");
   const [rejectReason, setRejectReason] = useState("");
 
-  const invalidate = () => {
-    qc.invalidateQueries({ queryKey: qk.orders });
-    qc.invalidateQueries({ queryKey: qk.payments });
-    qc.invalidateQueries({ queryKey: qk.orderDelivery(orderId) });
-    qc.invalidateQueries({ queryKey: qk.orderWorkflow(orderId) });
-  };
+  // Sensitive operations (payment review, OTP verification) stay
+  // server-authoritative: we refetch the affected slices, never guess.
+  const invalidate = () => invalidateFor(qc, "delivery", { orderId });
 
   const pay = useMutation({
     mutationFn: async () => {

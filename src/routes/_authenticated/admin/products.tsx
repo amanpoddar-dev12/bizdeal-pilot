@@ -13,6 +13,7 @@ import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { qk } from "@/lib/query-keys";
+import { invalidateFor } from "@/lib/query-mutations";
 
 export const Route = createFileRoute("/_authenticated/admin/products")({
   head: () => ({
@@ -61,7 +62,7 @@ function ProductsPage() {
       return createFn({ data: payload });
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: qk.products });
+      invalidateFor(qc, "product");
       toast.success(form.id ? "Product updated" : "Product added");
       setOpen(false); setForm(empty);
     },
@@ -70,7 +71,7 @@ function ProductsPage() {
 
   const delMut = useMutation({
     mutationFn: (id: string) => deleteFn({ data: { id } }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: qk.products }); toast.success("Product removed"); },
+    onSuccess: () => { invalidateFor(qc, "product"); toast.success("Product removed"); },
     onError: (e: any) => toast.error(e.message),
   });
 

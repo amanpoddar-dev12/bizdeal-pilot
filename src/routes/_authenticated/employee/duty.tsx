@@ -9,6 +9,7 @@ import { fmtDateTime } from "@/lib/format";
 import { toast } from "sonner";
 import { Clock } from "lucide-react";
 import { qk } from "@/lib/query-keys";
+import { invalidateFor } from "@/lib/query-mutations";
 
 export const Route = createFileRoute("/_authenticated/employee/duty")({
   head: () => ({
@@ -30,8 +31,8 @@ function Duty() {
   const qc = useQueryClient();
   const { data } = useQuery({ queryKey: qk.duty, queryFn: () => statusFn() });
 
-  const inMut = useMutation({ mutationFn: () => inFn(), onSuccess: () => { qc.invalidateQueries({ queryKey: qk.duty }); toast.success("Clocked in"); } });
-  const outMut = useMutation({ mutationFn: () => outFn(), onSuccess: () => { qc.invalidateQueries({ queryKey: qk.duty }); toast.success("Clocked out"); } });
+  const inMut = useMutation({ mutationFn: () => inFn(), onSuccess: () => { invalidateFor(qc, "duty"); toast.success("Clocked in"); } });
+  const outMut = useMutation({ mutationFn: () => outFn(), onSuccess: () => { invalidateFor(qc, "duty"); toast.success("Clocked out"); } });
 
   const isOnDuty = !!data?.open;
 

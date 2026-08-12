@@ -17,6 +17,7 @@ import autoTable from "jspdf-autotable";
 import { downloadCsv, num, csvDate } from "@/lib/csv";
 import { Download, FileText } from "lucide-react";
 import { qk } from "@/lib/query-keys";
+import { invalidateFor } from "@/lib/query-mutations";
 
 const stColor: Record<string, string> = {
   draft: "bg-gray-500", sent: "bg-sky-500", approved: "bg-indigo-500",
@@ -35,7 +36,7 @@ function InvoicesTable({ scope }: { scope: "admin" | "client" }) {
 
   const respond = useMutation({
     mutationFn: (v: any) => respFn({ data: v }),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: qk.invoices }); toast.success("Response sent"); },
+    onSuccess: () => { invalidateFor(qc, "invoice"); toast.success("Response sent"); },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -152,7 +153,7 @@ function InvoicesTable({ scope }: { scope: "admin" | "client" }) {
       </Card>
 
       <Dialog open={!!payFor} onOpenChange={(o) => { if (!o) setPayFor(null); }}>
-        {payFor && <PayForm inv={payFor} payFn={payFn} onDone={() => { setPayFor(null); qc.invalidateQueries({ queryKey: qk.invoices }); }} />}
+        {payFor && <PayForm inv={payFor} payFn={payFn} onDone={() => { setPayFor(null); invalidateFor(qc, "invoice"); }} />}
       </Dialog>
     </div>
   );

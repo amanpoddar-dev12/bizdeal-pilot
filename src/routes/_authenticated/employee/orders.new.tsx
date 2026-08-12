@@ -14,6 +14,7 @@ import { inr } from "@/lib/format";
 import { useState } from "react";
 import { toast } from "sonner";
 import { qk } from "@/lib/query-keys";
+import { invalidateFor } from "@/lib/query-mutations";
 
 export const Route = createFileRoute("/_authenticated/employee/orders/new")({
   head: () => ({
@@ -61,7 +62,11 @@ function NewOrder() {
         })),
       },
     }),
-    onSuccess: (o: any) => { toast.success(`Order ${o.order_number} created`); nav({ to: "/dashboard" }); },
+    onSuccess: (o: any) => {
+      invalidateFor(qc, "order");
+      toast.success(`Order ${o.order_number} created`);
+      nav({ to: "/dashboard" });
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
