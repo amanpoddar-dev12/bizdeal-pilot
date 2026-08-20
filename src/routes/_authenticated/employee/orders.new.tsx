@@ -8,13 +8,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Trash2, Plus } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Trash2, Plus, AlertTriangle } from "lucide-react";
 import { inr } from "@/lib/format";
 import { useState } from "react";
 import { toast } from "sonner";
 import { qk } from "@/lib/query-keys";
 import { invalidateFor } from "@/lib/query-mutations";
+import { OrderScanCard, LOW_CONFIDENCE } from "@/components/orders/order-scan-card";
+import type { ScanResult } from "@/lib/order-scan.functions";
+
 
 export const Route = createFileRoute("/_authenticated/employee/orders/new")({
   head: () => ({
@@ -29,7 +32,15 @@ export const Route = createFileRoute("/_authenticated/employee/orders/new")({
   component: NewOrder,
 });
 
-type LineItem = { product_id: string; product_name: string; product_code: string; quantity: number; rate: number };
+type LineItem = {
+  product_id: string;
+  product_name: string;
+  product_code: string;
+  quantity: number;
+  rate: number;
+  /** Set when the row came from OCR and needs a human look. */
+  flagged?: boolean;
+};
 
 const blankItem = (): LineItem => ({ product_id: "", product_name: "", product_code: "", quantity: 1, rate: 0 });
 
@@ -43,18 +54,22 @@ function NewOrder() {
   const activeProducts = (products as any[]).filter((p) => p.active);
   const qc = useQueryClient();
   const [clientId, setClientId] = useState("");
-  const [deliveryDate, setDeliveryDate] = useState("");
-  const [notes, setNotes] = useState("");
+  const [reference, setReference] = useState("");
   const [items, setItems] = useState<LineItem[]>([blankItem()]);
+  const [scanned, setScanned] = useState(false);
+  const [reviewed, setReviewed] = useState(false);
 
   const total = items.reduce((s, i) => s + Number(i.quantity || 0) * Number(i.rate || 0), 0);
+  const flaggedCount = items.filter((i) => i.flagged).length;
 
   const mut = useMutation({
     mutationFn: () => createFn({
       data: {
         client_id: clientId,
-        delivery_date: deliveryDate || null,
-        notes: notes || null,
+        // Delivery date is no longer captured at creation time; the column stays
+        // intact for existing orders and later workflow updates.
+        delivery_date: null,
+        notes: reference.trim() ? `Ref: ${reference.trim()}` : null,
         items: items.map((i) => ({
           product_name: i.product_name,
           product_code: i.product_code || null,
@@ -74,7 +89,7 @@ function NewOrder() {
   function pickProduct(i: number, productId: string) {
     const p = activeProducts.find((x) => x.id === productId);
     setItems(items.map((it, j) => j === i
-      ? { ...it, product_id: productId, product_name: p?.name ?? "", product_code: p?.code ?? "", rate: Number(p?.unit_price ?? 0) }
+      ? { ...it, product_id: productId, product_name: p?.name ?? "", product_code: p?.code ?? "", rate: Number(p?.unit_price ?? 0), flagged: false }
       : it));
   }
 
@@ -82,13 +97,36 @@ function NewOrder() {
     setItems(items.map((it, j) => j === i ? { ...it, [key]: value } : it));
   }
 
-  const canSubmit = clientId && items.length > 0 && items.every((i) => i.product_id && i.quantity > 0 && i.rate >= 0) && !mut.isPending;
+  /** Fill the existing form from an OCR result. Missing values stay empty. */
+  function applyScan(r: ScanResult) {
+    if (r.client_id) setClientId(r.client_id);
+    if (r.reference_number) setReference(r.reference_number);
+    const mapped: LineItem[] = r.items.map((it) => ({
+      product_id: it.product_id ?? "",
+      product_name: it.product_name ?? "",
+      product_code: it.product_code ?? "",
+      quantity: it.quantity ?? 0,
+      rate: it.rate ?? 0,
+      flagged: it.confidence < LOW_CONFIDENCE || !it.product_id || it.quantity == null || it.rate == null,
+    }));
+    setItems(mapped.length ? mapped : [blankItem()]);
+    setScanned(true);
+    setReviewed(false);
+    toast.info("Values filled in. Check the highlighted fields, then submit.");
+  }
+
+  const valid = Boolean(clientId) && items.length > 0 && items.every((i) => i.product_id && i.quantity > 0 && i.rate >= 0);
+  const needsReview = scanned && flaggedCount > 0 && !reviewed;
+  const canSubmit = valid && !needsReview && !mut.isPending;
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <div><h1 className="font-display text-xl font-semibold sm:text-2xl">New order</h1></div>
+
+      <OrderScanCard onApply={applyScan} />
+
       <Card>
-        <CardHeader><CardTitle>Client & delivery</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Client</CardTitle></CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1"><Label>Client</Label>
             <select value={clientId} onChange={(e) => setClientId(e.target.value)} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
@@ -96,10 +134,13 @@ function NewOrder() {
               {(clients as any[]).map((c) => <option key={c.id} value={c.id}>{c.business_name}</option>)}
             </select>
           </div>
-          <div className="space-y-1"><Label>Delivery date</Label><Input type="date" value={deliveryDate} onChange={(e) => setDeliveryDate(e.target.value)} /></div>
-          <div className="md:col-span-2 space-y-1"><Label>Notes</Label><Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} /></div>
+          <div className="space-y-1">
+            <Label>Reference number <span className="text-muted-foreground">(optional)</span></Label>
+            <Input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="From the order sheet" />
+          </div>
         </CardContent>
       </Card>
+
 
       <Card>
         <CardHeader className="flex flex-row items-center">
@@ -117,7 +158,10 @@ function NewOrder() {
           )}
           <div className="space-y-2">
             {items.map((it, i) => (
-              <div key={i} className="grid grid-cols-12 gap-2">
+              <div
+                key={i}
+                className={`grid grid-cols-12 gap-2 rounded-md ${it.flagged ? "border border-destructive/50 bg-destructive/5 p-2" : ""}`}
+              >
                 <select
                   className="col-span-6 rounded-md border border-input bg-background px-3 py-2 text-sm"
                   value={it.product_id}
@@ -136,6 +180,14 @@ function NewOrder() {
                   onClick={() => setItems(items.filter((_, j) => j !== i))} disabled={items.length === 1}>
                   <Trash2 className="size-4" />
                 </Button>
+                {it.flagged && (
+                  <p className="col-span-12 flex items-center gap-1 text-xs text-destructive">
+                    <AlertTriangle className="size-3" />
+                    {it.product_name && !it.product_id
+                      ? `Scanned as "${it.product_name}" — pick the matching product.`
+                      : "Low-confidence scan — verify product, quantity and rate."}
+                  </p>
+                )}
               </div>
             ))}
           </div>
@@ -146,11 +198,22 @@ function NewOrder() {
         </CardContent>
       </Card>
 
+      {scanned && flaggedCount > 0 && (
+        <label className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm">
+          <Checkbox checked={reviewed} onCheckedChange={(v) => setReviewed(v === true)} className="mt-0.5" />
+          <span>
+            {flaggedCount} scanned {flaggedCount === 1 ? "line" : "lines"} need review. I have checked the highlighted
+            values and confirm they are correct.
+          </span>
+        </label>
+      )}
+
       <div className="flex justify-end">
         <Button onClick={() => mut.mutate()} disabled={!canSubmit}>
           {mut.isPending ? "Creating…" : "Create order"}
         </Button>
       </div>
+
     </div>
   );
 }
