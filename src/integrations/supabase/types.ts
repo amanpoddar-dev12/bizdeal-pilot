@@ -1041,6 +1041,99 @@ export type Database = {
           },
         ]
       }
+      payslips: {
+        Row: {
+          advance_deduction: number
+          allowances: number
+          basic_pay: number
+          bonus: number
+          commission: number
+          created_at: string
+          employee_id: string
+          generated_at: string
+          generated_by: string | null
+          gross_earnings: number
+          hra: number
+          id: string
+          net_pay: number
+          notes: string | null
+          other_deductions: number
+          other_earnings: number
+          period_month: number
+          period_year: number
+          pf: number
+          professional_tax: number
+          tds: number
+          total_deductions: number
+          updated_at: string
+        }
+        Insert: {
+          advance_deduction?: number
+          allowances?: number
+          basic_pay?: number
+          bonus?: number
+          commission?: number
+          created_at?: string
+          employee_id: string
+          generated_at?: string
+          generated_by?: string | null
+          gross_earnings?: number
+          hra?: number
+          id?: string
+          net_pay?: number
+          notes?: string | null
+          other_deductions?: number
+          other_earnings?: number
+          period_month: number
+          period_year: number
+          pf?: number
+          professional_tax?: number
+          tds?: number
+          total_deductions?: number
+          updated_at?: string
+        }
+        Update: {
+          advance_deduction?: number
+          allowances?: number
+          basic_pay?: number
+          bonus?: number
+          commission?: number
+          created_at?: string
+          employee_id?: string
+          generated_at?: string
+          generated_by?: string | null
+          gross_earnings?: number
+          hra?: number
+          id?: string
+          net_pay?: number
+          notes?: string | null
+          other_deductions?: number
+          other_earnings?: number
+          period_month?: number
+          period_year?: number
+          pf?: number
+          professional_tax?: number
+          tds?: number
+          total_deductions?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payslips_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payslips_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           active: boolean
