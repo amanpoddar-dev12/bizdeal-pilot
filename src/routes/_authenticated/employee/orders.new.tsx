@@ -8,13 +8,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Trash2, Plus } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Trash2, Plus, AlertTriangle } from "lucide-react";
 import { inr } from "@/lib/format";
 import { useState } from "react";
 import { toast } from "sonner";
 import { qk } from "@/lib/query-keys";
 import { invalidateFor } from "@/lib/query-mutations";
+import { OrderScanCard, LOW_CONFIDENCE } from "@/components/orders/order-scan-card";
+import type { ScanResult } from "@/lib/order-scan.functions";
+
 
 export const Route = createFileRoute("/_authenticated/employee/orders/new")({
   head: () => ({
