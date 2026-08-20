@@ -150,7 +150,7 @@ export const getPendingTasks = createServerFn({ method: "GET" })
     }
 
     if (role === "employee") {
-      const [orders, myTasks] = await Promise.all([
+      const [orders, myTasks, reminders] = await Promise.all([
         supabase
           .from("orders")
           .select("id, order_number, status, total_amount, created_at, delivery_date, clients(business_name)")
@@ -159,9 +159,11 @@ export const getPendingTasks = createServerFn({ method: "GET" })
             "confirmed",
             "change_requested",
             "client_rejected",
+            "client_approved",
             "payment_submitted",
             "payment_verified",
             "out_for_delivery",
+            "completed",
           ])
           .order("created_at", { ascending: true }),
         supabase
@@ -170,7 +172,27 @@ export const getPendingTasks = createServerFn({ method: "GET" })
           .eq("employee_id", userId)
           .neq("status", "completed")
           .order("due_date", { ascending: true }),
+        supabase
+          .from("payment_reminders")
+          .select("order_id, due_date, amount_due, credit_terms, status, stage")
+          .eq("status", "pending"),
       ]);
+
+      // Invoice/due-date context for delivered orders awaiting payment.
+      const deliveredIds = (orders.data ?? []).filter((o: any) => o.status === "completed").map((o: any) => o.id);
+      const invoiceByOrder = new Map<string, any>();
+      if (deliveredIds.length) {
+        const invs = await supabase
+          .from("invoices")
+          .select("order_id, invoice_number, amount, payment_amount, due_date, status")
+          .in("order_id", deliveredIds);
+        const termsByOrder = new Map<string, number>(
+          (reminders.data ?? []).map((r: any) => [r.order_id, r.credit_terms]),
+        );
+        for (const i of invs.data ?? []) {
+          invoiceByOrder.set(i.order_id, { ...i, credit_terms: termsByOrder.get(i.order_id) ?? 0 });
+        }
+      }
 
       for (const o of orders.data ?? []) {
         const client = (o as any).clients?.business_name ?? null;
@@ -191,16 +213,35 @@ export const getPendingTasks = createServerFn({ method: "GET" })
             status: "Action required",
             actionLabel: "Verify delivery",
           });
-        } else if (o.status === "payment_verified") {
+        } else if (o.status === "client_approved" || o.status === "payment_verified") {
           tasks.push({
             ...base,
             id: `dispatch:${o.id}`,
             type: "dispatch",
             priority: "action_required",
             title: "Ready for delivery",
-            description: `${o.order_number} — payment verified, mark it out for delivery`,
+            description: `${o.order_number} — client accepted, mark it out for delivery`,
             status: "Action required",
             actionLabel: "Mark out for delivery",
+          });
+        } else if (o.status === "completed") {
+          const inv = invoiceByOrder.get(o.id);
+          const due = inv?.due_date ? new Date(inv.due_date) : null;
+          const isOverdue = due ? due.getTime() < Date.now() : false;
+          tasks.push({
+            ...base,
+            id: `collect:${o.id}`,
+            type: "payment_follow_up",
+            priority: isOverdue ? "overdue" : "action_required",
+            amount: inv ? Number(inv.amount) - Number(inv.payment_amount ?? 0) : base.amount,
+            title: isOverdue ? "Payment overdue — follow up" : "Payment follow-up",
+            description:
+              `${o.order_number} — delivered${inv ? `, invoice ${inv.invoice_number}` : ""}. ` +
+              (due
+                ? `Due ${due.toLocaleDateString("en-IN")} (${inv?.credit_terms ?? 0}-day terms).`
+                : "Collect payment from the client."),
+            status: isOverdue ? "Overdue" : "Action required",
+            actionLabel: "Open order",
           });
         } else if (o.status === "payment_submitted") {
           tasks.push({
@@ -251,7 +292,7 @@ export const getPendingTasks = createServerFn({ method: "GET" })
         supabase
           .from("orders")
           .select("id, order_number, status, total_amount, created_at, clients(business_name)")
-          .in("status", ["pending_client", "payment_pending", "payment_submitted", "out_for_delivery"])
+          .in("status", ["pending_client", "payment_pending", "payment_submitted", "out_for_delivery", "completed"])
           .order("created_at", { ascending: true }),
         supabase
           .from("order_payments")
@@ -259,6 +300,20 @@ export const getPendingTasks = createServerFn({ method: "GET" })
           .eq("status", "rejected")
           .order("reviewed_at", { ascending: false }),
       ]);
+
+      const clientInvoices = new Map<string, any>();
+      {
+        const dueIds = (orders.data ?? [])
+          .filter((o: any) => o.status === "completed" || o.status === "payment_pending")
+          .map((o: any) => o.id);
+        if (dueIds.length) {
+          const invs = await supabase
+            .from("invoices")
+            .select("order_id, invoice_number, amount, payment_amount, due_date, status")
+            .in("order_id", dueIds);
+          for (const i of invs.data ?? []) clientInvoices.set(i.order_id, i);
+        }
+      }
 
       const lastRejection = new Map<string, any>();
       for (const p of rejected.data ?? []) {
@@ -283,18 +338,27 @@ export const getPendingTasks = createServerFn({ method: "GET" })
             status: "Action required",
             actionLabel: "Review order",
           });
-        } else if (o.status === "payment_pending") {
+        } else if (o.status === "payment_pending" || o.status === "completed") {
           const rej = lastRejection.get(o.id);
+          const inv = clientInvoices.get(o.id);
+          const due = inv?.due_date ? new Date(inv.due_date) : null;
+          const isOverdue = due ? due.getTime() < Date.now() : false;
           tasks.push({
             ...base,
             id: `pay:${o.id}`,
             type: rej ? "payment_resubmission" : "payment_submission",
-            priority: "action_required",
-            title: rej ? "Payment rejected — resubmit proof" : "Payment required",
+            priority: isOverdue ? "overdue" : "action_required",
+            title: rej
+              ? "Payment rejected — resubmit proof"
+              : isOverdue
+                ? "Payment overdue"
+                : "Payment required",
             description: rej
               ? `${o.order_number} — ${rej.rejection_reason ?? "payment proof was rejected"}`
-              : `${o.order_number} — submit your payment proof`,
-            status: "Action required",
+              : due
+                ? `${o.order_number} — delivered, payment due ${due.toLocaleDateString("en-IN")}`
+                : `${o.order_number} — submit your payment proof`,
+            status: isOverdue ? "Overdue" : "Action required",
             actionLabel: rej ? "Resubmit payment" : "Make payment",
           });
         } else if (o.status === "payment_submitted") {
