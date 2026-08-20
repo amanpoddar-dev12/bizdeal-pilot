@@ -32,7 +32,15 @@ export const Route = createFileRoute("/_authenticated/employee/orders/new")({
   component: NewOrder,
 });
 
-type LineItem = { product_id: string; product_name: string; product_code: string; quantity: number; rate: number };
+type LineItem = {
+  product_id: string;
+  product_name: string;
+  product_code: string;
+  quantity: number;
+  rate: number;
+  /** Set when the row came from OCR and needs a human look. */
+  flagged?: boolean;
+};
 
 const blankItem = (): LineItem => ({ product_id: "", product_name: "", product_code: "", quantity: 1, rate: 0 });
 
@@ -46,18 +54,22 @@ function NewOrder() {
   const activeProducts = (products as any[]).filter((p) => p.active);
   const qc = useQueryClient();
   const [clientId, setClientId] = useState("");
-  const [deliveryDate, setDeliveryDate] = useState("");
-  const [notes, setNotes] = useState("");
+  const [reference, setReference] = useState("");
   const [items, setItems] = useState<LineItem[]>([blankItem()]);
+  const [scanned, setScanned] = useState(false);
+  const [reviewed, setReviewed] = useState(false);
 
   const total = items.reduce((s, i) => s + Number(i.quantity || 0) * Number(i.rate || 0), 0);
+  const flaggedCount = items.filter((i) => i.flagged).length;
 
   const mut = useMutation({
     mutationFn: () => createFn({
       data: {
         client_id: clientId,
-        delivery_date: deliveryDate || null,
-        notes: notes || null,
+        // Delivery date is no longer captured at creation time; the column stays
+        // intact for existing orders and later workflow updates.
+        delivery_date: null,
+        notes: reference.trim() ? `Ref: ${reference.trim()}` : null,
         items: items.map((i) => ({
           product_name: i.product_name,
           product_code: i.product_code || null,
@@ -77,7 +89,7 @@ function NewOrder() {
   function pickProduct(i: number, productId: string) {
     const p = activeProducts.find((x) => x.id === productId);
     setItems(items.map((it, j) => j === i
-      ? { ...it, product_id: productId, product_name: p?.name ?? "", product_code: p?.code ?? "", rate: Number(p?.unit_price ?? 0) }
+      ? { ...it, product_id: productId, product_name: p?.name ?? "", product_code: p?.code ?? "", rate: Number(p?.unit_price ?? 0), flagged: false }
       : it));
   }
 
@@ -85,13 +97,36 @@ function NewOrder() {
     setItems(items.map((it, j) => j === i ? { ...it, [key]: value } : it));
   }
 
-  const canSubmit = clientId && items.length > 0 && items.every((i) => i.product_id && i.quantity > 0 && i.rate >= 0) && !mut.isPending;
+  /** Fill the existing form from an OCR result. Missing values stay empty. */
+  function applyScan(r: ScanResult) {
+    if (r.client_id) setClientId(r.client_id);
+    if (r.reference_number) setReference(r.reference_number);
+    const mapped: LineItem[] = r.items.map((it) => ({
+      product_id: it.product_id ?? "",
+      product_name: it.product_name ?? "",
+      product_code: it.product_code ?? "",
+      quantity: it.quantity ?? 0,
+      rate: it.rate ?? 0,
+      flagged: it.confidence < LOW_CONFIDENCE || !it.product_id || it.quantity == null || it.rate == null,
+    }));
+    setItems(mapped.length ? mapped : [blankItem()]);
+    setScanned(true);
+    setReviewed(false);
+    toast.info("Values filled in. Check the highlighted fields, then submit.");
+  }
+
+  const valid = Boolean(clientId) && items.length > 0 && items.every((i) => i.product_id && i.quantity > 0 && i.rate >= 0);
+  const needsReview = scanned && flaggedCount > 0 && !reviewed;
+  const canSubmit = valid && !needsReview && !mut.isPending;
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <div><h1 className="font-display text-xl font-semibold sm:text-2xl">New order</h1></div>
+
+      <OrderScanCard onApply={applyScan} />
+
       <Card>
-        <CardHeader><CardTitle>Client & delivery</CardTitle></CardHeader>
+        <CardHeader><CardTitle>Client</CardTitle></CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1"><Label>Client</Label>
             <select value={clientId} onChange={(e) => setClientId(e.target.value)} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
@@ -99,10 +134,13 @@ function NewOrder() {
               {(clients as any[]).map((c) => <option key={c.id} value={c.id}>{c.business_name}</option>)}
             </select>
           </div>
-          <div className="space-y-1"><Label>Delivery date</Label><Input type="date" value={deliveryDate} onChange={(e) => setDeliveryDate(e.target.value)} /></div>
-          <div className="md:col-span-2 space-y-1"><Label>Notes</Label><Textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} /></div>
+          <div className="space-y-1">
+            <Label>Reference number <span className="text-muted-foreground">(optional)</span></Label>
+            <Input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="From the order sheet" />
+          </div>
         </CardContent>
       </Card>
+
 
       <Card>
         <CardHeader className="flex flex-row items-center">
