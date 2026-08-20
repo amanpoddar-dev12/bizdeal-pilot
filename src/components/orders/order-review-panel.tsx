@@ -61,7 +61,7 @@ export function OrderReviewPanel({
     onMutate: async (action) => {
       await qc.cancelQueries({ queryKey: qk.orders });
       const prev = qc.getQueryData<any[]>(qk.orders as unknown as unknown[]);
-      const next = action === "approve" ? "payment_pending" : "client_rejected";
+      const next = action === "approve" ? "client_approved" : "client_rejected";
       qc.setQueryData<any[]>(qk.orders as unknown as unknown[], (rows) =>
         (rows ?? []).map((o) => (o.id === orderId ? { ...o, status: next } : o)),
       );
@@ -72,7 +72,7 @@ export function OrderReviewPanel({
       toast.error(e.message);
     },
     onSuccess: (_r, action) => {
-      toast.success(action === "approve" ? "Order accepted — submit payment next" : "Order rejected");
+      toast.success(action === "approve" ? "Order accepted — we will process and dispatch it" : "Order rejected");
       if (action !== "approve") onOpenChange(false);
       setChecked({});
       setRemarks("");

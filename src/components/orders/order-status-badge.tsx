@@ -14,24 +14,24 @@ const styles: Record<string, string> = {
   payment_submitted: "bg-sky-500/15 text-sky-600 ring-sky-500/30 dark:text-sky-400",
   payment_verified: "bg-emerald-500/15 text-emerald-600 ring-emerald-500/30 dark:text-emerald-400",
   out_for_delivery: "bg-indigo-500/15 text-indigo-600 ring-indigo-500/30 dark:text-indigo-400",
-  completed: "bg-emerald-500/15 text-emerald-600 ring-emerald-500/30 dark:text-emerald-400",
+  completed: "bg-amber-500/15 text-amber-600 ring-amber-500/30 dark:text-amber-400",
 };
 
 const labels: Record<string, string> = {
   pending: "Pending",
   pending_client: "Awaiting client",
-  client_approved: "Client approved",
+  client_approved: "Processing",
   client_rejected: "Client rejected",
   confirmed: "Confirmed",
   declined: "Declined",
   change_requested: "Change requested",
   invoiced: "Invoiced",
-  paid: "Paid",
-  payment_pending: "Payment pending",
+  paid: "Payment completed",
+  payment_pending: "Payment due",
   payment_submitted: "Payment under verification",
   payment_verified: "Payment verified",
-  out_for_delivery: "Out for delivery",
-  completed: "Completed",
+  out_for_delivery: "Dispatched",
+  completed: "Delivered — payment due",
 };
 
 export function OrderStatusBadge({ status, className }: { status: string; className?: string }) {
