@@ -33,7 +33,9 @@
     "profile": "Profile & KYC",
     "settings": "Settings",
     "payments": "Payment verification",
-    "history": "History"
+    "history": "History",
+    "payslips": "Payslips",
+    "myPayslips": "My payslips"
   },
   "auth": {
     "welcome": "Welcome to Kredix",
