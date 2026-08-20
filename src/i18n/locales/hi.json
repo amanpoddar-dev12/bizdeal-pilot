@@ -33,7 +33,9 @@
     "profile": "प्रोफ़ाइल और KYC",
     "settings": "सेटिंग्स",
     "payments": "भुगतान सत्यापन",
-    "history": "इतिहास"
+    "history": "इतिहास",
+    "payslips": "वेतन पर्ची",
+    "myPayslips": "मेरी वेतन पर्ची"
   },
   "auth": {
     "welcome": "Kredix में आपका स्वागत है",

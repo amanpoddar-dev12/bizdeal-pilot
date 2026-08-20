@@ -18,6 +18,7 @@ import { Route as AuthenticatedHistoryRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCompleteProfileRouteImport } from './routes/_authenticated/complete-profile'
 import { Route as AuthenticatedEmployeeTasksRouteImport } from './routes/_authenticated/employee/tasks'
+import { Route as AuthenticatedEmployeePayslipsRouteImport } from './routes/_authenticated/employee/payslips'
 import { Route as AuthenticatedEmployeeLocationRouteImport } from './routes/_authenticated/employee/location'
 import { Route as AuthenticatedEmployeeDutyRouteImport } from './routes/_authenticated/employee/duty'
 import { Route as AuthenticatedEmployeeClientsRouteImport } from './routes/_authenticated/employee/clients'
@@ -26,6 +27,7 @@ import { Route as AuthenticatedClientOrdersRouteImport } from './routes/_authent
 import { Route as AuthenticatedClientLedgerRouteImport } from './routes/_authenticated/client/ledger'
 import { Route as AuthenticatedClientInvoicesRouteImport } from './routes/_authenticated/client/invoices'
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin/products'
+import { Route as AuthenticatedAdminPayslipsRouteImport } from './routes/_authenticated/admin/payslips'
 import { Route as AuthenticatedAdminPaymentsRouteImport } from './routes/_authenticated/admin/payments'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin/orders'
 import { Route as AuthenticatedAdminLocationsRouteImport } from './routes/_authenticated/admin/locations'
@@ -85,6 +87,12 @@ const AuthenticatedEmployeeTasksRoute =
     path: '/employee/tasks',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedEmployeePayslipsRoute =
+  AuthenticatedEmployeePayslipsRouteImport.update({
+    id: '/employee/payslips',
+    path: '/employee/payslips',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedEmployeeLocationRoute =
   AuthenticatedEmployeeLocationRouteImport.update({
     id: '/employee/location',
@@ -131,6 +139,12 @@ const AuthenticatedAdminProductsRoute =
   AuthenticatedAdminProductsRouteImport.update({
     id: '/admin/products',
     path: '/admin/products',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminPayslipsRoute =
+  AuthenticatedAdminPayslipsRouteImport.update({
+    id: '/admin/payslips',
+    path: '/admin/payslips',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedAdminPaymentsRoute =
@@ -222,6 +236,7 @@ export interface FileRoutesByFullPath {
   '/admin/locations': typeof AuthenticatedAdminLocationsRouteWithChildren
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/payments': typeof AuthenticatedAdminPaymentsRoute
+  '/admin/payslips': typeof AuthenticatedAdminPayslipsRoute
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/client/invoices': typeof AuthenticatedClientInvoicesRoute
   '/client/ledger': typeof AuthenticatedClientLedgerRoute
@@ -230,6 +245,7 @@ export interface FileRoutesByFullPath {
   '/employee/clients': typeof AuthenticatedEmployeeClientsRoute
   '/employee/duty': typeof AuthenticatedEmployeeDutyRoute
   '/employee/location': typeof AuthenticatedEmployeeLocationRoute
+  '/employee/payslips': typeof AuthenticatedEmployeePayslipsRoute
   '/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
   '/admin/locations/$employeeId': typeof AuthenticatedAdminLocationsEmployeeIdRoute
   '/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
@@ -252,6 +268,7 @@ export interface FileRoutesByTo {
   '/admin/locations': typeof AuthenticatedAdminLocationsRouteWithChildren
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/payments': typeof AuthenticatedAdminPaymentsRoute
+  '/admin/payslips': typeof AuthenticatedAdminPayslipsRoute
   '/admin/products': typeof AuthenticatedAdminProductsRoute
   '/client/invoices': typeof AuthenticatedClientInvoicesRoute
   '/client/ledger': typeof AuthenticatedClientLedgerRoute
@@ -260,6 +277,7 @@ export interface FileRoutesByTo {
   '/employee/clients': typeof AuthenticatedEmployeeClientsRoute
   '/employee/duty': typeof AuthenticatedEmployeeDutyRoute
   '/employee/location': typeof AuthenticatedEmployeeLocationRoute
+  '/employee/payslips': typeof AuthenticatedEmployeePayslipsRoute
   '/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
   '/admin/locations/$employeeId': typeof AuthenticatedAdminLocationsEmployeeIdRoute
   '/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
@@ -284,6 +302,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/locations': typeof AuthenticatedAdminLocationsRouteWithChildren
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/_authenticated/admin/payments': typeof AuthenticatedAdminPaymentsRoute
+  '/_authenticated/admin/payslips': typeof AuthenticatedAdminPayslipsRoute
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRoute
   '/_authenticated/client/invoices': typeof AuthenticatedClientInvoicesRoute
   '/_authenticated/client/ledger': typeof AuthenticatedClientLedgerRoute
@@ -292,6 +311,7 @@ export interface FileRoutesById {
   '/_authenticated/employee/clients': typeof AuthenticatedEmployeeClientsRoute
   '/_authenticated/employee/duty': typeof AuthenticatedEmployeeDutyRoute
   '/_authenticated/employee/location': typeof AuthenticatedEmployeeLocationRoute
+  '/_authenticated/employee/payslips': typeof AuthenticatedEmployeePayslipsRoute
   '/_authenticated/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
   '/_authenticated/admin/locations/$employeeId': typeof AuthenticatedAdminLocationsEmployeeIdRoute
   '/_authenticated/employee/orders/new': typeof AuthenticatedEmployeeOrdersNewRoute
@@ -316,6 +336,7 @@ export interface FileRouteTypes {
     | '/admin/locations'
     | '/admin/orders'
     | '/admin/payments'
+    | '/admin/payslips'
     | '/admin/products'
     | '/client/invoices'
     | '/client/ledger'
@@ -324,6 +345,7 @@ export interface FileRouteTypes {
     | '/employee/clients'
     | '/employee/duty'
     | '/employee/location'
+    | '/employee/payslips'
     | '/employee/tasks'
     | '/admin/locations/$employeeId'
     | '/employee/orders/new'
@@ -346,6 +368,7 @@ export interface FileRouteTypes {
     | '/admin/locations'
     | '/admin/orders'
     | '/admin/payments'
+    | '/admin/payslips'
     | '/admin/products'
     | '/client/invoices'
     | '/client/ledger'
@@ -354,6 +377,7 @@ export interface FileRouteTypes {
     | '/employee/clients'
     | '/employee/duty'
     | '/employee/location'
+    | '/employee/payslips'
     | '/employee/tasks'
     | '/admin/locations/$employeeId'
     | '/employee/orders/new'
@@ -377,6 +401,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/locations'
     | '/_authenticated/admin/orders'
     | '/_authenticated/admin/payments'
+    | '/_authenticated/admin/payslips'
     | '/_authenticated/admin/products'
     | '/_authenticated/client/invoices'
     | '/_authenticated/client/ledger'
@@ -385,6 +410,7 @@ export interface FileRouteTypes {
     | '/_authenticated/employee/clients'
     | '/_authenticated/employee/duty'
     | '/_authenticated/employee/location'
+    | '/_authenticated/employee/payslips'
     | '/_authenticated/employee/tasks'
     | '/_authenticated/admin/locations/$employeeId'
     | '/_authenticated/employee/orders/new'
@@ -463,6 +489,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeeTasksRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/employee/payslips': {
+      id: '/_authenticated/employee/payslips'
+      path: '/employee/payslips'
+      fullPath: '/employee/payslips'
+      preLoaderRoute: typeof AuthenticatedEmployeePayslipsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/employee/location': {
       id: '/_authenticated/employee/location'
       path: '/employee/location'
@@ -517,6 +550,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/products'
       fullPath: '/admin/products'
       preLoaderRoute: typeof AuthenticatedAdminProductsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/payslips': {
+      id: '/_authenticated/admin/payslips'
+      path: '/admin/payslips'
+      fullPath: '/admin/payslips'
+      preLoaderRoute: typeof AuthenticatedAdminPayslipsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/payments': {
@@ -635,6 +675,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminLocationsRoute: typeof AuthenticatedAdminLocationsRouteWithChildren
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
   AuthenticatedAdminPaymentsRoute: typeof AuthenticatedAdminPaymentsRoute
+  AuthenticatedAdminPayslipsRoute: typeof AuthenticatedAdminPayslipsRoute
   AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRoute
   AuthenticatedClientInvoicesRoute: typeof AuthenticatedClientInvoicesRoute
   AuthenticatedClientLedgerRoute: typeof AuthenticatedClientLedgerRoute
@@ -643,6 +684,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedEmployeeClientsRoute: typeof AuthenticatedEmployeeClientsRoute
   AuthenticatedEmployeeDutyRoute: typeof AuthenticatedEmployeeDutyRoute
   AuthenticatedEmployeeLocationRoute: typeof AuthenticatedEmployeeLocationRoute
+  AuthenticatedEmployeePayslipsRoute: typeof AuthenticatedEmployeePayslipsRoute
   AuthenticatedEmployeeTasksRoute: typeof AuthenticatedEmployeeTasksRoute
   AuthenticatedEmployeeOrdersNewRoute: typeof AuthenticatedEmployeeOrdersNewRoute
   AuthenticatedEmployeeOrdersIndexRoute: typeof AuthenticatedEmployeeOrdersIndexRoute
@@ -663,6 +705,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedAdminLocationsRouteWithChildren,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
   AuthenticatedAdminPaymentsRoute: AuthenticatedAdminPaymentsRoute,
+  AuthenticatedAdminPayslipsRoute: AuthenticatedAdminPayslipsRoute,
   AuthenticatedAdminProductsRoute: AuthenticatedAdminProductsRoute,
   AuthenticatedClientInvoicesRoute: AuthenticatedClientInvoicesRoute,
   AuthenticatedClientLedgerRoute: AuthenticatedClientLedgerRoute,
@@ -671,6 +714,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedEmployeeClientsRoute: AuthenticatedEmployeeClientsRoute,
   AuthenticatedEmployeeDutyRoute: AuthenticatedEmployeeDutyRoute,
   AuthenticatedEmployeeLocationRoute: AuthenticatedEmployeeLocationRoute,
+  AuthenticatedEmployeePayslipsRoute: AuthenticatedEmployeePayslipsRoute,
   AuthenticatedEmployeeTasksRoute: AuthenticatedEmployeeTasksRoute,
   AuthenticatedEmployeeOrdersNewRoute: AuthenticatedEmployeeOrdersNewRoute,
   AuthenticatedEmployeeOrdersIndexRoute: AuthenticatedEmployeeOrdersIndexRoute,

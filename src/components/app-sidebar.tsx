@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sidebar";
 import {
   LayoutDashboard, Users, Package, Receipt, Wallet, ScrollText, MapPin,
-  ClipboardList, Clock, MapPinned, FileText, User, Settings, Activity, History,
+  ClipboardList, Clock, MapPinned, FileText, User, Settings, Activity, History, BadgeIndianRupee,
 } from "lucide-react";
 
 
@@ -31,6 +31,7 @@ const navByRole: Record<Role, NavGroup[]> = {
       { key: "nav.invoices", url: "/admin/invoices", icon: Receipt },
       { key: "nav.credit", url: "/admin/credit", icon: Wallet },
       { key: "nav.locations", url: "/admin/locations", icon: MapPin },
+      { key: "nav.payslips", url: "/admin/payslips", icon: BadgeIndianRupee },
       { key: "nav.audit", url: "/admin/audit", icon: ScrollText },
       { key: "nav.history", url: "/history", icon: History },
       { key: "nav.settings", url: "/settings", icon: Settings },
@@ -45,6 +46,7 @@ const navByRole: Record<Role, NavGroup[]> = {
       { key: "nav.orders", url: "/employee/orders", icon: Package },
       { key: "nav.tasks", url: "/employee/tasks", icon: ClipboardList },
       { key: "nav.duty", url: "/employee/duty", icon: Clock },
+      { key: "nav.myPayslips", url: "/employee/payslips", icon: BadgeIndianRupee },
       { key: "nav.shareLocation", url: "/employee/location", icon: MapPinned },
       { key: "nav.history", url: "/history", icon: History },
       { key: "nav.settings", url: "/settings", icon: Settings },
