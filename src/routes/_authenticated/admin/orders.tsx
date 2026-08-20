@@ -81,14 +81,14 @@ function OrdersTable({ scope }: { scope: "admin" | "client" | "employee" }) {
   // surfaces stay behaviourally identical.
   const rowActions = (o: any) => (
     <>
-      {me?.role === "client" && ["pending_client", "payment_pending", "out_for_delivery"].includes(o.status) && (
+      {me?.role === "client" && ["pending_client", "payment_pending", "completed", "out_for_delivery"].includes(o.status) && (
         <Button size="sm" onClick={() => setOpenId(o.id)}>
-          {o.status === "payment_pending" ? "Pay" : o.status === "out_for_delivery" ? "View code" : "Review"}
+          {o.status === "payment_pending" || o.status === "completed" ? "Pay" : o.status === "out_for_delivery" ? "View code" : "Review"}
         </Button>
       )}
-      {scope !== "client" && ["payment_verified", "out_for_delivery"].includes(o.status) && (
+      {scope !== "client" && ["client_approved", "payment_verified", "out_for_delivery"].includes(o.status) && (
         <Button size="sm" onClick={() => setOpenId(o.id)}>
-          {o.status === "payment_verified" ? "Dispatch" : "Enter OTP"}
+          {o.status === "out_for_delivery" ? "Enter OTP" : "Dispatch"}
         </Button>
       )}
       {scope !== "client" && canSubmit(o) && (

@@ -29,17 +29,24 @@ const METHOD_LABELS: Record<string, string> = {
   other: "Other",
 };
 
-const STEPS = ["payment_pending", "payment_submitted", "payment_verified", "out_for_delivery", "completed"] as const;
+// Payment now happens after delivery:
+// processing -> dispatched -> delivered -> payment submitted -> verified/paid.
+const STEPS = ["client_approved", "out_for_delivery", "completed", "payment_submitted", "paid"] as const;
 const STEP_LABELS: Record<string, string> = {
-  payment_pending: "Payment",
-  payment_submitted: "Verification",
-  payment_verified: "Verified",
-  out_for_delivery: "Out for delivery",
+  client_approved: "Processing",
+  out_for_delivery: "Dispatched",
   completed: "Delivered",
+  payment_submitted: "Verification",
+  paid: "Paid",
+};
+/** Orders created under the pre-delivery payment flow still map onto the bar. */
+const LEGACY_STEP: Record<string, (typeof STEPS)[number]> = {
+  payment_pending: "client_approved",
+  payment_verified: "client_approved",
 };
 
 function Progress({ status }: { status: string }) {
-  const idx = STEPS.indexOf(status as (typeof STEPS)[number]);
+  const idx = STEPS.indexOf((LEGACY_STEP[status] ?? status) as (typeof STEPS)[number]);
   if (idx < 0) return null;
   return (
     <div className="flex items-center gap-1">
@@ -73,6 +80,11 @@ export function OrderDeliverySection({ order, role }: { order: any; role: "admin
   const payments: any[] = data?.payments ?? [];
   const latest = payments[0] ?? null;
   const otp = data?.otp ?? null;
+  const invoice: any = data?.invoice ?? null;
+  const reminders: any[] = data?.reminders ?? [];
+  const creditTerms: number = reminders[0]?.credit_terms ?? order.clients?.credit_terms ?? 0;
+  const dueAmount = invoice ? Number(invoice.amount) - Number(invoice.payment_amount ?? 0) : 0;
+  const overdue = !!invoice && invoice.status !== "paid" && new Date(invoice.due_date).getTime() < Date.now();
   const status: string = order.status;
 
   const [amount, setAmount] = useState(String(order.total_amount ?? ""));
@@ -168,6 +180,24 @@ export function OrderDeliverySection({ order, role }: { order: any; role: "admin
         </div>
         <Progress status={status} />
 
+        {invoice && status !== "paid" && (
+          <div className="rounded-lg border border-border p-3 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="font-medium">Invoice {invoice.invoice_number}</span>
+              <span className="font-display text-base font-semibold">{inr(dueAmount)}</span>
+            </div>
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+              <span>Delivered {fmtDateTime(invoice.invoice_date)}</span>
+              <span>
+                Credit terms: {creditTerms === 0 ? "Immediate payment" : `${creditTerms} days`}
+              </span>
+              <span className={cn(overdue && "font-medium text-red-600 dark:text-red-400")}>
+                Due {fmtDateTime(invoice.due_date)}{overdue ? " — overdue" : ""}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* ---- Payment history ---- */}
         {payments.length > 0 && (
           <div className="space-y-2">
@@ -225,7 +255,7 @@ export function OrderDeliverySection({ order, role }: { order: any; role: "admin
         )}
 
         {/* ---- Client: submit / resubmit payment ---- */}
-        {role === "client" && status === "payment_pending" && (
+        {role === "client" && (status === "completed" || status === "payment_pending") && (
           <div className="space-y-3 rounded-lg border border-border p-3">
             <div className="flex items-center justify-between text-sm">
               <span className="font-medium">{latest?.status === "rejected" ? "Resubmit payment" : "Submit payment"}</span>
@@ -299,13 +329,16 @@ export function OrderDeliverySection({ order, role }: { order: any; role: "admin
         )}
 
         {/* ---- Staff: delivery workflow ---- */}
-        {staff && (status === "payment_pending" || status === "payment_submitted") && (
+        {staff && (status === "completed" || status === "payment_submitted") && (
           <p className="flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-400">
-            <Lock className="size-4" /> Payment not verified — delivery locked.
+            <Lock className="size-4" />
+            {status === "payment_submitted"
+              ? "Payment submitted — awaiting admin verification."
+              : "Delivered — payment due from the client."}
           </p>
         )}
 
-        {staff && status === "payment_verified" && (
+        {staff && (status === "client_approved" || status === "payment_verified") && (
           <Button className="w-full" disabled={dispatch.isPending} onClick={() => dispatch.mutate()}>
             {dispatch.isPending && <Loader2 className="mr-1 size-4 animate-spin" />}
             <Truck className="mr-1 size-4" /> Mark out for delivery
@@ -338,9 +371,9 @@ export function OrderDeliverySection({ order, role }: { order: any; role: "admin
           </div>
         )}
 
-        {status === "completed" && (
+        {status === "paid" && (
           <p className="flex items-center gap-2 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400">
-            <ShieldCheck className="size-4" /> Delivery verified — order completed.
+            <ShieldCheck className="size-4" /> Payment completed — order closed.
           </p>
         )}
       </section>
