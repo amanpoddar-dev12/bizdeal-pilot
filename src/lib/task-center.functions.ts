@@ -187,10 +187,10 @@ export const getPendingTasks = createServerFn({ method: "GET" })
           .select("order_id, invoice_number, amount, payment_amount, due_date, status")
           .in("order_id", deliveredIds);
         const termsByOrder = new Map<string, number>(
-          (reminders.data ?? []).map((r: any) => [r.order_id, r.credit_terms]),
+          (reminders.data ?? []).map((r: any) => [String(r.order_id), Number(r.credit_terms ?? 0)] as [string, number]),
         );
         for (const i of invs.data ?? []) {
-          invoiceByOrder.set(i.order_id, { ...i, credit_terms: termsByOrder.get(i.order_id) ?? 0 });
+          invoiceByOrder.set(String(i.order_id), { ...i, credit_terms: termsByOrder.get(String(i.order_id)) ?? 0 });
         }
       }
 
@@ -311,7 +311,7 @@ export const getPendingTasks = createServerFn({ method: "GET" })
             .from("invoices")
             .select("order_id, invoice_number, amount, payment_amount, due_date, status")
             .in("order_id", dueIds);
-          for (const i of invs.data ?? []) clientInvoices.set(i.order_id, i);
+          for (const i of invs.data ?? []) clientInvoices.set(String(i.order_id), i);
         }
       }
 
