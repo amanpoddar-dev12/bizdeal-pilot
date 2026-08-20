@@ -40,6 +40,7 @@ export function OrderReviewPanel({
   const qc = useQueryClient();
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [remarks, setRemarks] = useState("");
+  const [rejecting, setRejecting] = useState(false);
 
   useRealtimeOrders(orderId ?? undefined);
 
@@ -75,6 +76,7 @@ export function OrderReviewPanel({
       if (action !== "approve") onOpenChange(false);
       setChecked({});
       setRemarks("");
+      setRejecting(false);
     },
     onSettled: () => {
       // Only the queries this review can affect — no app-wide refetch.
