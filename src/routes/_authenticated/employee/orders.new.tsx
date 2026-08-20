@@ -158,7 +158,10 @@ function NewOrder() {
           )}
           <div className="space-y-2">
             {items.map((it, i) => (
-              <div key={i} className="grid grid-cols-12 gap-2">
+              <div
+                key={i}
+                className={`grid grid-cols-12 gap-2 rounded-md ${it.flagged ? "border border-destructive/50 bg-destructive/5 p-2" : ""}`}
+              >
                 <select
                   className="col-span-6 rounded-md border border-input bg-background px-3 py-2 text-sm"
                   value={it.product_id}
@@ -177,6 +180,14 @@ function NewOrder() {
                   onClick={() => setItems(items.filter((_, j) => j !== i))} disabled={items.length === 1}>
                   <Trash2 className="size-4" />
                 </Button>
+                {it.flagged && (
+                  <p className="col-span-12 flex items-center gap-1 text-xs text-destructive">
+                    <AlertTriangle className="size-3" />
+                    {it.product_name && !it.product_id
+                      ? `Scanned as "${it.product_name}" — pick the matching product.`
+                      : "Low-confidence scan — verify product, quantity and rate."}
+                  </p>
+                )}
               </div>
             ))}
           </div>
@@ -187,11 +198,22 @@ function NewOrder() {
         </CardContent>
       </Card>
 
+      {scanned && flaggedCount > 0 && (
+        <label className="flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm">
+          <Checkbox checked={reviewed} onCheckedChange={(v) => setReviewed(v === true)} className="mt-0.5" />
+          <span>
+            {flaggedCount} scanned {flaggedCount === 1 ? "line" : "lines"} need review. I have checked the highlighted
+            values and confirm they are correct.
+          </span>
+        </label>
+      )}
+
       <div className="flex justify-end">
         <Button onClick={() => mut.mutate()} disabled={!canSubmit}>
           {mut.isPending ? "Creating…" : "Create order"}
         </Button>
       </div>
+
     </div>
   );
 }
