@@ -906,6 +906,83 @@ export type Database = {
           },
         ]
       }
+      payment_reminders: {
+        Row: {
+          amount_due: number
+          client_id: string
+          created_at: string
+          credit_terms: number
+          due_date: string
+          employee_id: string | null
+          id: string
+          invoice_id: string | null
+          notified_at: string | null
+          order_id: string
+          stage: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount_due?: number
+          client_id: string
+          created_at?: string
+          credit_terms?: number
+          due_date: string
+          employee_id?: string | null
+          id?: string
+          invoice_id?: string | null
+          notified_at?: string | null
+          order_id: string
+          stage: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_due?: number
+          client_id?: string
+          created_at?: string
+          credit_terms?: number
+          due_date?: string
+          employee_id?: string | null
+          id?: string
+          invoice_id?: string | null
+          notified_at?: string | null
+          order_id?: string
+          stage?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_reminders_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reminders_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reminders_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_reminders_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amount: number
@@ -1221,6 +1298,7 @@ export type Database = {
         Args: { p_code: string; p_order_id: string }
         Returns: undefined
       }
+      generate_payment_reminders: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
