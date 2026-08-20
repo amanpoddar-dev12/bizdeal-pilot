@@ -4,6 +4,9 @@ import { z } from "zod";
 
 export const PAYMENT_METHODS = ["upi", "bank_transfer", "cash", "cheque", "other"] as const;
 
+/** Methods a client may pick when submitting a payment (historical records keep the full set). */
+export const CLIENT_PAYMENT_METHODS = ["upi", "bank_transfer"] as const;
+
 const submitSchema = z.object({
   order_id: z.string().uuid(),
   amount: z.number().positive(),

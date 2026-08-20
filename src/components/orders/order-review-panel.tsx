@@ -40,6 +40,7 @@ export function OrderReviewPanel({
   const qc = useQueryClient();
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const [remarks, setRemarks] = useState("");
+  const [rejecting, setRejecting] = useState(false);
 
   useRealtimeOrders(orderId ?? undefined);
 
@@ -75,6 +76,7 @@ export function OrderReviewPanel({
       if (action !== "approve") onOpenChange(false);
       setChecked({});
       setRemarks("");
+      setRejecting(false);
     },
     onSettled: () => {
       // Only the queries this review can affect — no app-wide refetch.
@@ -160,35 +162,68 @@ export function OrderReviewPanel({
                       <span className="leading-snug">{c.label}</span>
                     </label>
                   ))}
-                  <Textarea
-                    rows={2}
-                    placeholder="Remarks (optional)"
-                    value={remarks}
-                    onChange={(e) => setRemarks(e.target.value)}
-                  />
+
+                  {/* Remark is only relevant when rejecting — it appears after Reject is chosen. */}
+                  {rejecting && (
+                    <div className="space-y-1.5 animate-in fade-in slide-in-from-top-1">
+                      <p className="text-sm font-medium">Reason for rejection (optional)</p>
+                      <Textarea
+                        rows={3}
+                        autoFocus
+                        placeholder="Describe the issue with this order"
+                        value={remarks}
+                        onChange={(e) => setRemarks(e.target.value)}
+                      />
+                    </div>
+                  )}
+
                   <div className="flex gap-2">
-                    <Button
-                      className="flex-1"
-                      disabled={!allChecked || review.isPending}
-                      onClick={() => review.mutate("approve")}
-                    >
-                      <Check className="mr-1 size-4" /> Approve
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex-1"
-                      disabled={review.isPending}
-                      onClick={() => review.mutate("reject")}
-                    >
-                      <X className="mr-1 size-4" /> Reject
-                    </Button>
+                    {rejecting ? (
+                      <>
+                        <Button
+                          variant="destructive"
+                          className="flex-1"
+                          disabled={review.isPending}
+                          onClick={() => review.mutate("reject")}
+                        >
+                          <X className="mr-1 size-4" /> Confirm rejection
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="flex-1"
+                          disabled={review.isPending}
+                          onClick={() => { setRejecting(false); setRemarks(""); }}
+                        >
+                          Cancel
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          className="flex-1"
+                          disabled={!allChecked || review.isPending}
+                          onClick={() => review.mutate("approve")}
+                        >
+                          <Check className="mr-1 size-4" /> Approve
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="flex-1"
+                          disabled={review.isPending}
+                          onClick={() => setRejecting(true)}
+                        >
+                          <X className="mr-1 size-4" /> Reject
+                        </Button>
+                      </>
+                    )}
                   </div>
-                  {!allChecked && (
+                  {!allChecked && !rejecting && (
                     <p className="text-xs text-muted-foreground">Tick all confirmations to enable approval.</p>
                   )}
                 </section>
               </>
             )}
+
 
             {me?.role && (
               <OrderDeliverySection order={order} role={me.role as any} />
