@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import {
   submitPayment, reviewPayment, getOrderDeliveryState,
-  markOutForDelivery, regenerateDeliveryOtp, verifyDeliveryOtp, PAYMENT_METHODS,
+  markOutForDelivery, regenerateDeliveryOtp, verifyDeliveryOtp, CLIENT_PAYMENT_METHODS,
 } from "@/lib/delivery.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,7 +77,6 @@ export function OrderDeliverySection({ order, role }: { order: any; role: "admin
 
   const [amount, setAmount] = useState(String(order.total_amount ?? ""));
   const [method, setMethod] = useState<string>("upi");
-  const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -115,7 +114,7 @@ export function OrderDeliverySection({ order, role }: { order: any; role: "admin
           order_id: orderId,
           amount: Number(amount),
           method: method as any,
-          reference_id: reference || null,
+          reference_id: null,
           proof_path,
           note: note || null,
         },
@@ -123,7 +122,7 @@ export function OrderDeliverySection({ order, role }: { order: any; role: "admin
     },
     onSuccess: () => {
       toast.success("Payment submitted for verification");
-      setReference(""); setNote(""); setFile(null);
+      setNote(""); setFile(null);
       invalidate();
     },
     onError: (e: any) => { setUploading(false); toast.error(e.message); },
@@ -242,16 +241,12 @@ export function OrderDeliverySection({ order, role }: { order: any; role: "admin
                 <Select value={method} onValueChange={setMethod}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {PAYMENT_METHODS.map((m) => (
+                    {CLIENT_PAYMENT_METHODS.map((m) => (
                       <SelectItem key={m} value={m}>{METHOD_LABELS[m]}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="pay-ref">Transaction / reference ID</Label>
-              <Input id="pay-ref" value={reference} onChange={(e) => setReference(e.target.value)} placeholder="e.g. UPI ref 4839201" />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="pay-proof">Payment screenshot / proof</Label>
