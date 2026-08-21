@@ -64,6 +64,7 @@ export const scanOrderDocument = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => scanInput.parse(d))
   .handler(async ({ data, context }): Promise<ScanResult> => {
+    await requirePermission(context, "orders.create", "create orders");
     const apiKey = process.env["LOVABLE_API_KEY"];
     if (!apiKey) throw new Error("Document scanning is not configured. Contact your administrator.");
 
