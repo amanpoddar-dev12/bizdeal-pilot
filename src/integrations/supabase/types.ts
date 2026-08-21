@@ -377,6 +377,42 @@ export type Database = {
           },
         ]
       }
+      employee_permissions: {
+        Row: {
+          created_at: string
+          employee_id: string
+          granted_by: string | null
+          permission: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          granted_by?: string | null
+          permission: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          granted_by?: string | null
+          permission?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_permissions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employee_permissions_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_profiles: {
         Row: {
           active: boolean
@@ -1392,6 +1428,10 @@ export type Database = {
         Returns: undefined
       }
       generate_payment_reminders: { Args: never; Returns: number }
+      has_employee_permission: {
+        Args: { _perm: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
