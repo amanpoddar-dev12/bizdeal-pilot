@@ -2,6 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { prefetchRouteData } from "@/lib/route-prefetch";
+import { usePermissions } from "@/hooks/use-permissions";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
@@ -14,7 +15,7 @@ import {
 
 type Role = "admin" | "employee" | "client";
 
-type NavItem = { key: string; url: string; icon: any };
+type NavItem = { key: string; url: string; icon: any; perm?: string };
 type NavGroup = { labelKey: string; items: NavItem[] };
 
 const navByRole: Record<Role, NavGroup[]> = {
@@ -42,7 +43,7 @@ const navByRole: Record<Role, NavGroup[]> = {
     items: [
       { key: "nav.today", url: "/dashboard", icon: LayoutDashboard },
       { key: "nav.clients", url: "/employee/clients", icon: Users },
-      { key: "nav.newOrder", url: "/employee/orders/new", icon: Package },
+      { key: "nav.newOrder", url: "/employee/orders/new", icon: Package, perm: "orders.create" },
       { key: "nav.orders", url: "/employee/orders", icon: Package },
       { key: "nav.tasks", url: "/employee/tasks", icon: ClipboardList },
       { key: "nav.duty", url: "/employee/duty", icon: Clock },
@@ -71,7 +72,11 @@ export function AppSidebar({ role, name }: { role: Role; name: string }) {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const groups = navByRole[role] ?? navByRole.client;
+  const { can } = usePermissions();
+  const groups = (navByRole[role] ?? navByRole.client).map((g) => ({
+    ...g,
+    items: g.items.filter((i) => !i.perm || can(i.perm as any)),
+  }));
   const qc = useQueryClient();
   const warm = (url: string) => prefetchRouteData(qc, url, role);
 

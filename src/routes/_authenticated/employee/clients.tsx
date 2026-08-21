@@ -23,6 +23,7 @@ import { useVisibleRows } from "@/hooks/use-visible-rows";
 import { toast } from "sonner";
 import { Download, Plus } from "lucide-react";
 import { qk } from "@/lib/query-keys";
+import { usePermissions } from "@/hooks/use-permissions";
 import { invalidateFor } from "@/lib/query-mutations";
 
 export const Route = createFileRoute("/_authenticated/employee/clients")({
@@ -45,6 +46,7 @@ function EmpClients() {
   const save = useServerFn(upsertClient);
   const qc = useQueryClient();
   const { data = [] } = useQuery({ queryKey: qk.clients, queryFn: () => fn() });
+  const { can } = usePermissions();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
@@ -133,6 +135,7 @@ function EmpClients() {
         <Button variant="outline" onClick={exportCsv}>
           <Download className="mr-1 size-4" /> CSV
         </Button>
+        {can("clients.manage") && (
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button variant="outline">
@@ -199,9 +202,12 @@ function EmpClients() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        <Button asChild>
-          <Link to="/employee/orders/new">Punch order</Link>
-        </Button>
+        )}
+        {can("orders.create") && (
+          <Button asChild>
+            <Link to="/employee/orders/new">Punch order</Link>
+          </Button>
+        )}
       </div>
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {shown.map((c: any) => (

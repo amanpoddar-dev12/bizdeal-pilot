@@ -14,6 +14,7 @@ import { inr } from "@/lib/format";
 import { useState } from "react";
 import { toast } from "sonner";
 import { qk } from "@/lib/query-keys";
+import { usePermissions } from "@/hooks/use-permissions";
 import { invalidateFor } from "@/lib/query-mutations";
 import { OrderScanCard, LOW_CONFIDENCE } from "@/components/orders/order-scan-card";
 import type { ScanResult } from "@/lib/order-scan.functions";
@@ -45,6 +46,7 @@ type LineItem = {
 const blankItem = (): LineItem => ({ product_id: "", product_name: "", product_code: "", quantity: 1, rate: 0 });
 
 function NewOrder() {
+  const { can } = usePermissions();
   const clientsFn = useServerFn(listClients);
   const productsFn = useServerFn(listProducts);
   const createFn = useServerFn(createOrder);
@@ -118,6 +120,17 @@ function NewOrder() {
   const valid = Boolean(clientId) && items.length > 0 && items.every((i) => i.product_id && i.quantity > 0 && i.rate >= 0);
   const needsReview = scanned && flaggedCount > 0 && !reviewed;
   const canSubmit = valid && !needsReview && !mut.isPending;
+
+  if (!can("orders.create")) {
+    return (
+      <div className="mx-auto max-w-lg py-12 text-center">
+        <h1 className="font-display text-xl font-semibold">Permission required</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          You do not have permission to create orders. Ask an administrator to grant it.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">

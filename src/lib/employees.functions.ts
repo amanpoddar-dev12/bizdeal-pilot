@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { ALL_PERMISSIONS } from "./permissions";
 
 const isAdmin = async (ctx: { supabase: any; userId: string }) => {
   const { data } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "admin" });
@@ -55,6 +56,11 @@ export const createEmployee = createServerFn({ method: "POST" })
       id: uid, territory: data.territory, order_limit: data.order_limit,
       max_order_value: data.max_order_value, base_salary: data.base_salary, commission_rate: data.commission_rate,
     });
+    // New employees start with the full employee toolkit; admins can restrict
+    // them afterwards from the permissions dialog.
+    await supabaseAdmin.from("employee_permissions").insert(
+      ALL_PERMISSIONS.map((permission) => ({ employee_id: uid, permission, granted_by: context.userId })),
+    );
     return { id: uid };
   });
 

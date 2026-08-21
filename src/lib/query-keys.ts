@@ -15,6 +15,7 @@ export const qk = {
     clientId ? (["client-assignments", clientId] as const) : (["client-assignments"] as const),
 
   employees: ["employees"] as const,
+  employeePermissions: ["employee-permissions"] as const,
   payslips: (employeeId?: string) =>
     employeeId ? (["payslips", employeeId] as const) : (["payslips"] as const),
   myPayslips: ["my-payslips"] as const,

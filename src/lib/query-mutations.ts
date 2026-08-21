@@ -72,7 +72,7 @@ export function invalidateFor(
       keys.push(qk.notifications);
       break;
     case "employee":
-      keys.push(qk.employees, qk.employeeActivity);
+      keys.push(qk.employees, qk.employeeActivity, qk.employeePermissions);
       break;
     case "duty":
       keys.push(qk.duty);
