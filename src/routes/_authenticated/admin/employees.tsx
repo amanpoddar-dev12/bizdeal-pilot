@@ -16,6 +16,8 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Download, Plus } from "lucide-react";
 import { qk } from "@/lib/query-keys";
+import { EmployeePermissionsDialog, useEmployeePermissionMap } from "@/components/admin/employee-permissions-dialog";
+import { ALL_PERMISSIONS } from "@/lib/permissions";
 import { invalidateFor } from "@/lib/query-mutations";
 
 export const Route = createFileRoute("/_authenticated/admin/employees")({
@@ -37,6 +39,7 @@ function Employees() {
   const updateFn = useServerFn(updateEmployee);
   const qc = useQueryClient();
   const { data = [] } = useQuery({ queryKey: qk.employees, queryFn: () => listFn() });
+  const permMap = useEmployeePermissionMap();
   const [open, setOpen] = useState(false);
 
   function exportCsv() {
@@ -83,14 +86,15 @@ function Employees() {
                   <th className="py-3">Max order</th>
                   <th className="py-3">Order limit</th>
                   <th className="py-3">Commission</th>
+                  <th className="py-3">Access</th>
                   <th className="py-3">Status</th>
                   <th className="py-3 pr-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {data.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">No employees yet</td></tr>}
+                {data.length === 0 && <tr><td colSpan={8} className="px-4 py-8 text-center text-muted-foreground">No employees yet</td></tr>}
                 {data.map((e: any) => (
-                  <EmployeeRow key={e.id} e={e} updateFn={updateFn} onSaved={() => invalidateFor(qc, "employee")} />
+                  <EmployeeRow key={e.id} e={e} perms={permMap.get(e.id) ?? []} updateFn={updateFn} onSaved={() => invalidateFor(qc, "employee")} />
                 ))}
               </tbody>
             </table>
@@ -101,7 +105,7 @@ function Employees() {
   );
 }
 
-function EmployeeRow({ e, updateFn, onSaved }: any) {
+function EmployeeRow({ e, perms, updateFn, onSaved }: any) {
   const mut = useMutation({
     mutationFn: (patch: any) => updateFn({ data: { id: e.id, ...patch } }),
     onSuccess: () => { onSaved(); toast.success("Saved"); },
@@ -117,8 +121,16 @@ function EmployeeRow({ e, updateFn, onSaved }: any) {
       <td className="py-3">{inr(e.max_order_value)}</td>
       <td className="py-3">{e.order_limit}</td>
       <td className="py-3">{(Number(e.commission_rate) * 100).toFixed(2)}%</td>
+      <td className="py-3">
+        {perms.length === ALL_PERMISSIONS.length
+          ? <Badge variant="secondary">Full access</Badge>
+          : perms.length === 0
+            ? <Badge variant="destructive">No access</Badge>
+            : <Badge variant="outline">{perms.length}/{ALL_PERMISSIONS.length} permissions</Badge>}
+      </td>
       <td className="py-3">{e.active ? <Badge>Active</Badge> : <Badge variant="secondary">Inactive</Badge>}</td>
       <td className="whitespace-nowrap py-3 pr-4 text-right">
+        <EmployeePermissionsDialog employeeId={e.id} employeeName={e.profiles?.name ?? e.profiles?.email ?? "Employee"} current={perms} />
         <Button size="sm" variant="ghost" onClick={() => mut.mutate({ active: !e.active })}>{e.active ? "Deactivate" : "Activate"}</Button>
       </td>
     </tr>
