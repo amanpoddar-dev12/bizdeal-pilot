@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { ALL_PERMISSIONS } from "./permissions";
 
 // Session/profile/role info for the current user. Called from the root subscriber
 // and from the role router.
@@ -16,5 +17,15 @@ export const getMe = createServerFn({ method: "GET" })
       const { data } = await supabase.from("clients").select("id, business_name").eq("user_id", userId).maybeSingle();
       clientRecord = data as typeof clientRecord;
     }
-    return { userId, profile, role, clientRecord };
+    let permissions: string[] = [];
+    if (role === "admin") {
+      permissions = [...ALL_PERMISSIONS];
+    } else if (role === "employee") {
+      const { data: perms } = await supabase
+        .from("employee_permissions")
+        .select("permission")
+        .eq("employee_id", userId);
+      permissions = (perms ?? []).map((p) => p.permission);
+    }
+    return { userId, profile, role, clientRecord, permissions };
   });

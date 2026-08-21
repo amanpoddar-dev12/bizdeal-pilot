@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { requirePermission } from "./permission-guard";
 
 const isAdmin = async (ctx: { supabase: any; userId: string }) => {
   const { data } = await ctx.supabase.rpc("has_role", { _user_id: ctx.userId, _role: "admin" });
@@ -55,6 +56,7 @@ export const upsertClient = createServerFn({ method: "POST" })
       _role: "employee",
     });
     if (!admin && !empRole) throw new Error("Forbidden");
+    await requirePermission(context, "clients.manage", "add or edit client information");
     const values = data.values;
     // Non-admins may never set credit/KYC fields via this path — the DB
     // trigger enforces it on update; strip them here to make inserts safe too.

@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { requirePermission } from "./permission-guard";
 
 export const listOrders = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -45,6 +46,7 @@ export const createOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => createOrderSchema.parse(d))
   .handler(async ({ data, context }) => {
+    await requirePermission(context, "orders.create", "create orders");
     const { supabase, userId } = context;
     const total = data.items.reduce((s, i) => s + i.quantity * i.rate, 0);
 
@@ -96,6 +98,7 @@ export const respondToOrder = createServerFn({ method: "POST" })
     }).parse(d),
   )
   .handler(async ({ data, context }) => {
+    await requirePermission(context, "orders.edit", "respond to orders");
     const status = data.action === "accept" ? "confirmed" as const : data.action === "decline" ? "declined" as const : "change_requested" as const;
     const patch = data.action === "request_changes"
       ? { status, change_request: (data.change_request ?? null) as any }

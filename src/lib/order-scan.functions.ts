@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { requirePermission } from "./permission-guard";
 
 /**
  * OCR / document extraction for the employee "new order" screen.
