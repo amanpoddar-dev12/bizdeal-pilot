@@ -19,6 +19,7 @@ import { Lock, Truck, ShieldCheck, Clock, AlertTriangle, Loader2, RefreshCw } fr
 import { ProofPreview } from "@/components/proof-preview";
 import { prepareUpload, thumbPathFor } from "@/lib/image-compress";
 import { qk } from "@/lib/query-keys";
+import { usePermissions } from "@/hooks/use-permissions";
 import { invalidateFor } from "@/lib/query-mutations";
 
 const METHOD_LABELS: Record<string, string> = {
@@ -63,6 +64,7 @@ function Progress({ status }: { status: string }) {
 }
 
 export function OrderDeliverySection({ order, role }: { order: any; role: "admin" | "employee" | "client" }) {
+  const { can } = usePermissions();
   const qc = useQueryClient();
   const orderId: string = order.id;
   const stateFn = useServerFn(getOrderDeliveryState);
@@ -169,7 +171,7 @@ export function OrderDeliverySection({ order, role }: { order: any; role: "admin
     onError: (e: any) => toast.error(e.message),
   });
 
-  const staff = role === "admin" || role === "employee";
+  const staff = (role === "admin" || role === "employee") && can("orders.approve");
 
   return (
     <>
