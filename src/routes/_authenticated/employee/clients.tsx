@@ -202,9 +202,12 @@ function EmpClients() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-        <Button asChild>
-          <Link to="/employee/orders/new">Punch order</Link>
-        </Button>
+        )}
+        {can("orders.create") && (
+          <Button asChild>
+            <Link to="/employee/orders/new">Punch order</Link>
+          </Button>
+        )}
       </div>
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {shown.map((c: any) => (
