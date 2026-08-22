@@ -153,7 +153,7 @@ export const reviewCreditRequest = createServerFn({ method: "POST" })
     const { error } = await context.supabase.rpc("review_credit_limit_request", {
       p_request_id: data.id,
       p_action: data.action,
-      p_reason: data.reason ?? null,
+      p_reason: data.reason ?? undefined,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
