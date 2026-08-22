@@ -61,7 +61,8 @@ export const STALE_TIMES: Array<[readonly unknown[], number]> = [
   [["products"], 15 * 60_000],
 
   // Slow-moving business records.
-  [["clients"], 5 * 60_000],
+  [["clients"], 45_000],
+  [["credit-purse-history"], 45_000],
   [["client-assignments"], 5 * 60_000],
   [["employees"], 5 * 60_000],
 
