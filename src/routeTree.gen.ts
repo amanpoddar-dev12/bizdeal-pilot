@@ -32,6 +32,7 @@ import { Route as AuthenticatedAdminPaymentsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin/orders'
 import { Route as AuthenticatedAdminLocationsRouteImport } from './routes/_authenticated/admin/locations'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated/admin/invoices'
+import { Route as AuthenticatedAdminFieldVisitsRouteImport } from './routes/_authenticated/admin/field-visits'
 import { Route as AuthenticatedAdminEmployeesRouteImport } from './routes/_authenticated/admin/employees'
 import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin/customers'
 import { Route as AuthenticatedAdminCreditRouteImport } from './routes/_authenticated/admin/credit'
@@ -171,6 +172,12 @@ const AuthenticatedAdminInvoicesRoute =
     path: '/admin/invoices',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminFieldVisitsRoute =
+  AuthenticatedAdminFieldVisitsRouteImport.update({
+    id: '/admin/field-visits',
+    path: '/admin/field-visits',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminEmployeesRoute =
   AuthenticatedAdminEmployeesRouteImport.update({
     id: '/admin/employees',
@@ -232,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/admin/credit': typeof AuthenticatedAdminCreditRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesRoute
+  '/admin/field-visits': typeof AuthenticatedAdminFieldVisitsRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/locations': typeof AuthenticatedAdminLocationsRouteWithChildren
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -264,6 +272,7 @@ export interface FileRoutesByTo {
   '/admin/credit': typeof AuthenticatedAdminCreditRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesRoute
+  '/admin/field-visits': typeof AuthenticatedAdminFieldVisitsRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/locations': typeof AuthenticatedAdminLocationsRouteWithChildren
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -298,6 +307,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/credit': typeof AuthenticatedAdminCreditRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/_authenticated/admin/employees': typeof AuthenticatedAdminEmployeesRoute
+  '/_authenticated/admin/field-visits': typeof AuthenticatedAdminFieldVisitsRoute
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/_authenticated/admin/locations': typeof AuthenticatedAdminLocationsRouteWithChildren
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -332,6 +342,7 @@ export interface FileRouteTypes {
     | '/admin/credit'
     | '/admin/customers'
     | '/admin/employees'
+    | '/admin/field-visits'
     | '/admin/invoices'
     | '/admin/locations'
     | '/admin/orders'
@@ -364,6 +375,7 @@ export interface FileRouteTypes {
     | '/admin/credit'
     | '/admin/customers'
     | '/admin/employees'
+    | '/admin/field-visits'
     | '/admin/invoices'
     | '/admin/locations'
     | '/admin/orders'
@@ -397,6 +409,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/credit'
     | '/_authenticated/admin/customers'
     | '/_authenticated/admin/employees'
+    | '/_authenticated/admin/field-visits'
     | '/_authenticated/admin/invoices'
     | '/_authenticated/admin/locations'
     | '/_authenticated/admin/orders'
@@ -587,6 +600,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminInvoicesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/field-visits': {
+      id: '/_authenticated/admin/field-visits'
+      path: '/admin/field-visits'
+      fullPath: '/admin/field-visits'
+      preLoaderRoute: typeof AuthenticatedAdminFieldVisitsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/employees': {
       id: '/_authenticated/admin/employees'
       path: '/admin/employees'
@@ -671,6 +691,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminCreditRoute: typeof AuthenticatedAdminCreditRoute
   AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRoute
   AuthenticatedAdminEmployeesRoute: typeof AuthenticatedAdminEmployeesRoute
+  AuthenticatedAdminFieldVisitsRoute: typeof AuthenticatedAdminFieldVisitsRoute
   AuthenticatedAdminInvoicesRoute: typeof AuthenticatedAdminInvoicesRoute
   AuthenticatedAdminLocationsRoute: typeof AuthenticatedAdminLocationsRouteWithChildren
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
@@ -700,6 +721,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminCreditRoute: AuthenticatedAdminCreditRoute,
   AuthenticatedAdminCustomersRoute: AuthenticatedAdminCustomersRoute,
   AuthenticatedAdminEmployeesRoute: AuthenticatedAdminEmployeesRoute,
+  AuthenticatedAdminFieldVisitsRoute: AuthenticatedAdminFieldVisitsRoute,
   AuthenticatedAdminInvoicesRoute: AuthenticatedAdminInvoicesRoute,
   AuthenticatedAdminLocationsRoute:
     AuthenticatedAdminLocationsRouteWithChildren,
