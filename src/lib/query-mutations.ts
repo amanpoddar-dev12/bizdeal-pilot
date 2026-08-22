@@ -57,7 +57,7 @@ export function invalidateFor(
       keys.push(qk.invoices, qk.ledger, qk.pendingTasks, qk.activityHistory(), qk.adminReports);
       break;
     case "client":
-      keys.push(qk.clients, qk.pendingTasks);
+      keys.push(qk.clients, qk.creditRequests, qk.notifications, qk.pendingTasks);
       break;
     case "clientAssignment":
       keys.push(qk.clients, qk.clientAssignments(), qk.pendingTasks);
