@@ -12,6 +12,8 @@ export const qk = {
 
   clients: ["clients"] as const,
   creditRequests: ["credit-requests"] as const,
+  creditPurseHistory: (clientId?: string) =>
+    clientId ? (["credit-purse-history", clientId] as const) : (["credit-purse-history"] as const),
   clientAssignments: (clientId?: string) =>
     clientId ? (["client-assignments", clientId] as const) : (["client-assignments"] as const),
 
