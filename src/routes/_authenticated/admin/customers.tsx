@@ -1,7 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listClients, upsertClient, setKycVerified } from "@/lib/clients.functions";
+import {
+  listClients,
+  upsertClient,
+  setKycVerified,
+  listCreditRequests,
+  reviewCreditRequest,
+  MIN_CREDIT_LIMIT,
+  HIGH_CREDIT_THRESHOLD,
+  CREDIT_TERMS_OPTIONS,
+  GST_REGEX,
+  PAN_REGEX,
+  PHONE_REGEX,
+} from "@/lib/clients.functions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { GeoAddressButton } from "@/components/clients/geo-address-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -125,6 +139,11 @@ function Customers() {
                   <tr key={c.id} className="border-b border-border/60 hover:bg-muted/40">
                     <td className="px-4 py-3 font-medium">{c.business_name}
                       {!c.active && <Badge variant="secondary" className="ml-2">inactive</Badge>}
+                      {c.credit_status === "pending_approval" && (
+                        <Badge variant="outline" className="ml-2 border-amber-500 text-amber-600">
+                          Credit {inr(c.pending_credit_limit)} pending
+                        </Badge>
+                      )}
                     </td>
                     <td className="py-3">{c.contact_person ?? "—"}<div className="text-xs text-muted-foreground"><PhoneDisplay phone={c.phone} canReveal /></div></td>
                     <td className="py-3">{inr(c.credit_limit)}</td>
@@ -193,7 +212,9 @@ function Customers() {
           </div>
         </CardContent>
       </Card>
+      <CreditApprovals />
       <AssignClientDialog client={assigning} open={!!assigning} onOpenChange={(o) => !o && setAssigning(null)} />
+
 
     </div>
   );
@@ -208,26 +229,53 @@ function ClientForm({ editing, onDone, upsert }: { editing: any; onDone: () => v
     gst_number: editing?.gst_number ?? "",
     pan: editing?.pan ?? "",
     address: editing?.address ?? "",
-    credit_limit: editing?.credit_limit ?? 0,
-    credit_terms: editing?.credit_terms ?? 30,
+    latitude: editing?.latitude ?? null,
+    longitude: editing?.longitude ?? null,
+    credit_limit: editing?.credit_limit ? String(editing.credit_limit) : String(MIN_CREDIT_LIMIT),
+    credit_terms: String(
+      CREDIT_TERMS_OPTIONS.includes(Number(editing?.credit_terms) as any) ? editing.credit_terms : 30,
+    ),
     penalty_rate_per_day: editing?.penalty_rate_per_day ?? 0.005,
     active: editing?.active ?? true,
     kyc_verified: editing?.kyc_verified ?? false,
   }));
 
+  const limit = Number(v.credit_limit);
+  const errors: string[] = [];
+  if (v.business_name.trim().length < 2) errors.push("Business name is required");
+  if (!PHONE_REGEX.test(v.phone.trim())) errors.push("Phone must be in E.164 format, e.g. +919876543210");
+  if (!GST_REGEX.test(v.gst_number.trim().toUpperCase())) errors.push("Enter a valid 15-character GST number");
+  if (!PAN_REGEX.test(v.pan.trim().toUpperCase())) errors.push("Enter a valid PAN, e.g. ABCDE1234F");
+  if (!Number.isFinite(limit) || limit < MIN_CREDIT_LIMIT)
+    errors.push(`Credit limit must be at least ${inr(MIN_CREDIT_LIMIT)}`);
+
   const mut = useMutation({
-    mutationFn: () => upsert({
-      data: {
-        id: editing?.id,
-        values: {
-          ...v,
-          credit_limit: Number(v.credit_limit),
-          credit_terms: Number(v.credit_terms),
-          penalty_rate_per_day: Number(v.penalty_rate_per_day),
+    mutationFn: () =>
+      upsert({
+        data: {
+          id: editing?.id,
+          values: {
+            ...v,
+            gst_number: v.gst_number.trim().toUpperCase(),
+            pan: v.pan.trim().toUpperCase(),
+            phone: v.phone.trim(),
+            address: v.address?.trim() || null,
+            latitude: v.latitude != null ? Number(v.latitude) : null,
+            longitude: v.longitude != null ? Number(v.longitude) : null,
+            credit_limit: limit,
+            credit_terms: Number(v.credit_terms),
+            penalty_rate_per_day: Number(v.penalty_rate_per_day),
+          },
         },
-      },
-    }),
-    onSuccess: () => { toast.success("Client saved"); onDone(); },
+      }),
+    onSuccess: (r: any) => {
+      toast.success(
+        r?.pendingApproval
+          ? "Client saved. The high credit limit is awaiting admin approval."
+          : "Client saved",
+      );
+      onDone();
+    },
     onError: (e: any) => toast.error(e.message),
   });
 
@@ -238,22 +286,148 @@ function ClientForm({ editing, onDone, upsert }: { editing: any; onDone: () => v
         <Field label="Business name" required><Input value={v.business_name} onChange={(e) => setV({ ...v, business_name: e.target.value })} /></Field>
         <Field label="Contact person"><Input value={v.contact_person} onChange={(e) => setV({ ...v, contact_person: e.target.value })} /></Field>
         <Field label="Email"><Input type="email" value={v.email} onChange={(e) => setV({ ...v, email: e.target.value })} /></Field>
-        <Field label="Phone"><Input value={v.phone} onChange={(e) => setV({ ...v, phone: e.target.value })} /></Field>
-        <Field label="GST"><Input value={v.gst_number} onChange={(e) => setV({ ...v, gst_number: e.target.value })} /></Field>
-        <Field label="PAN"><Input value={v.pan} onChange={(e) => setV({ ...v, pan: e.target.value })} /></Field>
-        <Field label="Address" full><Input value={v.address} onChange={(e) => setV({ ...v, address: e.target.value })} /></Field>
-        <Field label="Credit limit (₹)"><Input type="number" value={v.credit_limit} onChange={(e) => setV({ ...v, credit_limit: e.target.value as any })} /></Field>
-        <Field label="Credit terms (days)"><Input type="number" value={v.credit_terms} onChange={(e) => setV({ ...v, credit_terms: e.target.value as any })} /></Field>
+        <Field label="Phone" required><Input placeholder="+919876543210" value={v.phone} onChange={(e) => setV({ ...v, phone: e.target.value })} /></Field>
+        <Field label="GST number" required><Input placeholder="27ABCDE1234F1Z5" value={v.gst_number} onChange={(e) => setV({ ...v, gst_number: e.target.value.toUpperCase() })} /></Field>
+        <Field label="PAN number" required><Input placeholder="ABCDE1234F" value={v.pan} onChange={(e) => setV({ ...v, pan: e.target.value.toUpperCase() })} /></Field>
+        <Field label="Address" full>
+          <div className="flex flex-wrap items-center gap-2">
+            <Input
+              className="min-w-[12rem] flex-1"
+              value={v.address}
+              placeholder="Type the address, or use your location"
+              onChange={(e) => setV({ ...v, address: e.target.value })}
+            />
+            <GeoAddressButton
+              onResolved={({ address, latitude, longitude }) =>
+                setV((p) => ({ ...p, address: address || p.address, latitude, longitude }))
+              }
+            />
+          </div>
+          {v.latitude != null && v.longitude != null && (
+            <p className="text-xs text-muted-foreground">
+              Coordinates: {Number(v.latitude).toFixed(5)}, {Number(v.longitude).toFixed(5)}
+            </p>
+          )}
+        </Field>
+        <Field label="Credit limit (₹)" required>
+          <Input
+            type="number"
+            min={MIN_CREDIT_LIMIT}
+            step={1000}
+            value={v.credit_limit}
+            onChange={(e) => setV({ ...v, credit_limit: e.target.value })}
+          />
+          <p className="text-xs text-muted-foreground">
+            Minimum {inr(MIN_CREDIT_LIMIT)}. {inr(HIGH_CREDIT_THRESHOLD)} or more needs admin approval before it activates.
+          </p>
+        </Field>
+        <Field label="Credit terms" required>
+          <Select value={v.credit_terms} onValueChange={(t) => setV({ ...v, credit_terms: t })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {CREDIT_TERMS_OPTIONS.map((t) => (
+                <SelectItem key={t} value={String(t)}>{String(t).padStart(2, "0")} days</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
         <Field label="Penalty rate / day"><Input type="number" step="0.001" value={v.penalty_rate_per_day} onChange={(e) => setV({ ...v, penalty_rate_per_day: e.target.value as any })} /></Field>
         <div className="flex items-center gap-2 pt-6">
           <Switch checked={v.active} onCheckedChange={(c) => setV({ ...v, active: c })} />
           <Label>Active</Label>
         </div>
       </div>
+      {errors.length > 0 && (
+        <ul className="list-disc space-y-0.5 pl-5 text-xs text-destructive">
+          {errors.map((e) => <li key={e}>{e}</li>)}
+        </ul>
+      )}
+      {limit >= HIGH_CREDIT_THRESHOLD && errors.length === 0 && (
+        <p className="rounded-md border border-amber-500/40 bg-amber-500/10 p-2 text-xs">
+          {inr(limit)} is a high credit limit — it will be submitted for admin approval and won't apply until approved.
+        </p>
+      )}
       <DialogFooter>
-        <Button onClick={() => mut.mutate()} disabled={mut.isPending || !v.business_name}>{mut.isPending ? "Saving…" : "Save"}</Button>
+        <Button onClick={() => mut.mutate()} disabled={mut.isPending || errors.length > 0}>{mut.isPending ? "Saving…" : "Save"}</Button>
       </DialogFooter>
     </DialogContent>
+  );
+}
+
+function CreditApprovals() {
+  const listFn = useServerFn(listCreditRequests);
+  const reviewFn = useServerFn(reviewCreditRequest);
+  const qc = useQueryClient();
+  const { data = [] } = useQuery({ queryKey: qk.creditRequests, queryFn: () => listFn() });
+  const [reasons, setReasons] = useState<Record<string, string>>({});
+
+  const review = useMutation({
+    mutationFn: (v: { id: string; action: "approve" | "reject" }) =>
+      reviewFn({ data: { id: v.id, action: v.action, reason: reasons[v.id]?.trim() || undefined } }),
+    onSuccess: (_r, v) => {
+      toast.success(v.action === "approve" ? "Credit limit approved" : "Request rejected");
+      invalidateFor(qc, "client");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const pending = (data as any[]).filter((r) => r.status === "pending");
+  const history = (data as any[]).filter((r) => r.status !== "pending").slice(0, 25);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Credit limit approvals</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Requests of {inr(HIGH_CREDIT_THRESHOLD)} or more stay inactive until you approve them.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {pending.length === 0 && <p className="text-sm text-muted-foreground">No requests awaiting approval.</p>}
+        {pending.map((r: any) => (
+          <div key={r.id} className="space-y-2 rounded-md border border-amber-500/40 bg-amber-500/5 p-3">
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="font-medium">{r.clients?.business_name ?? "Client"}</span>
+              <Badge variant="outline">{String(r.credit_terms).padStart(2, "0")} days</Badge>
+              <span className="text-muted-foreground">
+                {inr(r.previous_limit)} → <span className="font-medium text-foreground">{inr(r.requested_limit)}</span>
+              </span>
+            </div>
+            <Input
+              placeholder="Internal reason (optional)"
+              value={reasons[r.id] ?? ""}
+              onChange={(e) => setReasons((p) => ({ ...p, [r.id]: e.target.value }))}
+            />
+            <div className="flex gap-2">
+              <Button size="sm" disabled={review.isPending} onClick={() => review.mutate({ id: r.id, action: "approve" })}>
+                Approve
+              </Button>
+              <Button size="sm" variant="outline" disabled={review.isPending} onClick={() => review.mutate({ id: r.id, action: "reject" })}>
+                Reject
+              </Button>
+            </div>
+          </div>
+        ))}
+
+        {history.length > 0 && (
+          <div className="space-y-1 border-t border-border pt-3">
+            <div className="text-xs font-medium text-muted-foreground">Approval history</div>
+            <ul className="space-y-1 text-xs">
+              {history.map((r: any) => (
+                <li key={r.id} className="flex flex-wrap items-center gap-2">
+                  <Badge variant={r.status === "approved" ? "default" : "secondary"}>{r.status}</Badge>
+                  <span className="font-medium">{r.clients?.business_name ?? "Client"}</span>
+                  <span className="text-muted-foreground">
+                    {inr(r.previous_limit)} → {inr(r.requested_limit)} · {String(r.credit_terms).padStart(2, "0")}d
+                  </span>
+                  {r.reason && <span className="text-muted-foreground">· {r.reason}</span>}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

@@ -1,7 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listClients, upsertClient } from "@/lib/clients.functions";
+import {
+  listClients,
+  upsertClient,
+  MIN_CREDIT_LIMIT,
+  HIGH_CREDIT_THRESHOLD,
+  CREDIT_TERMS_OPTIONS,
+  GST_REGEX,
+  PAN_REGEX,
+  PHONE_REGEX,
+} from "@/lib/clients.functions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { GeoAddressButton } from "@/components/clients/geo-address-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,8 +50,6 @@ export const Route = createFileRoute("/_authenticated/employee/clients")({
   component: EmpClients,
 });
 
-const phoneRegex = /^\+[1-9]\d{7,14}$/;
-
 function EmpClients() {
   const fn = useServerFn(listClients);
   const save = useServerFn(upsertClient);
@@ -49,19 +58,33 @@ function EmpClients() {
   const { can } = usePermissions();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
+  const emptyForm = {
     business_name: "",
     contact_person: "",
     phone: "",
     email: "",
     gst_number: "",
+    pan: "",
     address: "",
-  });
+    latitude: null as number | null,
+    longitude: null as number | null,
+    credit_limit: String(MIN_CREDIT_LIMIT),
+    credit_terms: "30",
+  };
+  const [form, setForm] = useState(emptyForm);
+
+  const limit = Number(form.credit_limit);
+  const errors: string[] = [];
+  if (form.business_name.trim().length < 2) errors.push("Business name is required");
+  if (!PHONE_REGEX.test(form.phone.trim())) errors.push("Phone must be in E.164 format, e.g. +919876543210");
+  if (!GST_REGEX.test(form.gst_number.trim().toUpperCase())) errors.push("Enter a valid 15-character GST number");
+  if (!PAN_REGEX.test(form.pan.trim().toUpperCase())) errors.push("Enter a valid PAN, e.g. ABCDE1234F");
+  if (!Number.isFinite(limit) || limit < MIN_CREDIT_LIMIT)
+    errors.push(`Credit limit must be at least ${inr(MIN_CREDIT_LIMIT)}`);
 
   const create = useMutation({
     mutationFn: async () => {
-      if (form.business_name.trim().length < 2) throw new Error("Business name is required");
-      if (!phoneRegex.test(form.phone)) throw new Error("Phone must be in E.164 format, e.g. +14155552671");
+      if (errors.length) throw new Error(errors[0]);
       return save({
         data: {
           values: {
@@ -69,10 +92,13 @@ function EmpClients() {
             contact_person: form.contact_person.trim() || null,
             phone: form.phone.trim(),
             email: form.email.trim() || null,
-            gst_number: form.gst_number.trim() || null,
+            gst_number: form.gst_number.trim().toUpperCase(),
+            pan: form.pan.trim().toUpperCase(),
             address: form.address.trim() || null,
-            credit_limit: 0,
-            credit_terms: 30,
+            latitude: form.latitude,
+            longitude: form.longitude,
+            credit_limit: limit,
+            credit_terms: Number(form.credit_terms),
             penalty_rate_per_day: 0.005,
             kyc_verified: false,
             active: true,
@@ -80,14 +106,19 @@ function EmpClients() {
         },
       });
     },
-    onSuccess: () => {
-      toast.success("Client added. They can sign in with their phone number.");
+    onSuccess: (r: any) => {
+      toast.success(
+        r?.pendingApproval
+          ? "Client added. The high credit limit is awaiting admin approval."
+          : "Client added. They can sign in with their phone number.",
+      );
       setOpen(false);
-      setForm({ business_name: "", contact_person: "", phone: "", email: "", gst_number: "", address: "" });
+      setForm(emptyForm);
       invalidateFor(qc, "client");
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed to add client"),
   });
+
 
   const filtered = useMemo(() => {
     if (!q) return data;
@@ -174,31 +205,76 @@ function EmpClients() {
                     onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                   />
                 </Field>
-                <Field label="GST number">
+                <Field label="GST number *">
                   <Input
+                    placeholder="27ABCDE1234F1Z5"
                     value={form.gst_number}
-                    onChange={(e) => setForm((f) => ({ ...f, gst_number: e.target.value }))}
+                    onChange={(e) => setForm((f) => ({ ...f, gst_number: e.target.value.toUpperCase() }))}
                   />
+                </Field>
+                <Field label="PAN number *">
+                  <Input
+                    placeholder="ABCDE1234F"
+                    value={form.pan}
+                    onChange={(e) => setForm((f) => ({ ...f, pan: e.target.value.toUpperCase() }))}
+                  />
+                </Field>
+                <Field label="Credit limit (₹) *">
+                  <Input
+                    type="number"
+                    min={MIN_CREDIT_LIMIT}
+                    step={1000}
+                    value={form.credit_limit}
+                    onChange={(e) => setForm((f) => ({ ...f, credit_limit: e.target.value }))}
+                  />
+                </Field>
+                <Field label="Credit terms *">
+                  <Select
+                    value={form.credit_terms}
+                    onValueChange={(t) => setForm((f) => ({ ...f, credit_terms: t }))}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CREDIT_TERMS_OPTIONS.map((t) => (
+                        <SelectItem key={t} value={String(t)}>{String(t).padStart(2, "0")} days</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
               </div>
               <Field label="Address">
-                <Input
-                  value={form.address}
-                  onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <Input
+                    className="min-w-[12rem] flex-1"
+                    placeholder="Type the address, or use your location"
+                    value={form.address}
+                    onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
+                  />
+                  <GeoAddressButton
+                    onResolved={({ address, latitude, longitude }) =>
+                      setForm((f) => ({ ...f, address: address || f.address, latitude, longitude }))
+                    }
+                  />
+                </div>
               </Field>
               <p className="text-xs text-muted-foreground">
-                The mobile number becomes their sign-in ID. They will complete the rest of their
-                profile on first login.
+                Minimum credit limit {inr(MIN_CREDIT_LIMIT)}. {inr(HIGH_CREDIT_THRESHOLD)} or more needs admin
+                approval before it activates. The mobile number becomes their sign-in ID.
               </p>
+              {errors.length > 0 && (
+                <ul className="list-disc space-y-0.5 pl-5 text-xs text-destructive">
+                  {errors.map((e) => <li key={e}>{e}</li>)}
+                </ul>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={() => create.mutate()} disabled={create.isPending}>
+              <Button onClick={() => create.mutate()} disabled={create.isPending || errors.length > 0}>
                 {create.isPending ? "Saving…" : "Save client"}
               </Button>
+
             </DialogFooter>
           </DialogContent>
         </Dialog>

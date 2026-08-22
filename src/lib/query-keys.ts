@@ -11,6 +11,7 @@ export const qk = {
   profileCompletion: ["profile-completion"] as const,
 
   clients: ["clients"] as const,
+  creditRequests: ["credit-requests"] as const,
   clientAssignments: (clientId?: string) =>
     clientId ? (["client-assignments", clientId] as const) : (["client-assignments"] as const),
 

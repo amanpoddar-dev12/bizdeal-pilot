@@ -27,18 +27,41 @@ export const getClient = createServerFn({ method: "GET" })
     return c;
   });
 
+export const MIN_CREDIT_LIMIT = 100000;
+export const HIGH_CREDIT_THRESHOLD = 500000;
+export const CREDIT_TERMS_OPTIONS = [7, 15, 30] as const;
+
+export const GST_REGEX = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][0-9A-Z]Z[0-9A-Z]$/;
+export const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+export const PHONE_REGEX = /^\+[1-9]\d{7,14}$/;
+
 const clientSchema = z.object({
-  business_name: z.string().min(1),
+  business_name: z.string().trim().min(2, "Business name is required"),
   business_type: z.string().optional().nullable(),
   contact_person: z.string().optional().nullable(),
   email: z.string().email().optional().or(z.literal("")).nullable(),
-  phone: z.string().optional().nullable(),
-  gst_number: z.string().optional().nullable(),
-  pan: z.string().optional().nullable(),
-  address: z.string().optional().nullable(),
+  phone: z.string().trim().regex(PHONE_REGEX, "Phone must be in E.164 format, e.g. +919876543210"),
+  gst_number: z
+    .string()
+    .trim()
+    .transform((s) => s.toUpperCase())
+    .refine((s) => GST_REGEX.test(s), "Enter a valid 15-character GST number"),
+  pan: z
+    .string()
+    .trim()
+    .transform((s) => s.toUpperCase())
+    .refine((s) => PAN_REGEX.test(s), "Enter a valid PAN, e.g. ABCDE1234F"),
+  address: z.string().trim().max(500).optional().nullable(),
+  latitude: z.number().min(-90).max(90).optional().nullable(),
+  longitude: z.number().min(-180).max(180).optional().nullable(),
   bank_account: z.string().optional().nullable(),
-  credit_limit: z.number().nonnegative().default(0),
-  credit_terms: z.number().int().min(0).max(365).default(30),
+  credit_limit: z
+    .number()
+    .min(MIN_CREDIT_LIMIT, `Credit limit must be at least ₹${MIN_CREDIT_LIMIT.toLocaleString("en-IN")}`),
+  credit_terms: z
+    .number()
+    .int()
+    .refine((n) => (CREDIT_TERMS_OPTIONS as readonly number[]).includes(n), "Credit terms must be 7, 15 or 30 days"),
   penalty_rate_per_day: z.number().nonnegative().default(0.005),
   kyc_verified: z.boolean().default(false),
   active: z.boolean().default(true),
@@ -57,39 +80,85 @@ export const upsertClient = createServerFn({ method: "POST" })
     });
     if (!admin && !empRole) throw new Error("Forbidden");
     await requirePermission(context, "clients.manage", "add or edit client information");
-    const values = data.values;
-    // Non-admins may never set credit/KYC fields via this path — the DB
-    // trigger enforces it on update; strip them here to make inserts safe too.
+    const values: any = { ...data.values };
+    // Credit limit / terms always flow through the approval RPC so the
+    // ≥₹5,00,000 rule and the history trail can never be bypassed.
+    const creditLimit = Number(values.credit_limit);
+    const creditTerms = Number(values.credit_terms);
+    delete values.credit_limit;
+    delete values.credit_terms;
     if (!admin) {
-      delete (values as any).credit_limit;
-      delete (values as any).credit_terms;
-      delete (values as any).penalty_rate_per_day;
-      delete (values as any).kyc_verified;
+      delete values.penalty_rate_per_day;
+      delete values.kyc_verified;
     }
-    if (data.id) {
-      const { error } = await context.supabase.from("clients").update(values).eq("id", data.id);
+
+    let clientId = data.id;
+    if (clientId) {
+      const { error } = await context.supabase.from("clients").update(values).eq("id", clientId);
       if (error) throw new Error(error.message);
       await context.supabase.from("audit_logs").insert({
-        actor_id: context.userId, action: "client_updated", target_type: "client", target_id: data.id, new_value: values,
+        actor_id: context.userId, action: "client_updated", target_type: "client", target_id: clientId, new_value: values,
       });
-      return { id: data.id };
-    }
-    if (!admin) {
+    } else if (!admin) {
       // Employees create clients through a scoped RPC that also links the new
       // client to the creating employee.
       const { data: newId, error: rpcErr } = await context.supabase.rpc("emp_create_client", {
         p_values: values as any,
       });
       if (rpcErr) throw new Error(rpcErr.message);
-      return { id: newId as string };
+      clientId = newId as string;
+    } else {
+      const { data: inserted, error } = await context.supabase.from("clients").insert(values).select("id").single();
+      if (error) throw new Error(error.message);
+      clientId = inserted.id;
+      await context.supabase.from("audit_logs").insert({
+        actor_id: context.userId, action: "client_created", target_type: "client", target_id: clientId, new_value: values,
+      });
     }
-    const { data: inserted, error } = await context.supabase.from("clients").insert(values).select("id").single();
-    if (error) throw new Error(error.message);
-    await context.supabase.from("audit_logs").insert({
-      actor_id: context.userId, action: "client_created", target_type: "client", target_id: inserted.id, new_value: values,
+
+    const { data: credit, error: creditErr } = await context.supabase.rpc("submit_credit_limit_request", {
+      p_client_id: clientId,
+      p_limit: creditLimit,
+      p_terms: creditTerms,
     });
-    return { id: inserted.id };
+    if (creditErr) throw new Error(creditErr.message);
+    return { id: clientId, pendingApproval: !!(credit as any)?.pending };
   });
+
+/** Credit limit approval history. Admins see all; employees see their clients'. */
+export const listCreditRequests = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("credit_limit_requests")
+      .select("*, clients(business_name, credit_limit, credit_status)")
+      .order("created_at", { ascending: false })
+      .limit(300);
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+export const reviewCreditRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        action: z.enum(["approve", "reject"]),
+        reason: z.string().trim().max(1000).optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.rpc("review_credit_limit_request", {
+      p_request_id: data.id,
+      p_action: data.action,
+      p_reason: data.reason ?? undefined,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 
 
 export const setKycVerified = createServerFn({ method: "POST" })
