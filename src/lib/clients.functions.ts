@@ -138,6 +138,29 @@ export const listCreditRequests = createServerFn({ method: "GET" })
     return data ?? [];
   });
 
+/**
+ * Credit purse movement history. Rows are written by the database whenever the
+ * purse is recalculated (order, invoice, payment, credit-limit change), so this
+ * is a read of the same source of truth the purse itself uses — never a
+ * client-side recomputation. RLS scopes rows to what the caller may see.
+ */
+export const listCreditPurseHistory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { client_id?: string } | undefined) =>
+    z.object({ client_id: z.string().uuid().optional() }).parse(d ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    let q = context.supabase
+      .from("credit_purse_events")
+      .select("*, clients(business_name), profiles:actor_id(name, email)")
+      .order("created_at", { ascending: false })
+      .limit(300);
+    if (data.client_id) q = q.eq("client_id", data.client_id);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
 export const reviewCreditRequest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
