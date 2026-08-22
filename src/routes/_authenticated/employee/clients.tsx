@@ -1,7 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listClients, upsertClient } from "@/lib/clients.functions";
+import {
+  listClients,
+  upsertClient,
+  MIN_CREDIT_LIMIT,
+  HIGH_CREDIT_THRESHOLD,
+  CREDIT_TERMS_OPTIONS,
+  GST_REGEX,
+  PAN_REGEX,
+  PHONE_REGEX,
+} from "@/lib/clients.functions";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { GeoAddressButton } from "@/components/clients/geo-address-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
