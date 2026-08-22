@@ -113,14 +113,18 @@ export type Database = {
           contact_person: string | null
           created_at: string
           credit_limit: number
+          credit_status: string
           credit_terms: number
           email: string | null
           gst_number: string | null
           id: string
           kyc_documents: Json
           kyc_verified: boolean
+          latitude: number | null
+          longitude: number | null
           pan: string | null
           penalty_rate_per_day: number
+          pending_credit_limit: number | null
           phone: string | null
           updated_at: string
           user_id: string | null
@@ -134,14 +138,18 @@ export type Database = {
           contact_person?: string | null
           created_at?: string
           credit_limit?: number
+          credit_status?: string
           credit_terms?: number
           email?: string | null
           gst_number?: string | null
           id?: string
           kyc_documents?: Json
           kyc_verified?: boolean
+          latitude?: number | null
+          longitude?: number | null
           pan?: string | null
           penalty_rate_per_day?: number
+          pending_credit_limit?: number | null
           phone?: string | null
           updated_at?: string
           user_id?: string | null
@@ -155,14 +163,18 @@ export type Database = {
           contact_person?: string | null
           created_at?: string
           credit_limit?: number
+          credit_status?: string
           credit_terms?: number
           email?: string | null
           gst_number?: string | null
           id?: string
           kyc_documents?: Json
           kyc_verified?: boolean
+          latitude?: number | null
+          longitude?: number | null
           pan?: string | null
           penalty_rate_per_day?: number
+          pending_credit_limit?: number | null
           phone?: string | null
           updated_at?: string
           user_id?: string | null
@@ -172,6 +184,73 @@ export type Database = {
             foreignKeyName: "clients_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      credit_limit_requests: {
+        Row: {
+          client_id: string
+          created_at: string
+          credit_terms: number
+          id: string
+          previous_limit: number
+          reason: string | null
+          requested_by: string | null
+          requested_limit: number
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          credit_terms: number
+          id?: string
+          previous_limit?: number
+          reason?: string | null
+          requested_by?: string | null
+          requested_limit: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          credit_terms?: number
+          id?: string
+          previous_limit?: number
+          reason?: string | null
+          requested_by?: string | null
+          requested_limit?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_limit_requests_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_limit_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_limit_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1583,9 +1662,17 @@ export type Database = {
       }
       mark_field_visits_overdue: { Args: never; Returns: number }
       refresh_credit_purse: { Args: { _client_id: string }; Returns: undefined }
+      review_credit_limit_request: {
+        Args: { p_action: string; p_reason?: string; p_request_id: string }
+        Returns: undefined
+      }
       set_field_visit_status: {
         Args: { p_id: string; p_note?: string; p_status: string }
         Returns: undefined
+      }
+      submit_credit_limit_request: {
+        Args: { p_client_id: string; p_limit: number; p_terms: number }
+        Returns: Json
       }
       submit_order_for_client: { Args: { p_id: string }; Returns: undefined }
     }
