@@ -12,6 +12,8 @@ export const qk = {
 
   clients: ["clients"] as const,
   creditRequests: ["credit-requests"] as const,
+  creditPurseHistory: (clientId?: string) =>
+    clientId ? (["credit-purse-history", clientId] as const) : (["credit-purse-history"] as const),
   clientAssignments: (clientId?: string) =>
     clientId ? (["client-assignments", clientId] as const) : (["client-assignments"] as const),
 
@@ -59,7 +61,8 @@ export const STALE_TIMES: Array<[readonly unknown[], number]> = [
   [["products"], 15 * 60_000],
 
   // Slow-moving business records.
-  [["clients"], 5 * 60_000],
+  [["clients"], 45_000],
+  [["credit-purse-history"], 45_000],
   [["client-assignments"], 5 * 60_000],
   [["employees"], 5 * 60_000],
 

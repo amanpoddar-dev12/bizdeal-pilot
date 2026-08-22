@@ -291,6 +291,59 @@ export type Database = {
           },
         ]
       }
+      credit_purse_events: {
+        Row: {
+          actor_id: string | null
+          client_id: string
+          created_at: string
+          credit_limit: number
+          delta: number
+          event: string
+          id: string
+          remaining_after: number
+          source_id: string | null
+          source_table: string | null
+          used_after: number
+          used_before: number
+        }
+        Insert: {
+          actor_id?: string | null
+          client_id: string
+          created_at?: string
+          credit_limit?: number
+          delta?: number
+          event: string
+          id?: string
+          remaining_after?: number
+          source_id?: string | null
+          source_table?: string | null
+          used_after?: number
+          used_before?: number
+        }
+        Update: {
+          actor_id?: string | null
+          client_id?: string
+          created_at?: string
+          credit_limit?: number
+          delta?: number
+          event?: string
+          id?: string
+          remaining_after?: number
+          source_id?: string | null
+          source_table?: string | null
+          used_after?: number
+          used_before?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_purse_events_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       delivery_otps: {
         Row: {
           active: boolean
@@ -1661,7 +1714,17 @@ export type Database = {
         Returns: undefined
       }
       mark_field_visits_overdue: { Args: never; Returns: number }
-      refresh_credit_purse: { Args: { _client_id: string }; Returns: undefined }
+      refresh_credit_purse:
+        | { Args: { _client_id: string }; Returns: undefined }
+        | {
+            Args: {
+              _client_id: string
+              _event?: string
+              _source_id?: string
+              _source_table?: string
+            }
+            Returns: undefined
+          }
       review_credit_limit_request: {
         Args: { p_action: string; p_reason?: string; p_request_id: string }
         Returns: undefined

@@ -41,12 +41,13 @@ const WORKFLOW_TABLES: Table[] = [
 function keysForTable(table: Table): Array<readonly unknown[]> {
   switch (table) {
     case "orders":
-      return [qk.orders, qk.pendingTasks, qk.activityHistory(), qk.adminReports];
+      // Orders consume credit the moment they exist, so the purse moves too.
+      return [qk.orders, qk.pendingTasks, qk.activityHistory(), qk.adminReports, qk.clients, qk.creditPurseHistory()];
     case "order_events":
     case "order_approvals":
       return [qk.orders, qk.pendingTasks, qk.activityHistory()];
     case "order_payments":
-      return [qk.orders, qk.payments, qk.pendingTasks, qk.activityHistory(), qk.adminReports];
+      return [qk.orders, qk.payments, qk.pendingTasks, qk.activityHistory(), qk.adminReports, qk.clients, qk.creditPurseHistory()];
     case "delivery_otps":
       return [qk.orders, qk.pendingTasks, qk.activityHistory()];
   }
