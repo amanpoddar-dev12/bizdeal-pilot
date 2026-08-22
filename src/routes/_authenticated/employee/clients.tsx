@@ -39,8 +39,6 @@ export const Route = createFileRoute("/_authenticated/employee/clients")({
   component: EmpClients,
 });
 
-const phoneRegex = /^\+[1-9]\d{7,14}$/;
-
 function EmpClients() {
   const fn = useServerFn(listClients);
   const save = useServerFn(upsertClient);
@@ -49,19 +47,33 @@ function EmpClients() {
   const { can } = usePermissions();
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({
+  const emptyForm = {
     business_name: "",
     contact_person: "",
     phone: "",
     email: "",
     gst_number: "",
+    pan: "",
     address: "",
-  });
+    latitude: null as number | null,
+    longitude: null as number | null,
+    credit_limit: String(MIN_CREDIT_LIMIT),
+    credit_terms: "30",
+  };
+  const [form, setForm] = useState(emptyForm);
+
+  const limit = Number(form.credit_limit);
+  const errors: string[] = [];
+  if (form.business_name.trim().length < 2) errors.push("Business name is required");
+  if (!PHONE_REGEX.test(form.phone.trim())) errors.push("Phone must be in E.164 format, e.g. +919876543210");
+  if (!GST_REGEX.test(form.gst_number.trim().toUpperCase())) errors.push("Enter a valid 15-character GST number");
+  if (!PAN_REGEX.test(form.pan.trim().toUpperCase())) errors.push("Enter a valid PAN, e.g. ABCDE1234F");
+  if (!Number.isFinite(limit) || limit < MIN_CREDIT_LIMIT)
+    errors.push(`Credit limit must be at least ${inr(MIN_CREDIT_LIMIT)}`);
 
   const create = useMutation({
     mutationFn: async () => {
-      if (form.business_name.trim().length < 2) throw new Error("Business name is required");
-      if (!phoneRegex.test(form.phone)) throw new Error("Phone must be in E.164 format, e.g. +14155552671");
+      if (errors.length) throw new Error(errors[0]);
       return save({
         data: {
           values: {
@@ -69,10 +81,13 @@ function EmpClients() {
             contact_person: form.contact_person.trim() || null,
             phone: form.phone.trim(),
             email: form.email.trim() || null,
-            gst_number: form.gst_number.trim() || null,
+            gst_number: form.gst_number.trim().toUpperCase(),
+            pan: form.pan.trim().toUpperCase(),
             address: form.address.trim() || null,
-            credit_limit: 0,
-            credit_terms: 30,
+            latitude: form.latitude,
+            longitude: form.longitude,
+            credit_limit: limit,
+            credit_terms: Number(form.credit_terms),
             penalty_rate_per_day: 0.005,
             kyc_verified: false,
             active: true,
@@ -80,14 +95,19 @@ function EmpClients() {
         },
       });
     },
-    onSuccess: () => {
-      toast.success("Client added. They can sign in with their phone number.");
+    onSuccess: (r: any) => {
+      toast.success(
+        r?.pendingApproval
+          ? "Client added. The high credit limit is awaiting admin approval."
+          : "Client added. They can sign in with their phone number.",
+      );
       setOpen(false);
-      setForm({ business_name: "", contact_person: "", phone: "", email: "", gst_number: "", address: "" });
+      setForm(emptyForm);
       invalidateFor(qc, "client");
     },
     onError: (e: any) => toast.error(e?.message ?? "Failed to add client"),
   });
+
 
   const filtered = useMemo(() => {
     if (!q) return data;
