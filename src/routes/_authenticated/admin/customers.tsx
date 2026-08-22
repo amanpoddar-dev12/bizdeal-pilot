@@ -139,6 +139,11 @@ function Customers() {
                   <tr key={c.id} className="border-b border-border/60 hover:bg-muted/40">
                     <td className="px-4 py-3 font-medium">{c.business_name}
                       {!c.active && <Badge variant="secondary" className="ml-2">inactive</Badge>}
+                      {c.credit_status === "pending_approval" && (
+                        <Badge variant="outline" className="ml-2 border-amber-500 text-amber-600">
+                          Credit {inr(c.pending_credit_limit)} pending
+                        </Badge>
+                      )}
                     </td>
                     <td className="py-3">{c.contact_person ?? "—"}<div className="text-xs text-muted-foreground"><PhoneDisplay phone={c.phone} canReveal /></div></td>
                     <td className="py-3">{inr(c.credit_limit)}</td>
