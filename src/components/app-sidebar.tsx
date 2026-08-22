@@ -47,7 +47,7 @@ const navByRole: Record<Role, NavGroup[]> = {
       { key: "nav.newOrder", url: "/employee/orders/new", icon: Package, perm: "orders.create" },
       { key: "nav.orders", url: "/employee/orders", icon: Package },
       { key: "nav.tasks", url: "/employee/tasks", icon: ClipboardList },
-      { key: "nav.myVisits", url: "/employee/field-visits", icon: MapPinned },
+      { key: "nav.myVisits", url: "/employee/field-visits", icon: MapPinned, perm: "orders.view" },
       { key: "nav.duty", url: "/employee/duty", icon: Clock },
       { key: "nav.myPayslips", url: "/employee/payslips", icon: BadgeIndianRupee },
       { key: "nav.shareLocation", url: "/employee/location", icon: MapPinned },

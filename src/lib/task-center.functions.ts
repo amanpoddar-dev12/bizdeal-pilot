@@ -150,7 +150,7 @@ export const getPendingTasks = createServerFn({ method: "GET" })
     }
 
     if (role === "employee") {
-      const [orders, myTasks, reminders] = await Promise.all([
+      const [orders, myTasks, reminders, visits] = await Promise.all([
         supabase
           .from("orders")
           .select("id, order_number, status, total_amount, created_at, delivery_date, clients(business_name)")
@@ -176,7 +176,30 @@ export const getPendingTasks = createServerFn({ method: "GET" })
           .from("payment_reminders")
           .select("order_id, due_date, amount_due, credit_terms, status, stage")
           .eq("status", "pending"),
+        supabase
+          .from("field_visits")
+          .select("id, visit_date, visit_time, purpose, location, priority, status, prospect_name, clients(business_name)")
+          .eq("employee_id", userId)
+          .in("status", ["pending", "assigned", "overdue"])
+          .order("visit_date", { ascending: true }),
       ]);
+
+      for (const v of visits.data ?? []) {
+        const overdue = v.status === "overdue";
+        tasks.push({
+          id: `visit:${v.id}`,
+          type: "field_visit",
+          priority: overdue ? "overdue" : v.priority === "urgent" ? "action_required" : "pending",
+          title: overdue ? "Field visit overdue" : "Field visit scheduled",
+          description: `${v.purpose}${v.location ? ` — ${v.location}` : ""} on ${new Date(`${v.visit_date}T00:00:00`).toLocaleDateString("en-IN")}${v.visit_time ? ` ${String(v.visit_time).slice(0, 5)}` : ""}`,
+          entity: (v as any).clients?.business_name ?? v.prospect_name ?? null,
+          amount: null,
+          created_at: `${v.visit_date}T00:00:00.000Z`,
+          status: overdue ? "Overdue" : "Pending",
+          actionLabel: "Open field visits",
+          route: "/employee/field-visits",
+        });
+      }
 
       // Invoice/due-date context for delivered orders awaiting payment.
       const deliveredIds = (orders.data ?? []).filter((o: any) => o.status === "completed").map((o: any) => o.id);
