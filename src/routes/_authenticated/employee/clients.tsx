@@ -205,31 +205,76 @@ function EmpClients() {
                     onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
                   />
                 </Field>
-                <Field label="GST number">
+                <Field label="GST number *">
                   <Input
+                    placeholder="27ABCDE1234F1Z5"
                     value={form.gst_number}
-                    onChange={(e) => setForm((f) => ({ ...f, gst_number: e.target.value }))}
+                    onChange={(e) => setForm((f) => ({ ...f, gst_number: e.target.value.toUpperCase() }))}
                   />
+                </Field>
+                <Field label="PAN number *">
+                  <Input
+                    placeholder="ABCDE1234F"
+                    value={form.pan}
+                    onChange={(e) => setForm((f) => ({ ...f, pan: e.target.value.toUpperCase() }))}
+                  />
+                </Field>
+                <Field label="Credit limit (₹) *">
+                  <Input
+                    type="number"
+                    min={MIN_CREDIT_LIMIT}
+                    step={1000}
+                    value={form.credit_limit}
+                    onChange={(e) => setForm((f) => ({ ...f, credit_limit: e.target.value }))}
+                  />
+                </Field>
+                <Field label="Credit terms *">
+                  <Select
+                    value={form.credit_terms}
+                    onValueChange={(t) => setForm((f) => ({ ...f, credit_terms: t }))}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {CREDIT_TERMS_OPTIONS.map((t) => (
+                        <SelectItem key={t} value={String(t)}>{String(t).padStart(2, "0")} days</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </Field>
               </div>
               <Field label="Address">
-                <Input
-                  value={form.address}
-                  onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
-                />
+                <div className="flex flex-wrap items-center gap-2">
+                  <Input
+                    className="min-w-[12rem] flex-1"
+                    placeholder="Type the address, or use your location"
+                    value={form.address}
+                    onChange={(e) => setForm((f) => ({ ...f, address: e.target.value }))}
+                  />
+                  <GeoAddressButton
+                    onResolved={({ address, latitude, longitude }) =>
+                      setForm((f) => ({ ...f, address: address || f.address, latitude, longitude }))
+                    }
+                  />
+                </div>
               </Field>
               <p className="text-xs text-muted-foreground">
-                The mobile number becomes their sign-in ID. They will complete the rest of their
-                profile on first login.
+                Minimum credit limit {inr(MIN_CREDIT_LIMIT)}. {inr(HIGH_CREDIT_THRESHOLD)} or more needs admin
+                approval before it activates. The mobile number becomes their sign-in ID.
               </p>
+              {errors.length > 0 && (
+                <ul className="list-disc space-y-0.5 pl-5 text-xs text-destructive">
+                  {errors.map((e) => <li key={e}>{e}</li>)}
+                </ul>
+              )}
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={() => create.mutate()} disabled={create.isPending}>
+              <Button onClick={() => create.mutate()} disabled={create.isPending || errors.length > 0}>
                 {create.isPending ? "Saving…" : "Save client"}
               </Button>
+
             </DialogFooter>
           </DialogContent>
         </Dialog>
