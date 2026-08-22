@@ -68,7 +68,7 @@ export const upsertFieldVisit = createServerFn({ method: "POST" })
     }
     const { id, ...values } = data;
     const { data: visitId, error } = await context.supabase.rpc("admin_upsert_field_visit", {
-      p_id: id ?? null,
+      p_id: (id ?? null) as unknown as string,
       p_values: values,
     });
     if (error) {
@@ -99,7 +99,7 @@ export const setFieldVisitStatus = createServerFn({ method: "POST" })
     const { error } = await context.supabase.rpc("set_field_visit_status", {
       p_id: data.id,
       p_status: data.status,
-      p_note: data.note ?? null,
+      p_note: data.note ?? undefined,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
