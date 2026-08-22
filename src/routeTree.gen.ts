@@ -20,6 +20,7 @@ import { Route as AuthenticatedCompleteProfileRouteImport } from './routes/_auth
 import { Route as AuthenticatedEmployeeTasksRouteImport } from './routes/_authenticated/employee/tasks'
 import { Route as AuthenticatedEmployeePayslipsRouteImport } from './routes/_authenticated/employee/payslips'
 import { Route as AuthenticatedEmployeeLocationRouteImport } from './routes/_authenticated/employee/location'
+import { Route as AuthenticatedEmployeeFieldVisitsRouteImport } from './routes/_authenticated/employee/field-visits'
 import { Route as AuthenticatedEmployeeDutyRouteImport } from './routes/_authenticated/employee/duty'
 import { Route as AuthenticatedEmployeeClientsRouteImport } from './routes/_authenticated/employee/clients'
 import { Route as AuthenticatedClientProfileRouteImport } from './routes/_authenticated/client/profile'
@@ -32,6 +33,7 @@ import { Route as AuthenticatedAdminPaymentsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin/orders'
 import { Route as AuthenticatedAdminLocationsRouteImport } from './routes/_authenticated/admin/locations'
 import { Route as AuthenticatedAdminInvoicesRouteImport } from './routes/_authenticated/admin/invoices'
+import { Route as AuthenticatedAdminFieldVisitsRouteImport } from './routes/_authenticated/admin/field-visits'
 import { Route as AuthenticatedAdminEmployeesRouteImport } from './routes/_authenticated/admin/employees'
 import { Route as AuthenticatedAdminCustomersRouteImport } from './routes/_authenticated/admin/customers'
 import { Route as AuthenticatedAdminCreditRouteImport } from './routes/_authenticated/admin/credit'
@@ -97,6 +99,12 @@ const AuthenticatedEmployeeLocationRoute =
   AuthenticatedEmployeeLocationRouteImport.update({
     id: '/employee/location',
     path: '/employee/location',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedEmployeeFieldVisitsRoute =
+  AuthenticatedEmployeeFieldVisitsRouteImport.update({
+    id: '/employee/field-visits',
+    path: '/employee/field-visits',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedEmployeeDutyRoute =
@@ -171,6 +179,12 @@ const AuthenticatedAdminInvoicesRoute =
     path: '/admin/invoices',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAdminFieldVisitsRoute =
+  AuthenticatedAdminFieldVisitsRouteImport.update({
+    id: '/admin/field-visits',
+    path: '/admin/field-visits',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminEmployeesRoute =
   AuthenticatedAdminEmployeesRouteImport.update({
     id: '/admin/employees',
@@ -232,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/admin/credit': typeof AuthenticatedAdminCreditRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesRoute
+  '/admin/field-visits': typeof AuthenticatedAdminFieldVisitsRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/locations': typeof AuthenticatedAdminLocationsRouteWithChildren
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -244,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/client/profile': typeof AuthenticatedClientProfileRoute
   '/employee/clients': typeof AuthenticatedEmployeeClientsRoute
   '/employee/duty': typeof AuthenticatedEmployeeDutyRoute
+  '/employee/field-visits': typeof AuthenticatedEmployeeFieldVisitsRoute
   '/employee/location': typeof AuthenticatedEmployeeLocationRoute
   '/employee/payslips': typeof AuthenticatedEmployeePayslipsRoute
   '/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
@@ -264,6 +280,7 @@ export interface FileRoutesByTo {
   '/admin/credit': typeof AuthenticatedAdminCreditRoute
   '/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/admin/employees': typeof AuthenticatedAdminEmployeesRoute
+  '/admin/field-visits': typeof AuthenticatedAdminFieldVisitsRoute
   '/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/admin/locations': typeof AuthenticatedAdminLocationsRouteWithChildren
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -276,6 +293,7 @@ export interface FileRoutesByTo {
   '/client/profile': typeof AuthenticatedClientProfileRoute
   '/employee/clients': typeof AuthenticatedEmployeeClientsRoute
   '/employee/duty': typeof AuthenticatedEmployeeDutyRoute
+  '/employee/field-visits': typeof AuthenticatedEmployeeFieldVisitsRoute
   '/employee/location': typeof AuthenticatedEmployeeLocationRoute
   '/employee/payslips': typeof AuthenticatedEmployeePayslipsRoute
   '/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
@@ -298,6 +316,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/credit': typeof AuthenticatedAdminCreditRoute
   '/_authenticated/admin/customers': typeof AuthenticatedAdminCustomersRoute
   '/_authenticated/admin/employees': typeof AuthenticatedAdminEmployeesRoute
+  '/_authenticated/admin/field-visits': typeof AuthenticatedAdminFieldVisitsRoute
   '/_authenticated/admin/invoices': typeof AuthenticatedAdminInvoicesRoute
   '/_authenticated/admin/locations': typeof AuthenticatedAdminLocationsRouteWithChildren
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
@@ -310,6 +329,7 @@ export interface FileRoutesById {
   '/_authenticated/client/profile': typeof AuthenticatedClientProfileRoute
   '/_authenticated/employee/clients': typeof AuthenticatedEmployeeClientsRoute
   '/_authenticated/employee/duty': typeof AuthenticatedEmployeeDutyRoute
+  '/_authenticated/employee/field-visits': typeof AuthenticatedEmployeeFieldVisitsRoute
   '/_authenticated/employee/location': typeof AuthenticatedEmployeeLocationRoute
   '/_authenticated/employee/payslips': typeof AuthenticatedEmployeePayslipsRoute
   '/_authenticated/employee/tasks': typeof AuthenticatedEmployeeTasksRoute
@@ -332,6 +352,7 @@ export interface FileRouteTypes {
     | '/admin/credit'
     | '/admin/customers'
     | '/admin/employees'
+    | '/admin/field-visits'
     | '/admin/invoices'
     | '/admin/locations'
     | '/admin/orders'
@@ -344,6 +365,7 @@ export interface FileRouteTypes {
     | '/client/profile'
     | '/employee/clients'
     | '/employee/duty'
+    | '/employee/field-visits'
     | '/employee/location'
     | '/employee/payslips'
     | '/employee/tasks'
@@ -364,6 +386,7 @@ export interface FileRouteTypes {
     | '/admin/credit'
     | '/admin/customers'
     | '/admin/employees'
+    | '/admin/field-visits'
     | '/admin/invoices'
     | '/admin/locations'
     | '/admin/orders'
@@ -376,6 +399,7 @@ export interface FileRouteTypes {
     | '/client/profile'
     | '/employee/clients'
     | '/employee/duty'
+    | '/employee/field-visits'
     | '/employee/location'
     | '/employee/payslips'
     | '/employee/tasks'
@@ -397,6 +421,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/credit'
     | '/_authenticated/admin/customers'
     | '/_authenticated/admin/employees'
+    | '/_authenticated/admin/field-visits'
     | '/_authenticated/admin/invoices'
     | '/_authenticated/admin/locations'
     | '/_authenticated/admin/orders'
@@ -409,6 +434,7 @@ export interface FileRouteTypes {
     | '/_authenticated/client/profile'
     | '/_authenticated/employee/clients'
     | '/_authenticated/employee/duty'
+    | '/_authenticated/employee/field-visits'
     | '/_authenticated/employee/location'
     | '/_authenticated/employee/payslips'
     | '/_authenticated/employee/tasks'
@@ -503,6 +529,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeeLocationRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/employee/field-visits': {
+      id: '/_authenticated/employee/field-visits'
+      path: '/employee/field-visits'
+      fullPath: '/employee/field-visits'
+      preLoaderRoute: typeof AuthenticatedEmployeeFieldVisitsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/employee/duty': {
       id: '/_authenticated/employee/duty'
       path: '/employee/duty'
@@ -585,6 +618,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/invoices'
       fullPath: '/admin/invoices'
       preLoaderRoute: typeof AuthenticatedAdminInvoicesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/field-visits': {
+      id: '/_authenticated/admin/field-visits'
+      path: '/admin/field-visits'
+      fullPath: '/admin/field-visits'
+      preLoaderRoute: typeof AuthenticatedAdminFieldVisitsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/employees': {
@@ -671,6 +711,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminCreditRoute: typeof AuthenticatedAdminCreditRoute
   AuthenticatedAdminCustomersRoute: typeof AuthenticatedAdminCustomersRoute
   AuthenticatedAdminEmployeesRoute: typeof AuthenticatedAdminEmployeesRoute
+  AuthenticatedAdminFieldVisitsRoute: typeof AuthenticatedAdminFieldVisitsRoute
   AuthenticatedAdminInvoicesRoute: typeof AuthenticatedAdminInvoicesRoute
   AuthenticatedAdminLocationsRoute: typeof AuthenticatedAdminLocationsRouteWithChildren
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
@@ -683,6 +724,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedClientProfileRoute: typeof AuthenticatedClientProfileRoute
   AuthenticatedEmployeeClientsRoute: typeof AuthenticatedEmployeeClientsRoute
   AuthenticatedEmployeeDutyRoute: typeof AuthenticatedEmployeeDutyRoute
+  AuthenticatedEmployeeFieldVisitsRoute: typeof AuthenticatedEmployeeFieldVisitsRoute
   AuthenticatedEmployeeLocationRoute: typeof AuthenticatedEmployeeLocationRoute
   AuthenticatedEmployeePayslipsRoute: typeof AuthenticatedEmployeePayslipsRoute
   AuthenticatedEmployeeTasksRoute: typeof AuthenticatedEmployeeTasksRoute
@@ -700,6 +742,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminCreditRoute: AuthenticatedAdminCreditRoute,
   AuthenticatedAdminCustomersRoute: AuthenticatedAdminCustomersRoute,
   AuthenticatedAdminEmployeesRoute: AuthenticatedAdminEmployeesRoute,
+  AuthenticatedAdminFieldVisitsRoute: AuthenticatedAdminFieldVisitsRoute,
   AuthenticatedAdminInvoicesRoute: AuthenticatedAdminInvoicesRoute,
   AuthenticatedAdminLocationsRoute:
     AuthenticatedAdminLocationsRouteWithChildren,
@@ -713,6 +756,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedClientProfileRoute: AuthenticatedClientProfileRoute,
   AuthenticatedEmployeeClientsRoute: AuthenticatedEmployeeClientsRoute,
   AuthenticatedEmployeeDutyRoute: AuthenticatedEmployeeDutyRoute,
+  AuthenticatedEmployeeFieldVisitsRoute: AuthenticatedEmployeeFieldVisitsRoute,
   AuthenticatedEmployeeLocationRoute: AuthenticatedEmployeeLocationRoute,
   AuthenticatedEmployeePayslipsRoute: AuthenticatedEmployeePayslipsRoute,
   AuthenticatedEmployeeTasksRoute: AuthenticatedEmployeeTasksRoute,

@@ -467,6 +467,139 @@ export type Database = {
           },
         ]
       }
+      field_visit_events: {
+        Row: {
+          actor_id: string | null
+          created_at: string
+          event: string
+          from_status: string | null
+          id: string
+          note: string | null
+          to_status: string | null
+          visit_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string
+          event: string
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          to_status?: string | null
+          visit_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string
+          event?: string
+          from_status?: string | null
+          id?: string
+          note?: string | null
+          to_status?: string | null
+          visit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_visit_events_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_visit_events_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "field_visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      field_visits: {
+        Row: {
+          cancelled_at: string | null
+          cancelled_reason: string | null
+          client_id: string | null
+          completed_at: string | null
+          completion_notes: string | null
+          created_at: string
+          created_by: string | null
+          employee_id: string | null
+          id: string
+          instructions: string | null
+          location: string | null
+          priority: Database["public"]["Enums"]["field_visit_priority"]
+          prospect_name: string | null
+          purpose: string
+          status: Database["public"]["Enums"]["field_visit_status"]
+          updated_at: string
+          visit_date: string
+          visit_time: string | null
+        }
+        Insert: {
+          cancelled_at?: string | null
+          cancelled_reason?: string | null
+          client_id?: string | null
+          completed_at?: string | null
+          completion_notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string | null
+          id?: string
+          instructions?: string | null
+          location?: string | null
+          priority?: Database["public"]["Enums"]["field_visit_priority"]
+          prospect_name?: string | null
+          purpose: string
+          status?: Database["public"]["Enums"]["field_visit_status"]
+          updated_at?: string
+          visit_date: string
+          visit_time?: string | null
+        }
+        Update: {
+          cancelled_at?: string | null
+          cancelled_reason?: string | null
+          client_id?: string | null
+          completed_at?: string | null
+          completion_notes?: string | null
+          created_at?: string
+          created_by?: string | null
+          employee_id?: string | null
+          id?: string
+          instructions?: string | null
+          location?: string | null
+          priority?: Database["public"]["Enums"]["field_visit_priority"]
+          prospect_name?: string | null
+          purpose?: string
+          status?: Database["public"]["Enums"]["field_visit_status"]
+          updated_at?: string
+          visit_date?: string
+          visit_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "field_visits_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_visits_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "field_visits_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           amount: number
@@ -1379,6 +1512,10 @@ export type Database = {
         Args: { p_action: string; p_payment_id: string; p_reason?: string }
         Returns: undefined
       }
+      admin_upsert_field_visit: {
+        Args: { p_id: string; p_values: Json }
+        Returns: string
+      }
       client_cancel_order: { Args: { p_id: string }; Returns: undefined }
       client_respond_invoice: {
         Args: { p_action: string; p_id: string }
@@ -1444,11 +1581,23 @@ export type Database = {
         Args: { p_order_id: string; p_regenerated: boolean }
         Returns: undefined
       }
+      mark_field_visits_overdue: { Args: never; Returns: number }
       refresh_credit_purse: { Args: { _client_id: string }; Returns: undefined }
+      set_field_visit_status: {
+        Args: { p_id: string; p_note?: string; p_status: string }
+        Returns: undefined
+      }
       submit_order_for_client: { Args: { p_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "employee" | "client"
+      field_visit_priority: "low" | "medium" | "high" | "urgent"
+      field_visit_status:
+        | "pending"
+        | "assigned"
+        | "completed"
+        | "cancelled"
+        | "overdue"
       invoice_status:
         | "sent"
         | "approved"
@@ -1604,6 +1753,14 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "employee", "client"],
+      field_visit_priority: ["low", "medium", "high", "urgent"],
+      field_visit_status: [
+        "pending",
+        "assigned",
+        "completed",
+        "cancelled",
+        "overdue",
+      ],
       invoice_status: [
         "sent",
         "approved",

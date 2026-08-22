@@ -37,6 +37,9 @@ export const qk = {
 
   notifications: ["notifications"] as const,
   tasks: ["tasks"] as const,
+  fieldVisits: ["field-visits"] as const,
+  fieldVisitEvents: (visitId: string | null) =>
+    visitId ? (["field-visit-events", visitId] as const) : (["field-visit-events"] as const),
   pendingTasks: ["pending-tasks"] as const,
   activityHistory: (limit?: number) =>
     limit == null ? (["activity-history"] as const) : (["activity-history", limit] as const),
@@ -75,6 +78,8 @@ export const STALE_TIMES: Array<[readonly unknown[], number]> = [
   [["notifications"], 20_000],
   [["pending-tasks"], 20_000],
   [["tasks"], 30_000],
+  [["field-visits"], 30_000],
+  [["field-visit-events"], 60_000],
 
   // Reports / history.
   [["activity-history"], 2 * 60_000],

@@ -18,6 +18,7 @@ export type MutationScope =
   | "clientAssignment"
   | "product"
   | "task"
+  | "fieldVisit"
   | "notification"
   | "employee"
   | "duty"
@@ -64,6 +65,9 @@ export function invalidateFor(
       break;
     case "product":
       keys.push(qk.products);
+      break;
+    case "fieldVisit":
+      keys.push(qk.fieldVisits, qk.fieldVisitEvents(null), qk.notifications, qk.pendingTasks);
       break;
     case "task":
       keys.push(qk.tasks, qk.pendingTasks, qk.activityHistory());
