@@ -49,7 +49,7 @@ function Profile() {
           <Row k="Credit limit" v={inr(c.credit_limit)} />
           <Row k="Credit terms" v={`${c.credit_terms} days`} />
           <Row k="Penalty / day" v={`${(Number(c.penalty_rate_per_day) * 100).toFixed(2)}%`} />
-          {purse && <Row k="Available credit" v={inr(purse.available)} />}
+          {purse && <Row k="Available credit" v={inr(purse.remaining_credit)} />}
         </CardContent>
       </Card>
     </div>
