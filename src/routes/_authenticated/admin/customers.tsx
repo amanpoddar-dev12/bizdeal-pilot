@@ -207,7 +207,9 @@ function Customers() {
           </div>
         </CardContent>
       </Card>
+      <CreditApprovals />
       <AssignClientDialog client={assigning} open={!!assigning} onOpenChange={(o) => !o && setAssigning(null)} />
+
 
     </div>
   );
