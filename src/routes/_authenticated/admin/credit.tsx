@@ -75,7 +75,9 @@ function Credit() {
   const rows = useMemo(
     () =>
       (data as any[]).map((c) => {
-        const purse = c.credit_purse?.[0] ?? null;
+        // The embed is a one-to-one object (client_id is the purse PK); older
+        // code assumed an array here, which is why every value read as zero.
+        const purse = Array.isArray(c.credit_purse) ? c.credit_purse[0] : c.credit_purse;
         const limit = Number(purse?.credit_limit ?? c.credit_limit ?? 0);
         const used = Number(purse?.used_credit ?? 0);
         const available = Number(purse?.remaining_credit ?? limit - used);
