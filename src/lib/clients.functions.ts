@@ -152,13 +152,21 @@ export const listCreditPurseHistory = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     let q = context.supabase
       .from("credit_purse_events")
-      .select("*, clients(business_name), profiles:actor_id(name, email)")
+      .select("*, clients(business_name)")
       .order("created_at", { ascending: false })
       .limit(300);
     if (data.client_id) q = q.eq("client_id", data.client_id);
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-    return rows ?? [];
+    const list = rows ?? [];
+    // actor_id has no FK to profiles, so PostgREST cannot embed it — join by hand.
+    const ids = [...new Set(list.map((r: any) => r.actor_id).filter(Boolean))];
+    let actors: Record<string, any> = {};
+    if (ids.length) {
+      const { data: profs } = await context.supabase.from("profiles").select("id, name, email").in("id", ids);
+      actors = Object.fromEntries((profs ?? []).map((p: any) => [p.id, p]));
+    }
+    return list.map((r: any) => ({ ...r, profiles: r.actor_id ? actors[r.actor_id] ?? null : null }));
   });
 
 export const reviewCreditRequest = createServerFn({ method: "POST" })
